@@ -155,8 +155,10 @@ public class GenerateComponentDescriptorMojo extends AbstractJbiMojo {
 
         File descriptor = new File( outputDir, JBI_DESCRIPTOR );
 
-        Set artifacts = project.getArtifacts();
         List uris = new ArrayList();
+        uris.add(project.getArtifactId() + "-" + project.getVersion() + ".jar");
+        
+        Set artifacts = project.getArtifacts();
         for ( Iterator iter = artifacts.iterator(); iter.hasNext(); )
         {
             Artifact artifact = (Artifact) iter.next();

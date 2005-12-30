@@ -17,9 +17,7 @@ package org.apache.servicemix.maven.plugin.jbi;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.maven.archiver.MavenArchiveConfiguration;
@@ -129,9 +127,16 @@ public class GenerateInstallerMojo extends AbstractJbiMojo {
 				throw new JbiPluginException("Unable to create work directory: " + workDirectory);
 			}
 		}
+
+        File projectArtifact = new File(outputDirectory, project.getArtifactId() + "-" + project.getVersion() + ".jar");
+    	try {
+        	FileUtils.copyFileToDirectory( projectArtifact,
+        								   workDirectory);
+    	} catch (IOException e) {
+    		throw new JbiPluginException("Unable to copy file " + projectArtifact, e);
+    	}
 		
         Set artifacts = project.getArtifacts();
-        List uris = new ArrayList();
         for ( Iterator iter = artifacts.iterator(); iter.hasNext(); )
         {
             Artifact artifact = (Artifact) iter.next();
@@ -149,11 +154,9 @@ public class GenerateInstallerMojo extends AbstractJbiMojo {
                 	} catch (IOException e) {
                 		throw new JbiPluginException("Unable to copy file " + artifact.getFile(), e);
                 	}
-                	uris.add(LIB_DIRECTORY + "/" + artifact.getFile().getName());
                 }
             }
         }
-		
 	}
 
 }
