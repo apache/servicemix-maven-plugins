@@ -21,14 +21,14 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
     xmlns="http://maven.apache.org/POM/4.0.0">
     
+  <modelVersion>4.0.0</modelVersion>
+
   <parent>
-    <groupId>incubator-servicemix</groupId>
+    <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix</artifactId>
     <version>3.0-SNAPSHOT</version>
-    <relativePath>../../pom.xml</relativePath>
   </parent>
     
-  <modelVersion>4.0.0</modelVersion>
 	<groupId>org.apache.servicemix.plugins</groupId>
 	<artifactId>maven2-jbi-plugin</artifactId>
 	<packaging>maven-plugin</packaging>
