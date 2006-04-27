@@ -45,7 +45,7 @@ import org.codehaus.plexus.util.FileUtils;
 public class GenerateInstallerMojo extends AbstractJbiMojo {
 
     /**
-     * The directory for the generated WAR.
+     * The directory for the generated JBI component.
      *
      * @parameter expression="${project.build.directory}"
      * @required
@@ -69,6 +69,14 @@ public class GenerateInstallerMojo extends AbstractJbiMojo {
     private JarArchiver jarArchiver;
 
     /**
+     * Single directory for extra files to include in the JBI component.
+     *
+     * @parameter expression="${basedir}/src/main/jbi"
+     * @required
+     */
+    private File jbiSourceDirectory;
+
+    /**
      * The maven archive configuration to use.
      *
      * @parameter
@@ -81,6 +89,7 @@ public class GenerateInstallerMojo extends AbstractJbiMojo {
         getLog().debug( " ======= GenerateInstallerMojo settings =======" );
         getLog().debug( "workDirectory[" + workDirectory + "]" );
         getLog().debug( "installerName[" + installerName + "]" );
+        getLog().debug( "jbiSourceDirectory[" + jbiSourceDirectory + "]" );
         
         try {
         	
@@ -105,6 +114,9 @@ public class GenerateInstallerMojo extends AbstractJbiMojo {
 	        archiver.setArchiver( jarArchiver );
 	        archiver.setOutputFile( installerFile );
 			jarArchiver.addDirectory( workDirectory );
+			if (jbiSourceDirectory.isDirectory()) {
+			jarArchiver.addDirectory( jbiSourceDirectory );
+      }
 			// create archive
 			archiver.createArchive( getProject(), archive );
 			
