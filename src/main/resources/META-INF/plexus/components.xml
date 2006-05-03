@@ -16,6 +16,7 @@
       <configuration>
         <type>jbi-component</type>
         <extension>jar</extension>
+        <language>java</language>
       </configuration>
     </component>
     <component>
