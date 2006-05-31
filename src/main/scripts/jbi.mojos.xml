@@ -1,0 +1,368 @@
+<pluginMetadata>
+  <mojos>
+    <mojo>
+      <goal>installComponent</goal>
+      <call>installComponent</call>      
+      <requiresProject>true</requiresProject>      
+      <description>
+        Installs a JBI component to a server
+      </description>
+      <parameters>          
+        <parameter>
+          <name>installerFile</name> 
+          <property>installerFile</property>
+          <required>true</required>
+          <readonly>true</readonly>
+          <defaultValue>${project.build.directory}/${project.artifactId}-${project.version}-installer.zip</defaultValue>
+          <type>java.lang.String</type>
+          <description>The location of the component installer file</description>
+        </parameter>
+        <parameter>
+          <name>serverProtocol</name> 
+          <property>serverProtocol</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue>rmi</defaultValue>
+          <type>java.lang.String</type>
+          <description>The default protcol used for connecting with the ServiceMix JMX MBeanServer</description>
+        </parameter>
+        <parameter>
+          <name>host</name> 
+          <property>host</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue>localhost</defaultValue>
+          <type>java.lang.String</type>
+          <description>The hostname of the naming server</description>
+        </parameter>
+        <parameter>
+          <name>containerName</name> 
+          <property>containerName</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue>ServiceMix</defaultValue>
+          <type>java.lang.String</type>
+          <description>The name of the ServiceMix JBI Container to connect to</description>
+        </parameter>
+        <parameter>
+          <name>jmxDomainName</name> 
+          <property>jmxDomainName</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue>org.apache.servicemix</defaultValue>
+          <type>java.lang.String</type>
+          <description>The domain name of the MBeanServer used by the ServiceMix JBI Container</description>
+        </parameter>
+        <parameter>
+          <name>port</name> 
+          <property>port</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue>1099</defaultValue>
+          <type>java.lang.String</type>
+          <description>The port the naming server listens for connections on</description>
+        </parameter>
+        <parameter>
+          <name>jndiPath</name> 
+          <property>jndiPath</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue>/jmxrmi</defaultValue>
+          <type>java.lang.String</type>
+          <description>The path in the naming server to retrieve the JMX Connection</description>
+        </parameter>
+        <parameter>
+          <name>username</name> 
+          <property>username</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue></defaultValue>
+          <type>java.lang.String</type>
+          <description>The user name for the JMXConnection</description>
+        </parameter>
+        <parameter>
+          <name>password</name> 
+          <property>password</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue></defaultValue>
+          <type>java.lang.String</type>
+          <description>The password for the JMXConnection</description>
+        </parameter>
+      </parameters>
+    </mojo>
+    <mojo>
+      <goal>uninstallComponent</goal>
+      <call>uninstallComponent</call>      
+      <requiresProject>true</requiresProject>      
+      <description>
+        Uninstalled a JBI component from the server
+      </description>
+      <parameters>          
+        <parameter>
+          <name>componentName</name> 
+          <property>componentName</property>
+          <required>true</required>
+          <readonly>true</readonly>
+          <defaultValue>${project.artifactId}</defaultValue>
+          <type>java.lang.String</type>
+          <description>The name of the Component to uninstall</description>
+        </parameter>
+        <parameter>
+          <name>serverProtocol</name> 
+          <property>serverProtocol</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue>rmi</defaultValue>
+          <type>java.lang.String</type>
+          <description>The default protcol used for connecting with the ServiceMix JMX MBeanServer</description>
+        </parameter>
+        <parameter>
+          <name>host</name> 
+          <property>host</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue>localhost</defaultValue>
+          <type>java.lang.String</type>
+          <description>The hostname of the naming server</description>
+        </parameter>
+        <parameter>
+          <name>containerName</name> 
+          <property>containerName</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue>ServiceMix</defaultValue>
+          <type>java.lang.String</type>
+          <description>The name of the ServiceMix JBI Container to connect to</description>
+        </parameter>
+        <parameter>
+          <name>jmxDomainName</name> 
+          <property>jmxDomainName</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue>org.apache.servicemix</defaultValue>
+          <type>java.lang.String</type>
+          <description>The domain name of the MBeanServer used by the ServiceMix JBI Container</description>
+        </parameter>
+        <parameter>
+          <name>port</name> 
+          <property>port</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue>1099</defaultValue>
+          <type>java.lang.String</type>
+          <description>The port the naming server listens for connections on</description>
+        </parameter>
+        <parameter>
+          <name>jndiPath</name> 
+          <property>jndiPath</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue>/jmxrmi</defaultValue>
+          <type>java.lang.String</type>
+          <description>The path in the naming server to retrieve the JMX Connection</description>
+        </parameter>
+        <parameter>
+          <name>username</name> 
+          <property>username</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue></defaultValue>
+          <type>java.lang.String</type>
+          <description>The user name for the JMXConnection</description>
+        </parameter>
+        <parameter>
+          <name>password</name> 
+          <property>password</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue></defaultValue>
+          <type>java.lang.String</type>
+          <description>The password for the JMXConnection</description>
+        </parameter>
+      </parameters>
+    </mojo>
+    <mojo>
+      <goal>stopComponent</goal>
+      <call>stopComponent</call>      
+      <requiresProject>true</requiresProject>      
+      <description>
+        Stops a JBI component on the server
+      </description>
+      <parameters>          
+        <parameter>
+          <name>componentName</name> 
+          <property>componentName</property>
+          <required>true</required>
+          <readonly>true</readonly>
+          <defaultValue>${project.artifactId}</defaultValue>
+          <type>java.lang.String</type>
+          <description>The name of the Component to uninstall</description>
+        </parameter>
+        <parameter>
+          <name>serverProtocol</name> 
+          <property>serverProtocol</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue>rmi</defaultValue>
+          <type>java.lang.String</type>
+          <description>The default protcol used for connecting with the ServiceMix JMX MBeanServer</description>
+        </parameter>
+        <parameter>
+          <name>host</name> 
+          <property>host</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue>localhost</defaultValue>
+          <type>java.lang.String</type>
+          <description>The hostname of the naming server</description>
+        </parameter>
+        <parameter>
+          <name>containerName</name> 
+          <property>containerName</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue>ServiceMix</defaultValue>
+          <type>java.lang.String</type>
+          <description>The name of the ServiceMix JBI Container to connect to</description>
+        </parameter>
+        <parameter>
+          <name>jmxDomainName</name> 
+          <property>jmxDomainName</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue>org.apache.servicemix</defaultValue>
+          <type>java.lang.String</type>
+          <description>The domain name of the MBeanServer used by the ServiceMix JBI Container</description>
+        </parameter>
+        <parameter>
+          <name>port</name> 
+          <property>port</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue>1099</defaultValue>
+          <type>java.lang.String</type>
+          <description>The port the naming server listens for connections on</description>
+        </parameter>
+        <parameter>
+          <name>jndiPath</name> 
+          <property>jndiPath</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue>/jmxrmi</defaultValue>
+          <type>java.lang.String</type>
+          <description>The path in the naming server to retrieve the JMX Connection</description>
+        </parameter>
+        <parameter>
+          <name>username</name> 
+          <property>username</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue></defaultValue>
+          <type>java.lang.String</type>
+          <description>The user name for the JMXConnection</description>
+        </parameter>
+        <parameter>
+          <name>password</name> 
+          <property>password</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue></defaultValue>
+          <type>java.lang.String</type>
+          <description>The password for the JMXConnection</description>
+        </parameter>
+      </parameters>
+    </mojo>
+    <mojo>
+      <goal>startComponent</goal>
+      <call>startComponent</call>      
+      <requiresProject>true</requiresProject>      
+      <description>
+        Starts a JBI component on the server
+      </description>
+      <parameters>          
+        <parameter>
+          <name>componentName</name> 
+          <property>componentName</property>
+          <required>true</required>
+          <readonly>true</readonly>
+          <defaultValue>${project.artifactId}</defaultValue>
+          <type>java.lang.String</type>
+          <description>The name of the Component to uninstall</description>
+        </parameter>
+        <parameter>
+          <name>serverProtocol</name> 
+          <property>serverProtocol</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue>rmi</defaultValue>
+          <type>java.lang.String</type>
+          <description>The default protcol used for connecting with the ServiceMix JMX MBeanServer</description>
+        </parameter>
+        <parameter>
+          <name>host</name> 
+          <property>host</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue>localhost</defaultValue>
+          <type>java.lang.String</type>
+          <description>The hostname of the naming server</description>
+        </parameter>
+        <parameter>
+          <name>containerName</name> 
+          <property>containerName</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue>ServiceMix</defaultValue>
+          <type>java.lang.String</type>
+          <description>The name of the ServiceMix JBI Container to connect to</description>
+        </parameter>
+        <parameter>
+          <name>jmxDomainName</name> 
+          <property>jmxDomainName</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue>org.apache.servicemix</defaultValue>
+          <type>java.lang.String</type>
+          <description>The domain name of the MBeanServer used by the ServiceMix JBI Container</description>
+        </parameter>
+        <parameter>
+          <name>port</name> 
+          <property>port</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue>1099</defaultValue>
+          <type>java.lang.String</type>
+          <description>The port the naming server listens for connections on</description>
+        </parameter>
+        <parameter>
+          <name>jndiPath</name> 
+          <property>jndiPath</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue>/jmxrmi</defaultValue>
+          <type>java.lang.String</type>
+          <description>The path in the naming server to retrieve the JMX Connection</description>
+        </parameter>
+        <parameter>
+          <name>username</name> 
+          <property>username</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue></defaultValue>
+          <type>java.lang.String</type>
+          <description>The user name for the JMXConnection</description>
+        </parameter>
+        <parameter>
+          <name>password</name> 
+          <property>password</property>
+          <required>false</required>
+          <readonly>true</readonly>
+          <defaultValue></defaultValue>
+          <type>java.lang.String</type>
+          <description>The password for the JMXConnection</description>
+        </parameter>
+      </parameters>
+    </mojo>
+  </mojos>
+</pluginMetadata>

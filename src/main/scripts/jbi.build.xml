@@ -1,0 +1,25 @@
+<project>
+	<target name="installComponent">
+		<taskdef name="installComponent" classname="org.apache.servicemix.jbi.management.task.InstallComponentTask" />
+		<echo>Installing ${installerFile} to service:jmx:${serverProtocol}:///jndi/${serverProtocol}://${host}:${port}${jndiPath}</echo>
+		<installComponent serverProtocol="${serverProtocol}" host="${host}" containerName="${containerName}" jmxDomainName="${jmxDomainName}" port="${port}" jndiPath="${jndiPath}" username="${username}" password="${password}" failOnError="true" file="${installerFile}"/>
+	</target>	
+	
+	<target name="uninstallComponent">
+		<taskdef name="uninstallComponent" classname="org.apache.servicemix.jbi.management.task.UninstallComponentTask" />
+		<echo>Uninstalling ${componentName} from service:jmx:${serverProtocol}:///jndi/${serverProtocol}://${host}:${port}${jndiPath}</echo>
+		<uninstallComponent serverProtocol="${serverProtocol}" host="${host}" containerName="${containerName}" jmxDomainName="${jmxDomainName}" port="${port}" jndiPath="${jndiPath}" username="${username}" password="${password}" failOnError="true" name="${componentName}"/>
+	</target>
+	
+	<target name="startComponent">
+		<taskdef name="startComponent" classname="org.apache.servicemix.jbi.management.task.StartComponentTask" />
+		<echo>Starting ${componentName} on service:jmx:${serverProtocol}:///jndi/${serverProtocol}://${host}:${port}${jndiPath}</echo>
+		<startComponent serverProtocol="${serverProtocol}" host="${host}" containerName="${containerName}" jmxDomainName="${jmxDomainName}" port="${port}" jndiPath="${jndiPath}" username="${username}" password="${password}" failOnError="true" name="${componentName}"/>
+	</target>
+	
+	<target name="stopComponent">
+		<taskdef name="stopComponent" classname="org.apache.servicemix.jbi.management.task.StopComponentTask" />
+		<echo>Stopping ${componentName} on service:jmx:${serverProtocol}:///jndi/${serverProtocol}://${host}:${port}${jndiPath}</echo>
+		<stopComponent serverProtocol="${serverProtocol}" host="${host}" containerName="${containerName}" jmxDomainName="${jmxDomainName}" port="${port}" jndiPath="${jndiPath}" username="${username}" password="${password}" failOnError="true" name="${componentName}"/>
+	</target>
+</project>
