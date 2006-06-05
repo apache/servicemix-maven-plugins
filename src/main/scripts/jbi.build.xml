@@ -1,4 +1,10 @@
 <project>
+	
+	<!--
+	
+	Component Tasks
+	
+	-->
 	<target name="installComponent">
 		<taskdef name="installComponent" classname="org.apache.servicemix.jbi.management.task.InstallComponentTask" />
 		<echo>Installing ${installerFile} to service:jmx:${serverProtocol}:///jndi/${serverProtocol}://${host}:${port}${jndiPath}</echo>
@@ -21,5 +27,80 @@
 		<taskdef name="stopComponent" classname="org.apache.servicemix.jbi.management.task.StopComponentTask" />
 		<echo>Stopping ${componentName} on service:jmx:${serverProtocol}:///jndi/${serverProtocol}://${host}:${port}${jndiPath}</echo>
 		<stopComponent serverProtocol="${serverProtocol}" host="${host}" containerName="${containerName}" jmxDomainName="${jmxDomainName}" port="${port}" jndiPath="${jndiPath}" username="${username}" password="${password}" failOnError="true" name="${componentName}"/>
+	</target>
+	
+	<target name="shutdownComponent">
+		<taskdef name="shutdownComponent" classname="org.apache.servicemix.jbi.management.task.ShutDownComponentTask" />
+		<echo>Shutting down ${componentName} on service:jmx:${serverProtocol}:///jndi/${serverProtocol}://${host}:${port}${jndiPath}</echo>
+		<shutdownComponent serverProtocol="${serverProtocol}" host="${host}" containerName="${containerName}" jmxDomainName="${jmxDomainName}" port="${port}" jndiPath="${jndiPath}" username="${username}" password="${password}" failOnError="true" name="${componentName}"/>
+	</target>
+	
+	<target name="listServiceEngines">
+		<taskdef name="listServiceEngines" classname="org.apache.servicemix.jbi.management.task.ListServiceEnginesTask" />
+		<echo>Listing service engines on service:jmx:${serverProtocol}:///jndi/${serverProtocol}://${host}:${port}${jndiPath}</echo>
+		<listServiceEngines serverProtocol="${serverProtocol}" host="${host}" containerName="${containerName}" jmxDomainName="${jmxDomainName}" port="${port}" jndiPath="${jndiPath}" username="${username}" password="${password}" failOnError="true" serviceAssemblyName="${serviceAssemblyName}" sharedLibraryName="${sharedLibraryName}" state="${state}"/>
+	</target>
+	
+	<target name="listBindingComponents">
+		<taskdef name="listBindingComponents" classname="org.apache.servicemix.jbi.management.task.ListBindingComponentsTask" />
+		<echo>Listing binding components on service:jmx:${serverProtocol}:///jndi/${serverProtocol}://${host}:${port}${jndiPath}</echo>
+		<listBindingComponents serverProtocol="${serverProtocol}" host="${host}" containerName="${containerName}" jmxDomainName="${jmxDomainName}" port="${port}" jndiPath="${jndiPath}" username="${username}" password="${password}" failOnError="true" serviceAssemblyName="${serviceAssemblyName}" bindingComponentName="${bindingComponentName}" sharedLibraryName="${sharedLibraryName}" state="${state}"/>
+	</target>
+	
+	<!--
+
+	Shared Library Tasks
+	
+	-->
+	<target name="installSharedLibrary">
+		<taskdef name="installSharedLibrary" classname="org.apache.servicemix.jbi.management.task.InstallSharedLibraryTask" />
+		<echo>Installing shared library ${sharedLibraryFile} on service:jmx:${serverProtocol}:///jndi/${serverProtocol}://${host}:${port}${jndiPath}</echo>
+		<installSharedLibrary serverProtocol="${serverProtocol}" host="${host}" containerName="${containerName}" jmxDomainName="${jmxDomainName}" port="${port}" jndiPath="${jndiPath}" username="${username}" password="${password}" failOnError="true" file="${sharedLibraryFile}"/>
+	</target>
+	<target name="uninstallSharedLibrary">
+		<taskdef name="uninstallSharedLibrary" classname="org.apache.servicemix.jbi.management.task.UninstallSharedLibraryTask" />
+		<echo>Uninstalling shared library ${sharedLibraryName} on service:jmx:${serverProtocol}:///jndi/${serverProtocol}://${host}:${port}${jndiPath}</echo>
+		<uninstallSharedLibrary serverProtocol="${serverProtocol}" host="${host}" containerName="${containerName}" jmxDomainName="${jmxDomainName}" port="${port}" jndiPath="${jndiPath}" username="${username}" password="${password}" failOnError="true" name="${sharedLibraryName}"/>
+	</target>
+	<target name="listSharedLibraries">
+		<taskdef name="listSharedLibraries" classname="org.apache.servicemix.jbi.management.task.ListSharedLibrariesTask" />
+		<echo>Listing shared library on service:jmx:${serverProtocol}:///jndi/${serverProtocol}://${host}:${port}${jndiPath}</echo>
+		<listSharedLibraries serverProtocol="${serverProtocol}" host="${host}" containerName="${containerName}" jmxDomainName="${jmxDomainName}" port="${port}" jndiPath="${jndiPath}" username="${username}" password="${password}" failOnError="true" componentName="${componentName}" sharedLibraryName="${sharedLibraryName}"/>
+	</target>
+	
+	<!--
+
+	Shared Library Tasks
+	
+	-->
+	<target name="deployServiceAssembly">
+		<taskdef name="deployServiceAssembly" classname="org.apache.servicemix.jbi.management.task.DeployServiceAssemblyTask" />
+		<echo>Deploying service assembly ${serviceAssemblyFile} on service:jmx:${serverProtocol}:///jndi/${serverProtocol}://${host}:${port}${jndiPath}</echo>
+		<deployServiceAssembly serverProtocol="${serverProtocol}" host="${host}" containerName="${containerName}" jmxDomainName="${jmxDomainName}" port="${port}" jndiPath="${jndiPath}" username="${username}" password="${password}" failOnError="true" file="${serviceAssemblyFile}"/>
+	</target>
+	<target name="undeployServiceAssembly">
+		<taskdef name="undeployServiceAssembly" classname="org.apache.servicemix.jbi.management.task.UndeployServiceAssemblyTask" />
+		<echo>Uninstalling service assembly ${serviceAssemblyName} on service:jmx:${serverProtocol}:///jndi/${serverProtocol}://${host}:${port}${jndiPath}</echo>
+		<undeployServiceAssembly serverProtocol="${serverProtocol}" host="${host}" containerName="${containerName}" jmxDomainName="${jmxDomainName}" port="${port}" jndiPath="${jndiPath}" username="${username}" password="${password}" failOnError="true" name="${serviceAssemblyName}"/>
+	</target>
+	<target name="startServiceAssembly">
+		<taskdef name="startServiceAssembly" classname="org.apache.servicemix.jbi.management.task.StartServiceAssemblyTask" />
+		<echo>Starting service assembly ${serviceAssemblyName} on service:jmx:${serverProtocol}:///jndi/${serverProtocol}://${host}:${port}${jndiPath}</echo>
+		<startServiceAssembly serverProtocol="${serverProtocol}" host="${host}" containerName="${containerName}" jmxDomainName="${jmxDomainName}" port="${port}" jndiPath="${jndiPath}" username="${username}" password="${password}" failOnError="true" name="${serviceAssemblyName}"/>
+	</target>
+	<target name="stopServiceAssembly">
+		<taskdef name="stopServiceAssembly" classname="org.apache.servicemix.jbi.management.task.StopServiceAssemblyTask" />
+		<echo>Stopping service assembly ${serviceAssemblyName} on service:jmx:${serverProtocol}:///jndi/${serverProtocol}://${host}:${port}${jndiPath}</echo>
+		<stopServiceAssembly serverProtocol="${serverProtocol}" host="${host}" containerName="${containerName}" jmxDomainName="${jmxDomainName}" port="${port}" jndiPath="${jndiPath}" username="${username}" password="${password}" failOnError="true" name="${serviceAssemblyName}"/>
+	</target>
+	<target name="shutdownServiceAssembly">
+		<taskdef name="shutdownServiceAssembly" classname="org.apache.servicemix.jbi.management.task.ShutDownServiceAssemblyTask" />
+		<echo>Shutting down service assembly ${serviceAssemblyName} on service:jmx:${serverProtocol}:///jndi/${serverProtocol}://${host}:${port}${jndiPath}</echo>
+		<shutdownServiceAssembly serverProtocol="${serverProtocol}" host="${host}" containerName="${containerName}" jmxDomainName="${jmxDomainName}" port="${port}" jndiPath="${jndiPath}" username="${username}" password="${password}" failOnError="true" name="${serviceAssemblyName}"/>
+	</target>
+	<target name="listServiceAssemblies">
+		<taskdef name="listServiceAssemblies" classname="org.apache.servicemix.jbi.management.task.ListServiceAssembliesTask" />
+		<echo>Listing service assemblies on service:jmx:${serverProtocol}:///jndi/${serverProtocol}://${host}:${port}${jndiPath}</echo>
+		<listServiceAssemblies serverProtocol="${serverProtocol}" host="${host}" containerName="${containerName}" jmxDomainName="${jmxDomainName}" port="${port}" jndiPath="${jndiPath}" username="${username}" password="${password}" failOnError="true" componentName="${componentName}" serviceAssemblyName="${serviceAssemblyName}" state="${state}"/>
 	</target>
 </project>
