@@ -33,7 +33,7 @@ import org.codehaus.plexus.util.FileUtils;
  *
  * @author <a href="gnodet@apache.org">Guillaume Nodet</a>
  * @version $Id: GenerateComponentDescriptorMojo 314956 2005-10-12 16:27:15Z brett $
- * @goal generate-jbi-descriptor
+ * @goal generate-jbi-component-descriptor
  * @phase generate-resources
  * @requiresDependencyResolution runtime
  * @description generates the jbi.xml deployment descriptor
