@@ -19,10 +19,15 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.project.DefaultMavenProjectBuilder;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
 import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
 import org.codehaus.plexus.util.xml.XMLWriter;
 
@@ -61,8 +66,8 @@ public class JbiServiceAssemblyDescriptorWriter {
 		writer.endElement();
 
 		for (Iterator it = uris.iterator(); it.hasNext();) {
-			Artifact artifact = (Artifact) it.next();
-			writeServiceUnit(writer, artifact);
+			ServiceUnitInfo serviceUnitInfo = (ServiceUnitInfo) it.next();
+			writeServiceUnit(writer, serviceUnitInfo);
 
 		}
 
@@ -72,28 +77,31 @@ public class JbiServiceAssemblyDescriptorWriter {
 		close(w);
 	}
 
-	private void writeServiceUnit(XMLWriter writer, Artifact artifact) {
+	private void writeServiceUnit(XMLWriter writer, ServiceUnitInfo serviceUnitInfo)
+			throws JbiPluginException {
 		writer.startElement("service-unit");
 		writer.startElement("identification");
 		writer.startElement("name");
-		writer.writeText(artifact.getArtifactId());
+		writer.writeText(serviceUnitInfo.getName());
 		writer.endElement();
-		writer.startElement("description");		
+		writer.startElement("description");
+		writer.writeText(serviceUnitInfo.getDescription());
 		writer.endElement();
 		writer.endElement();
-		
+
 		writer.startElement("target");
 		writer.startElement("artifacts-zip");
-		writer.writeText(artifact.getFile().getName());
+		writer.writeText(serviceUnitInfo.getArtifactZip());
 		writer.endElement();
-		
+
 		writer.startElement("component-name");
+		writer.writeText(serviceUnitInfo.getComponent());
 		writer.endElement();
-		
+
 		writer.endElement();
-		
+
 		writer.endElement();
-	}
+	}	
 
 	private void close(Writer closeable) {
 		if (closeable != null) {

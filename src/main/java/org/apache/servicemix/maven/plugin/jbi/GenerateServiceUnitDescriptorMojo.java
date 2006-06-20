@@ -74,7 +74,7 @@ public class GenerateServiceUnitDescriptorMojo extends AbstractJbiMojo {
 	/**
 	 * Directory where the application.xml file will be auto-generated.
 	 * 
-	 * @parameter expression="${project.build.directory}"
+	 * @parameter expression="${project.build.directory}/classes/META-INF"
 	 */
 	private String generatedDescriptorLocation;
 
@@ -98,19 +98,12 @@ public class GenerateServiceUnitDescriptorMojo extends AbstractJbiMojo {
 
 		// Generate jbi descriptor and copy it to the build directory
 		getLog().info("Generating jbi.xml");
-		try {
+		try {			
 			generateJbiDescriptor();
 		} catch (JbiPluginException e) {
 			throw new MojoExecutionException("Failed to generate jbi.xml", e);
 		}
 
-		try {
-			FileUtils.copyFileToDirectory(new File(generatedDescriptorLocation,
-					JBI_DESCRIPTOR), new File(getWorkDirectory(), META_INF));
-		} catch (IOException e) {
-			throw new MojoExecutionException(
-					"Unable to copy jbi.xml to final destination", e);
-		}
 	}
 
 	/**

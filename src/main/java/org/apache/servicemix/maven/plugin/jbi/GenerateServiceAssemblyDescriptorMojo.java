@@ -23,9 +23,13 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
 import org.codehaus.plexus.util.FileUtils;
 
 /**
@@ -74,9 +78,24 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 	/**
 	 * Directory where the application.xml file will be auto-generated.
 	 * 
-	 * @parameter expression="${project.build.directory}"
+	 * @parameter expression="${project.build.directory}/classes/META-INF"
 	 */
 	private String generatedDescriptorLocation;
+
+	/**
+	 * @component
+	 */
+	private MavenProjectBuilder pb;
+
+	/**
+	 * @parameter default-value="${localRepository}"
+	 */
+	private ArtifactRepository localRepo;
+
+	/**
+	 * @parameter default-value="${project.remoteArtifactRepositories}"
+	 */
+	private List remoteRepos;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
@@ -125,7 +144,7 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 
 		File descriptor = new File(outputDir, JBI_DESCRIPTOR);
 
-		List uris = new ArrayList();		
+		List serviceUnits = new ArrayList();
 
 		Set artifacts = project.getArtifacts();
 		for (Iterator iter = artifacts.iterator(); iter.hasNext();) {
@@ -136,15 +155,26 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 					Artifact.SCOPE_RUNTIME);
 			if (!artifact.isOptional() && filter.include(artifact)) {
 				String type = artifact.getType();
-				if ("jbi-service-unit".equals(type)) {					
-					uris
-							.add(artifact);
+				if ("jbi-service-unit".equals(type)) {
+					try {
+						MavenProject project = pb.buildFromRepository(artifact,
+								remoteRepos, localRepo);
+						ServiceUnitInfo info = new ServiceUnitInfo();
+						info.setName(artifact.getArtifactId());
+						info.setArtifactZip(artifact.getFile().getName());
+						info.setComponent(project.getProperties().getProperty("jbiComponentName"));
+						info.setDescription(project.getDescription());
+						serviceUnits.add(info);
+					} catch (ProjectBuildingException e) {
+						throw new JbiPluginException(
+								"Unable to resolve dependency : " + artifact, e);
+					}				
 				}
 			}
 		}
 
 		JbiServiceAssemblyDescriptorWriter writer = new JbiServiceAssemblyDescriptorWriter(
 				encoding);
-		writer.write(descriptor, name, description, uris);
+		writer.write(descriptor, name, description, serviceUnits);
 	}
 }
