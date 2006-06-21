@@ -57,7 +57,7 @@ public class GenerateSharedLibraryMojo extends AbstractJbiMojo {
 	 * @parameter expression="${project.artifactId}-${project.version}.zip"
 	 * @required
 	 */
-	private String installerName;
+	private String sharedLibraryName;
 
 	/**
 	 * The Zip archiver.
@@ -86,18 +86,18 @@ public class GenerateSharedLibraryMojo extends AbstractJbiMojo {
 
 		getLog().debug(" ======= GenerateInstallerMojo settings =======");
 		getLog().debug("workDirectory[" + workDirectory + "]");
-		getLog().debug("installerName[" + installerName + "]");
+		getLog().debug("installerName[" + sharedLibraryName + "]");
 		getLog().debug("jbiSourceDirectory[" + jbiSourceDirectory + "]");
 
 		try {
 
-			createUnpackedInstaller();
+			createUnpackedSharedLibrary();
 
-			File installerFile = new File(outputDirectory, installerName);
+			File installerFile = new File(outputDirectory, sharedLibraryName);
 			createArchive(installerFile);
 
 			projectHelper.attachArtifact(project, "zip", "", new File(
-					outputDirectory, installerName));
+					outputDirectory, sharedLibraryName));
 
 		} catch (JbiPluginException e) {
 			throw new MojoExecutionException("Failed to create shared library",
@@ -129,7 +129,7 @@ public class GenerateSharedLibraryMojo extends AbstractJbiMojo {
 		}
 	}
 
-	private void createUnpackedInstaller() throws JbiPluginException {
+	private void createUnpackedSharedLibrary() throws JbiPluginException {
 
 		if (!workDirectory.isDirectory()) {
 			if (!workDirectory.mkdirs()) {
@@ -144,11 +144,12 @@ public class GenerateSharedLibraryMojo extends AbstractJbiMojo {
 		try {
 			FileUtils.copyFileToDirectory(projectArtifact, new File(
 					workDirectory, LIB_DIRECTORY));
+			
 		} catch (IOException e) {
 			throw new JbiPluginException("Unable to copy file "
 					+ projectArtifact, e);
 		}
-
+		
 		Set artifacts = project.getArtifacts();
 		for (Iterator iter = artifacts.iterator(); iter.hasNext();) {
 			Artifact artifact = (Artifact) iter.next();

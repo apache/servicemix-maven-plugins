@@ -90,7 +90,7 @@ public class JbiServiceAssemblyDescriptorWriter {
 
 		writer.startElement("target");
 		writer.startElement("artifacts-zip");
-		writer.writeText(serviceUnitInfo.getArtifactZip());
+		writer.writeText(serviceUnitInfo.getFilename());
 		writer.endElement();
 
 		writer.startElement("component-name");

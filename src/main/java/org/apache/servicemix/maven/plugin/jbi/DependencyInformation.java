@@ -23,7 +23,7 @@ package org.apache.servicemix.maven.plugin.jbi;
  */
 public class DependencyInformation {
 
-	private String artifactZip;
+	private String filename;
 
 	private String component;
 
@@ -33,8 +33,18 @@ public class DependencyInformation {
 
 	private String version;
 
-	public String getArtifactZip() {
-		return artifactZip;
+	private String type;
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public String getFilename() {
+		return filename;
 	}
 
 	public String getComponent() {
@@ -53,8 +63,8 @@ public class DependencyInformation {
 		return version;
 	}
 
-	public void setArtifactZip(String artifactZip) {
-		this.artifactZip = artifactZip;
+	public void setFilename(String artifactZip) {
+		this.filename = artifactZip;
 	}
 
 	public void setComponent(String component) {

@@ -156,7 +156,15 @@ public class GenerateSharedLibraryDescriptorMojo extends AbstractJbiMojo {
 
 		File descriptor = new File(outputDir, JBI_DESCRIPTOR);
 
-		List serviceUnits = new ArrayList();
+		List embeddedLibraries = new ArrayList();
+
+		DependencyInformation info = new DependencyInformation();
+		info.setFilename(LIB_DIRECTORY + "/" + project.getArtifactId() + "-"
+				+ project.getVersion() + ".jar");
+		info.setVersion(project.getVersion());
+		info.setName(project.getArtifactId());
+		info.setType("jar");
+		embeddedLibraries.add(info);
 
 		Set artifacts = project.getArtifacts();
 		for (Iterator iter = artifacts.iterator(); iter.hasNext();) {
@@ -168,7 +176,9 @@ public class GenerateSharedLibraryDescriptorMojo extends AbstractJbiMojo {
 			if (!artifact.isOptional() && filter.include(artifact)) {
 				String type = artifact.getType();
 				if ("jar".equals(type)) {
-					serviceUnits.add(artifact);
+					info = new DependencyInformation();
+					info.setFilename(artifact.getFile().getName());
+					embeddedLibraries.add(info);
 				}
 			}
 		}
@@ -176,6 +186,6 @@ public class GenerateSharedLibraryDescriptorMojo extends AbstractJbiMojo {
 		JbiSharedLibraryDescriptorWriter writer = new JbiSharedLibraryDescriptorWriter(
 				encoding);
 		writer.write(descriptor, name, description, version,
-				classLoaderDelegate, serviceUnits);
+				classLoaderDelegate, embeddedLibraries);
 	}
 }

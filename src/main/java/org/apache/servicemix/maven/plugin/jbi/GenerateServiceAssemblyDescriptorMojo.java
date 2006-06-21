@@ -154,22 +154,27 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 			ScopeArtifactFilter filter = new ScopeArtifactFilter(
 					Artifact.SCOPE_RUNTIME);
 			if (!artifact.isOptional() && filter.include(artifact)) {
-				String type = artifact.getType();
-				if ("jbi-service-unit".equals(type)) {
-					try {
-						MavenProject project = pb.buildFromRepository(artifact,
-								remoteRepos, localRepo);
-						DependencyInformation info = new DependencyInformation();
-						info.setName(artifact.getArtifactId());
-						info.setArtifactZip(artifact.getFile().getName());
-						info.setComponent(project.getProperties().getProperty("jbiComponentName"));
-						info.setDescription(project.getDescription());
-						serviceUnits.add(info);
-					} catch (ProjectBuildingException e) {
-						throw new JbiPluginException(
-								"Unable to resolve dependency : " + artifact, e);
-					}				
+				MavenProject project = null;
+				try {
+					project = pb.buildFromRepository(artifact, remoteRepos,
+							localRepo);
+				} catch (ProjectBuildingException e) {
+					getLog().warn(
+							"Unable to determine packaging for dependency : "
+									+ artifact.getArtifactId()
+									+ " assuming jar");
 				}
+				if (project != null
+						&& project.getPackaging().equals("jbi-service-unit")) {
+					DependencyInformation info = new DependencyInformation();
+					info.setName(artifact.getArtifactId());
+					info.setFilename(artifact.getFile().getName());
+					info.setComponent(project.getProperties().getProperty(
+							"jbiComponentName"));
+					info.setDescription(project.getDescription());
+					serviceUnits.add(info);
+				}
+
 			}
 		}
 

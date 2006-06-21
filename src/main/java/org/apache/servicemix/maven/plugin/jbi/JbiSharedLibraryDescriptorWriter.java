@@ -69,9 +69,9 @@ public class JbiSharedLibraryDescriptorWriter {
 
 		writer.startElement("shared-library-class-path");
 		for (Iterator it = uris.iterator(); it.hasNext();) {
-			Artifact serviceUnitInfo = (Artifact) it.next();
+			DependencyInformation dependency = (DependencyInformation) it.next();
 			writer.startElement("path-element");
-			writer.writeText(serviceUnitInfo.getFile().getName());
+			writer.writeText(dependency.getFilename());
 			writer.endElement();			
 		}
 		writer.endElement();

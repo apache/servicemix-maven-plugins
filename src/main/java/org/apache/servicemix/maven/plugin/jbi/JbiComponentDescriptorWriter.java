@@ -33,13 +33,8 @@ public class JbiComponentDescriptorWriter {
 		this.encoding = encoding;
 	}
 
-	public void write(File descriptor, 
-					  String component, 
-					  String bootstrap, 
-					  String type,
-					  String name,
-					  String description,
-					  List uris)
+	public void write(File descriptor, String component, String bootstrap,
+			String type, String name, String description, List uris)
 			throws JbiPluginException {
 		FileWriter w;
 		try {
@@ -56,7 +51,7 @@ public class JbiComponentDescriptorWriter {
 
 		writer.startElement("component");
 		writer.addAttribute("type", type);
-		
+
 		writer.startElement("identification");
 		writer.startElement("name");
 		writer.writeText(name);
@@ -65,15 +60,18 @@ public class JbiComponentDescriptorWriter {
 		writer.writeText(description);
 		writer.endElement();
 		writer.endElement();
-		
+
 		writer.startElement("component-class-name");
 		writer.writeText(component);
 		writer.endElement();
 		writer.startElement("component-class-path");
 		for (Iterator it = uris.iterator(); it.hasNext();) {
-			writer.startElement("path-element");
-			writer.writeText(it.next().toString());
-			writer.endElement();
+			DependencyInformation info = (DependencyInformation) it.next();
+			if ("jar".equals(info.getType())) {
+				writer.startElement("path-element");
+				writer.writeText(info.getFilename());
+				writer.endElement();
+			}
 		}
 		writer.endElement();
 
@@ -82,19 +80,34 @@ public class JbiComponentDescriptorWriter {
 		writer.endElement();
 		writer.startElement("bootstrap-class-path");
 		for (Iterator it = uris.iterator(); it.hasNext();) {
-			writer.startElement("path-element");
-			writer.writeText(it.next().toString());
-			writer.endElement();
+			DependencyInformation info = (DependencyInformation) it.next();
+			if ("jar".equals(info.getType())) {
+				writer.startElement("path-element");
+				writer.writeText(info.getFilename());
+				writer.endElement();
+			}
 		}
 		writer.endElement();
-		
+
+		writer.startElement("shared-library-list");
+		for (Iterator it = uris.iterator(); it.hasNext();) {
+			DependencyInformation info = (DependencyInformation) it.next();
+			if ("jbi-shared-library".equals(info.getType())) {
+				writer.startElement("shared-library");
+				writer.addAttribute("version", info.getVersion());
+				writer.writeText(info.getName());
+				writer.endElement();
+			}
+		}
 		writer.endElement();
-		
+
+		writer.endElement();
+
 		writer.endElement();
 
 		close(w);
 	}
-	
+
 	private void close(Writer closeable) {
 		if (closeable != null) {
 			try {
