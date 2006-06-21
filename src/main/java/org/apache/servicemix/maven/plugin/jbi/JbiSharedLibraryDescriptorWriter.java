@@ -22,23 +22,25 @@ import java.io.Writer;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.maven.artifact.Artifact;
 import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
 import org.codehaus.plexus.util.xml.XMLWriter;
 
 /**
- * Helper that can be used to write the jbi.xml for a service assembly
+ * Helper that is used to write the jbi.xml for a shared library
  * 
  */
-public class JbiServiceAssemblyDescriptorWriter {
+public class JbiSharedLibraryDescriptorWriter {
 
 	private final String encoding;
 
-	public JbiServiceAssemblyDescriptorWriter(String encoding) {
+	public JbiSharedLibraryDescriptorWriter(String encoding) {
 		this.encoding = encoding;
 	}
 
 	public void write(File descriptor, String name, String description,
-			List uris) throws JbiPluginException {
+			String version, String classLoaderDelegation, List uris)
+			throws JbiPluginException {
 		FileWriter w;
 		try {
 			w = new FileWriter(descriptor);
@@ -52,7 +54,9 @@ public class JbiServiceAssemblyDescriptorWriter {
 		writer.addAttribute("xmlns", "http://java.sun.com/xml/ns/jbi");
 		writer.addAttribute("version", "1.0");
 
-		writer.startElement("service-assembly");
+		writer.startElement("shared-library");
+		writer.addAttribute("class-loader-delegation", classLoaderDelegation);
+		writer.addAttribute("version", version);
 
 		writer.startElement("identification");
 		writer.startElement("name");
@@ -63,43 +67,19 @@ public class JbiServiceAssemblyDescriptorWriter {
 		writer.endElement();
 		writer.endElement();
 
+		writer.startElement("shared-library-class-path");
 		for (Iterator it = uris.iterator(); it.hasNext();) {
-			DependencyInformation serviceUnitInfo = (DependencyInformation) it
-					.next();
-			writeServiceUnit(writer, serviceUnitInfo);
-
+			Artifact serviceUnitInfo = (Artifact) it.next();
+			writer.startElement("path-element");
+			writer.writeText(serviceUnitInfo.getFile().getName());
+			writer.endElement();			
 		}
+		writer.endElement();
 
 		writer.endElement();
 		writer.endElement();
 
 		close(w);
-	}
-
-	private void writeServiceUnit(XMLWriter writer,
-			DependencyInformation serviceUnitInfo) throws JbiPluginException {
-		writer.startElement("service-unit");
-		writer.startElement("identification");
-		writer.startElement("name");
-		writer.writeText(serviceUnitInfo.getName());
-		writer.endElement();
-		writer.startElement("description");
-		writer.writeText(serviceUnitInfo.getDescription());
-		writer.endElement();
-		writer.endElement();
-
-		writer.startElement("target");
-		writer.startElement("artifacts-zip");
-		writer.writeText(serviceUnitInfo.getArtifactZip());
-		writer.endElement();
-
-		writer.startElement("component-name");
-		writer.writeText(serviceUnitInfo.getComponent());
-		writer.endElement();
-
-		writer.endElement();
-
-		writer.endElement();
 	}
 
 	private void close(Writer closeable) {

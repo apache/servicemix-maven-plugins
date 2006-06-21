@@ -27,23 +27,21 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
-import org.apache.maven.project.ProjectBuildingException;
 import org.codehaus.plexus.util.FileUtils;
 
 /**
- * A Mojo used to build the jbi.xml file for a service unit.
+ * A Mojo used to build the jbi.xml file for a shared library
  * 
  * @author <a href="pdodds@apache.org">Philip Dodds</a>
  * @version $Id: GenerateComponentDescriptorMojo 314956 2005-10-12 16:27:15Z
  *          brett $
- * @goal generate-jbi-service-assembly-descriptor
+ * @goal generate-jbi-shared-library-descriptor
  * @phase generate-resources
  * @requiresDependencyResolution runtime
- * @description generates the jbi.xml deployment descriptor for a service unit
+ * @description generates the jbi.xml deployment descriptor for a shared library
  */
-public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
+public class GenerateSharedLibraryDescriptorMojo extends AbstractJbiMojo {
 
 	public static final String UTF_8 = "UTF-8";
 
@@ -55,18 +53,32 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 	private Boolean generateJbiDescriptor = Boolean.TRUE;
 
 	/**
-	 * The component name.
+	 * The shared library name.
 	 * 
 	 * @parameter expression="${project.artifactId}"
 	 */
 	private String name;
 
 	/**
-	 * The component description.
+	 * The shared library description.
 	 * 
 	 * @parameter expression="${project.name}"
 	 */
 	private String description;
+
+	/**
+	 * The shared library version.
+	 * 
+	 * @parameter expression="${project.version}"
+	 */
+	private String version;
+
+	/**
+	 * The shared library class loader delegate
+	 * 
+	 * @parameter expression="self-first"
+	 */
+	private String classLoaderDelegate;
 
 	/**
 	 * Character encoding for the auto-generated application.xml file.
@@ -78,7 +90,7 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 	/**
 	 * Directory where the application.xml file will be auto-generated.
 	 * 
-	 * @parameter expression="${project.build.directory}/classes/META-INF"
+	 * @parameter expression="${project.build.directory}"
 	 */
 	private String generatedDescriptorLocation;
 
@@ -101,7 +113,7 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 
 		getLog()
 				.debug(
-						" ======= GenerateServiceAssemlbyDescriptorMojo settings =======");
+						" ======= GenerateSharedLibraryDescriptorMojo settings =======");
 		getLog().debug("workDirectory[" + workDirectory + "]");
 		getLog().debug("generateJbiDescriptor[" + generateJbiDescriptor + "]");
 		getLog().debug("name[" + name + "]");
@@ -155,26 +167,15 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 					Artifact.SCOPE_RUNTIME);
 			if (!artifact.isOptional() && filter.include(artifact)) {
 				String type = artifact.getType();
-				if ("jbi-service-unit".equals(type)) {
-					try {
-						MavenProject project = pb.buildFromRepository(artifact,
-								remoteRepos, localRepo);
-						DependencyInformation info = new DependencyInformation();
-						info.setName(artifact.getArtifactId());
-						info.setArtifactZip(artifact.getFile().getName());
-						info.setComponent(project.getProperties().getProperty("jbiComponentName"));
-						info.setDescription(project.getDescription());
-						serviceUnits.add(info);
-					} catch (ProjectBuildingException e) {
-						throw new JbiPluginException(
-								"Unable to resolve dependency : " + artifact, e);
-					}				
+				if ("jar".equals(type)) {
+					serviceUnits.add(artifact);
 				}
 			}
 		}
 
-		JbiServiceAssemblyDescriptorWriter writer = new JbiServiceAssemblyDescriptorWriter(
+		JbiSharedLibraryDescriptorWriter writer = new JbiSharedLibraryDescriptorWriter(
 				encoding);
-		writer.write(descriptor, name, description, serviceUnits);
+		writer.write(descriptor, name, description, version,
+				classLoaderDelegate, serviceUnits);
 	}
 }

@@ -25,6 +25,10 @@ import java.util.List;
 import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
 import org.codehaus.plexus.util.xml.XMLWriter;
 
+/**
+ * Helper that is used to write the jbi.xml for a service unit
+ *
+ */
 public class JbiServiceUnitDescriptorWriter {
 
 	private final String encoding;
