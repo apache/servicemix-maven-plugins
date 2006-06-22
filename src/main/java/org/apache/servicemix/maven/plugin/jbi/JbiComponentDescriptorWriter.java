@@ -89,7 +89,6 @@ public class JbiComponentDescriptorWriter {
 		}
 		writer.endElement();
 
-		writer.startElement("shared-library-list");
 		for (Iterator it = uris.iterator(); it.hasNext();) {
 			DependencyInformation info = (DependencyInformation) it.next();
 			if ("jbi-shared-library".equals(info.getType())) {
@@ -99,7 +98,6 @@ public class JbiComponentDescriptorWriter {
 				writer.endElement();
 			}
 		}
-		writer.endElement();
 
 		writer.endElement();
 

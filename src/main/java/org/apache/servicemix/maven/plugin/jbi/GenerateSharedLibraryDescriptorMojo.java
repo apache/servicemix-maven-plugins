@@ -119,9 +119,8 @@ public class GenerateSharedLibraryDescriptorMojo extends AbstractJbiMojo {
 		getLog().debug("name[" + name + "]");
 		getLog().debug("description[" + description + "]");
 		getLog().debug("encoding[" + encoding + "]");
-		getLog().debug(
-				"generatedDescriptorLocation[" + generatedDescriptorLocation
-						+ "]");
+		getLog().debug("generatedDescriptorLocation[" + generatedDescriptorLocation	+ "]");
+		getLog().debug("version[" + version + "]");
 
 		if (!generateJbiDescriptor.booleanValue()) {
 			getLog().debug("Generation of jbi.xml is disabled");
