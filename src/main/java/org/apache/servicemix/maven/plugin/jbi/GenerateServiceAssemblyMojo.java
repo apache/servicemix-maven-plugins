@@ -74,7 +74,7 @@ public class GenerateServiceAssemblyMojo extends AbstractJbiMojo {
 														.getAbsolutePath()
 												+ " into working directory for packaging");
 						FileUtils.copyFileToDirectory(artifact.getFile(),
-								new File(workDirectory, LIB_DIRECTORY));
+								workDirectory);
 					} catch (IOException e) {
 						throw new JbiPluginException(
 								"Unable to find service unit "

@@ -177,7 +177,7 @@ public class GenerateSharedLibraryDescriptorMojo extends AbstractJbiMojo {
 				String type = artifact.getType();
 				if ("jar".equals(type)) {
 					info = new DependencyInformation();
-					info.setFilename(artifact.getFile().getName());
+					info.setFilename(LIB_DIRECTORY + "/" + artifact.getFile().getName());
 					embeddedLibraries.add(info);
 				}
 			}
