@@ -135,8 +135,11 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 
 	/**
 	 * Generates the deployment descriptor if necessary.
+	 * 
+	 * @throws MojoExecutionException
 	 */
-	protected void generateJbiDescriptor() throws JbiPluginException {
+	protected void generateJbiDescriptor() throws JbiPluginException,
+			MojoExecutionException {
 		File outputDir = new File(generatedDescriptorLocation);
 		if (!outputDir.exists()) {
 			outputDir.mkdirs();
@@ -153,7 +156,8 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 			// TODO: utilise appropriate methods from project builder
 			ScopeArtifactFilter filter = new ScopeArtifactFilter(
 					Artifact.SCOPE_RUNTIME);
-			if (!artifact.isOptional() && filter.include(artifact)) {
+			if (!artifact.isOptional() && filter.include(artifact)
+					&& (artifact.getDependencyTrail().size() == 2)) {
 				MavenProject project = null;
 				try {
 					project = pb.buildFromRepository(artifact, remoteRepos,
@@ -164,13 +168,13 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 									+ artifact.getArtifactId()
 									+ " assuming jar");
 				}
-				if (project != null
-						&& project.getPackaging().equals("jbi-service-unit")) {
+				if ((project != null)
+						&& (project.getPackaging().equals("jbi-service-unit"))) {
 					DependencyInformation info = new DependencyInformation();
 					info.setName(artifact.getArtifactId());
 					info.setFilename(artifact.getFile().getName());
-					info.setComponent(project.getProperties().getProperty(
-							"jbiComponentName"));
+					info.setComponent(getComponentName(project, artifacts,
+							artifact));
 					info.setDescription(project.getDescription());
 					serviceUnits.add(info);
 				}
@@ -181,5 +185,60 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 		JbiServiceAssemblyDescriptorWriter writer = new JbiServiceAssemblyDescriptorWriter(
 				encoding);
 		writer.write(descriptor, name, description, serviceUnits);
+	}
+
+	private String getComponentName(MavenProject project, Set artifacts,
+			Artifact suArtifact) throws MojoExecutionException {
+
+		getLog().info(
+				"Determining component name for service unit "
+						+ project.getArtifactId());
+		if (project.getProperties().getProperty("componentName") != null) {
+			return project.getProperties().getProperty("componentName");
+		}
+
+		String currentArtifact = suArtifact.getGroupId() + ":"
+				+ suArtifact.getArtifactId() + ":" + suArtifact.getType() + ":"
+				+ suArtifact.getVersion();
+
+		// Find artifacts directly under this project
+		for (Iterator iter = artifacts.iterator(); iter.hasNext();) {
+			Artifact artifact = (Artifact) iter.next();
+			if ((artifact.getDependencyTrail().size() == 3)) {
+				String parent = getDependencyParent(artifact
+						.getDependencyTrail());
+				getLog().info(
+						"Parent is " + parent + " while current is "
+								+ currentArtifact);
+				if (parent.equals(currentArtifact)) {
+					getLog().info("Yay!");
+					MavenProject artifactProject = null;
+					try {
+						artifactProject = pb.buildFromRepository(artifact,
+								remoteRepos, localRepo);
+					} catch (ProjectBuildingException e) {
+						getLog().warn(
+								"Unable to determine packaging for dependency : "
+										+ artifact.getArtifactId()
+										+ " assuming jar");
+					}
+					getLog().info("Project "+artifactProject+" packaged "+artifactProject.getPackaging());
+					if ((artifactProject != null)
+							&& (artifactProject.getPackaging()
+									.equals("jbi-component"))) {
+						return artifact.getArtifactId();
+					}
+				}
+			}
+		}
+
+		throw new MojoExecutionException(
+				"The service unit "
+						+ project.getArtifactId()
+						+ " does not have a dependency which is packaged as a jbi-component or a project property 'componentName'");
+	}
+
+	private String getDependencyParent(List dependencyTrail) {
+		return (String) dependencyTrail.get(dependencyTrail.size() - 2);
 	}
 }

@@ -43,7 +43,7 @@
       <implementation>org.apache.maven.artifact.handler.DefaultArtifactHandler</implementation>
       <configuration>
         <type>jbi-service-unit</type>
-        <extension>jar</extension>
+        <extension>zip</extension>
         <language>java</language>
       </configuration>
     </component>
@@ -72,7 +72,7 @@
       <implementation>org.apache.maven.artifact.handler.DefaultArtifactHandler</implementation>
       <configuration>
         <type>jbi-service-assembly</type>
-        <extension>jar</extension>
+        <extension>zip</extension>
         <language>java</language>
       </configuration>
     </component>

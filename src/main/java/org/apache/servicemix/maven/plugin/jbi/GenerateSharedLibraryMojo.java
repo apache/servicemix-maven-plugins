@@ -96,7 +96,7 @@ public class GenerateSharedLibraryMojo extends AbstractJbiMojo {
 			File installerFile = new File(outputDirectory, sharedLibraryName);
 			createArchive(installerFile);
 
-			projectHelper.attachArtifact(project, "zip", "", new File(
+			projectHelper.attachArtifact(project, project.getPackaging(), "installer", new File(
 					outputDirectory, sharedLibraryName));
 
 		} catch (JbiPluginException e) {

@@ -21,9 +21,14 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
+import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuildingException;
 import org.codehaus.plexus.util.FileUtils;
 
 /**
@@ -40,6 +45,11 @@ import org.codehaus.plexus.util.FileUtils;
 public class GenerateServiceAssemblyMojo extends AbstractJbiMojo {
 
 	/**
+	 * @component
+	 */
+	private ArtifactFactory af;
+
+	/**
 	 * Directory where the application.xml file will be auto-generated.
 	 * 
 	 * @parameter expression="${project.build.directory}/classes"
@@ -50,35 +60,39 @@ public class GenerateServiceAssemblyMojo extends AbstractJbiMojo {
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
 			injectDependentServiceUnits();
-		} catch (JbiPluginException e) {
+		} catch (Exception e) {
 			throw new MojoExecutionException("Failed to inject dependencies", e);
 		}
 	}
 
-	private void injectDependentServiceUnits() throws JbiPluginException {
+	private void injectDependentServiceUnits() throws JbiPluginException,
+			ArtifactResolutionException, ArtifactNotFoundException {
 		Set artifacts = project.getArtifacts();
 		for (Iterator iter = artifacts.iterator(); iter.hasNext();) {
 			Artifact artifact = (Artifact) iter.next();
 
 			// TODO: utilise appropriate methods from project builder
 			ScopeArtifactFilter filter = new ScopeArtifactFilter(
-					Artifact.SCOPE_RUNTIME);
-			if (!artifact.isOptional() && filter.include(artifact)) {
-				String type = artifact.getType();
-				if ("jbi-service-unit".equals(type)) {
-					try {								
-						getLog()
-								.info(
-										"Copying service unit "
-												+ artifact.getFile()
-														.getAbsolutePath()
-												+ " into working directory for packaging");
+					Artifact.SCOPE_RUNTIME);			
+			if (!artifact.isOptional() && filter.include(artifact)
+					&& (artifact.getDependencyTrail().size() == 2)) {
+				MavenProject project = null;
+				try {
+					project = projectBuilder.buildFromRepository(artifact,
+							remoteRepos, localRepo);
+				} catch (ProjectBuildingException e) {
+					getLog().warn(
+							"Unable to determine packaging for dependency : "
+									+ artifact.getArtifactId()
+									+ " assuming jar");
+				}
+				if ((project != null)
+						&& (project.getPackaging().equals("jbi-service-unit"))) {
+					try {
 						FileUtils.copyFileToDirectory(artifact.getFile(),
 								workDirectory);
 					} catch (IOException e) {
-						throw new JbiPluginException(
-								"Unable to find service unit "
-										+ artifact.getFile(), e);
+						throw new JbiPluginException(e);
 					}
 				}
 			}

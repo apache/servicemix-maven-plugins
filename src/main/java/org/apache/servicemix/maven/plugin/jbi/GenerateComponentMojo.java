@@ -101,7 +101,7 @@ public class GenerateComponentMojo extends AbstractJbiMojo {
             File installerFile = new File(outputDirectory, installerName);
             createArchive(installerFile);
 
-            projectHelper.attachArtifact(project, "zip", "installer", new File(outputDirectory, installerName));
+            projectHelper.attachArtifact(project, project.getPackaging(), "installer", new File(outputDirectory, installerName));
 
         } catch (JbiPluginException e) {
             throw new MojoExecutionException("Failed to create installer", e);
