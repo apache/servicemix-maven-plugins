@@ -16,7 +16,6 @@
 package org.apache.servicemix.maven.plugin.jbi;
 
 import java.io.File;
-import java.util.Set;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -35,43 +34,23 @@ import org.apache.maven.plugin.MojoFailureException;
 public class GenerateServiceUnitMojo extends AbstractJbiMojo {
 
 	/**
-	 * Directory where the application.xml file will be auto-generated.
+	 * The name of the generated war.
+	 * 
+	 * @parameter expression="${project.artifactId}-${project.version}.jar"
+	 * @required
+	 */
+	private String serviceUnitName;
+
+	/**
+	 * The directory for the generated JBI component.
 	 * 
 	 * @parameter expression="${project.build.directory}"
 	 * @required
 	 */
-	private File workDirectory;
+	private File outputDirectory;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		try {
-			injectDependentJars();
-		} catch (JbiPluginException e) {
-			throw new MojoExecutionException("Failed to inject dependencies", e);
-		}
+		projectHelper.attachArtifact(project, "zip", "", new File(
+				outputDirectory, serviceUnitName));
 	}
-
-	private void injectDependentJars() throws JbiPluginException {
-		Set artifacts = project.getArtifacts();
-		// TODO Do we need to inject anything?
-		// for (Iterator iter = artifacts.iterator(); iter.hasNext();) {
-		// Artifact artifact = (Artifact) iter.next();
-		//
-		// // TODO: utilise appropriate methods from project builder
-		// ScopeArtifactFilter filter = new
-		// ScopeArtifactFilter(Artifact.SCOPE_RUNTIME);
-		// if (!artifact.isOptional() && filter.include(artifact)) {
-		// String type = artifact.getType();
-		// if ("jar".equals(type)) {
-		// try {
-		// FileUtils.copyFileToDirectory(artifact.getFile(), new
-		// File(workDirectory, LIB_DIRECTORY));
-		// } catch (IOException e) {
-		// throw new JbiPluginException("Unable to file " + artifact.getFile(),
-		// e);
-		// }
-		// }
-		// }
-		// }
-	}
-
 }
