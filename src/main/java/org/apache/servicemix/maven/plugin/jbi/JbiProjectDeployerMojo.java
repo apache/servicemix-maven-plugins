@@ -37,6 +37,7 @@ import org.apache.servicemix.jbi.management.task.DeployServiceAssemblyTask;
 import org.apache.servicemix.jbi.management.task.InstallComponentTask;
 import org.apache.servicemix.jbi.management.task.InstallSharedLibraryTask;
 import org.apache.servicemix.jbi.management.task.StartComponentTask;
+import org.apache.servicemix.jbi.management.task.StartServiceAssemblyTask;
 
 /**
  * A Mojo that can take any project and determine its JBI dependencies and then
@@ -145,6 +146,11 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 			initializeJbiTask(componentTask);
 			componentTask.setFile(jbiDeployable.getFile());
 			componentTask.execute();
+
+			StartServiceAssemblyTask startTask = new StartServiceAssemblyTask();
+			initializeJbiTask(startTask);
+			startTask.setName(jbiDeployable.getName());
+			startTask.execute();
 		}
 		if ("jbi-component".equals(jbiDeployable.getType())) {
 			InstallComponentTask componentTask = new InstallComponentTask();

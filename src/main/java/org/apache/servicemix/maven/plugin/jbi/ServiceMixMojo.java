@@ -15,11 +15,14 @@
  */
 package org.apache.servicemix.maven.plugin.jbi;
 
+import java.io.File;
+
 import javax.jbi.JBIException;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.servicemix.jbi.container.JBIContainer;
+import org.codehaus.plexus.util.FileUtils;
 
 /**
  * Starts a ServiceMix JBI container and them uses the deploy project MOJO to
@@ -52,9 +55,24 @@ public class ServiceMixMojo extends JbiProjectDeployerMojo {
 	 */
 	private String rootDirectory;
 
+	/**
+	 * @parameter default-value="true"
+	 */
+	private boolean cleanStart;
+
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
 		try {
+
+			if (cleanStart) {
+				getLog().info(
+						"Cleaning ServiceMix root directory [" + rootDirectory
+								+ "]");
+				File rootDir = new File(rootDirectory);
+				FileUtils.deleteDirectory(rootDir);
+				rootDir.mkdirs();
+			}
+
 			startServiceMix();
 			deployProject();
 
