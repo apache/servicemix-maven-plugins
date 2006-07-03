@@ -24,12 +24,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.codehaus.plexus.util.FileUtils;
 
@@ -165,57 +163,63 @@ public class GenerateComponentDescriptorMojo extends AbstractJbiMojo {
 		info.setType("jar");
 		uris.add(info);
 
-        ScopeArtifactFilter filter = new ScopeArtifactFilter(Artifact.SCOPE_RUNTIME);
+		ScopeArtifactFilter filter = new ScopeArtifactFilter(
+				Artifact.SCOPE_RUNTIME);
 
-        JbiResolutionListener listener = resolveProject();
-        //print(listener.getRootNode(), "");
-        
-        Set sharedLibraries = new HashSet();
-        Set includes = new HashSet();
-        for (Iterator iter = project.getArtifacts().iterator(); iter.hasNext();) {
-            Artifact artifact = (Artifact) iter.next();
-            if (!artifact.isOptional() && filter.include(artifact)) {
-                MavenProject project = null;
-                try {
-                    project = projectBuilder.buildFromRepository(artifact, remoteRepos, localRepo);
-                } catch (ProjectBuildingException e) {
-                    getLog().warn(
-                            "Unable to determine packaging for dependency : "
-                                    + artifact.getArtifactId()
-                                    + " assuming jar");
-                }
-                String type = project != null ? project.getPackaging() : artifact.getType();
-                if ("jbi-shared-library".equals(type)) {
-                    removeChildren(listener, artifact);
-                    includes.add(artifact);
-                } else if ("jar".equals(type)) {
-                    includes.add(artifact);
-                }
-            }
-        }
-        //print(listener.getRootNode(), "");
-        includes.retainAll(getArtifacts(listener.getRootNode(), new HashSet()));
-        
-        for (Iterator iter = includes.iterator(); iter.hasNext();) {
-            Artifact artifact = (Artifact) iter.next();
-            MavenProject project = null;
-            try {
-                project = projectBuilder.buildFromRepository(artifact, remoteRepos, localRepo);
-            } catch (ProjectBuildingException e) {
-                getLog().warn(
-                        "Unable to determine packaging for dependency : "
-                                + artifact.getArtifactId()
-                                + " assuming jar");
-            }
-            String type = project != null ? project.getPackaging() : artifact.getType();
-            info = new DependencyInformation();
-            info.setFilename(LIB_DIRECTORY + "/" + artifact.getFile().getName());
-            info.setVersion(artifact.getVersion());
-            info.setName(artifact.getArtifactId());
-            info.setType(type);
-            uris.add(info);
-        }
-        
+		JbiResolutionListener listener = resolveProject();
+		// print(listener.getRootNode(), "");
+
+		Set sharedLibraries = new HashSet();
+		Set includes = new HashSet();
+		for (Iterator iter = project.getArtifacts().iterator(); iter.hasNext();) {
+			Artifact artifact = (Artifact) iter.next();
+			if (!artifact.isOptional() && filter.include(artifact)) {
+				MavenProject project = null;
+				try {
+					project = projectBuilder.buildFromRepository(artifact,
+							remoteRepos, localRepo);
+				} catch (ProjectBuildingException e) {
+					getLog().warn(
+							"Unable to determine packaging for dependency : "
+									+ artifact.getArtifactId()
+									+ " assuming jar");
+				}
+				String type = project != null ? project.getPackaging()
+						: artifact.getType();
+				if ("jbi-shared-library".equals(type)) {
+					removeChildren(listener, artifact);
+					includes.add(artifact);
+				} else if ("jar".equals(type)) {
+					includes.add(artifact);
+				}
+			}
+		}
+		// print(listener.getRootNode(), "");
+
+		for (Iterator iter = retainArtifacts(includes, listener).iterator(); iter
+				.hasNext();) {
+			Artifact artifact = (Artifact) iter.next();
+			MavenProject project = null;
+			try {
+				project = projectBuilder.buildFromRepository(artifact,
+						remoteRepos, localRepo);
+			} catch (ProjectBuildingException e) {
+				getLog().warn(
+						"Unable to determine packaging for dependency : "
+								+ artifact.getArtifactId() + " assuming jar");
+			}
+			String type = project != null ? project.getPackaging() : artifact
+					.getType();
+			info = new DependencyInformation();
+			info
+					.setFilename(LIB_DIRECTORY + "/"
+							+ artifact.getFile().getName());
+			info.setVersion(artifact.getVersion());
+			info.setName(artifact.getArtifactId());
+			info.setType(type);
+			uris.add(info);
+		}
+
 		JbiComponentDescriptorWriter writer = new JbiComponentDescriptorWriter(
 				encoding);
 		writer.write(descriptor, component, bootstrap, type, name, description,

@@ -207,7 +207,7 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 			throws ArtifactResolutionException, ArtifactNotFoundException {
 		Artifact jbiArtifact = af.createArtifactWithClassifier(artifact
 				.getGroupId(), artifact.getArtifactId(), artifact.getVersion(),
-				project.getPackaging(), getExtension(project));
+				"zip", getExtension(project));
 		resolver.resolve(jbiArtifact, remoteRepos, localRepo);
 		return new JbiDeployableArtifact(project.getArtifactId(), project
 				.getPackaging(), jbiArtifact.getFile().getAbsolutePath());
