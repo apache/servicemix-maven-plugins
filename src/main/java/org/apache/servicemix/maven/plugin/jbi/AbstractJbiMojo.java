@@ -165,26 +165,26 @@ public abstract class AbstractJbiMojo extends AbstractMojo {
 		Set filteredArtifacts = getArtifacts(listener.getRootNode(),
 				new HashSet());
 		for (Iterator iter = includes.iterator(); iter.hasNext();) {
-			Artifact artifact = (Artifact) iter.next();
-			getLog().debug(
-					"Checking to determine whether to include " + artifact);
+			Artifact artifact = (Artifact) iter.next();			
 			for (Iterator iter2 = filteredArtifacts.iterator(); iter2.hasNext();) {
 				Artifact filteredArtifact = (Artifact) iter2.next();
 				if (filteredArtifact.getArtifactId().equals(
-						artifact.getArtifactId())) {
-					getLog().info("Initial match for "+artifact+" to "+filteredArtifact);
+						artifact.getArtifactId())
+						&& filteredArtifact.getType()
+								.equals(artifact.getType())
+						&& filteredArtifact.getGroupId().equals(
+								artifact.getGroupId())) {
+					if (!filteredArtifact.getVersion().equals(
+							artifact.getVersion())) {
+						getLog()
+								.warn(
+										"Resolved artifact "
+												+ artifact
+												+ " has a different version from that in dependency management "
+												+ filteredArtifact
+												+ ", overriding dependency management");
+					}
 					finalIncludes.add(artifact);
-					// XXX Something is wrong with the versions??
-//					if (filteredArtifact.getArtifactId().equals(
-//							artifact.getArtifactId())
-//							&& filteredArtifact.getVersion().equals(
-//									artifact.getVersion())
-//							&& filteredArtifact.getType().equals(
-//									artifact.getType())) {
-//						getLog().debug(
-//								"Found in filtered artifacts, including!");
-//						finalIncludes.add(artifact);
-//					}
 				}
 			}
 
