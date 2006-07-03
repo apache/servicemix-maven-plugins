@@ -206,12 +206,8 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 			Artifact artifact = (Artifact) iter.next();
 			if ((artifact.getDependencyTrail().size() == 3)) {
 				String parent = getDependencyParent(artifact
-						.getDependencyTrail());
-				getLog().info(
-						"Parent is " + parent + " while current is "
-								+ currentArtifact);
-				if (parent.equals(currentArtifact)) {
-					getLog().info("Yay!");
+						.getDependencyTrail());				
+				if (parent.equals(currentArtifact)) {					
 					MavenProject artifactProject = null;
 					try {
 						artifactProject = pb.buildFromRepository(artifact,
