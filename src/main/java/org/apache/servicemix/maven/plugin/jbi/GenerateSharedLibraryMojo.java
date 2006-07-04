@@ -58,6 +58,14 @@ public class GenerateSharedLibraryMojo extends AbstractJbiMojo {
 	 * @required
 	 */
 	private String sharedLibraryName;
+	
+	/**
+	 * The name of the generated war.
+	 * 
+	 * @parameter expression="${project.artifactId}-${project.version}.jar"
+	 * @required
+	 */
+	private String jarName;
 
 	/**
 	 * The Zip archiver.
@@ -95,6 +103,9 @@ public class GenerateSharedLibraryMojo extends AbstractJbiMojo {
 
 			File installerFile = new File(outputDirectory, sharedLibraryName);
 			createArchive(installerFile);
+			
+			projectHelper.attachArtifact(project,"jar", "", new File(
+					outputDirectory, jarName));
 
 			projectHelper.attachArtifact(project,"zip", "installer", new File(
 					outputDirectory, sharedLibraryName));
