@@ -83,9 +83,11 @@ public class JbiServiceAssemblyDescriptorWriter {
 		writer.startElement("name");
 		writer.writeText(serviceUnitInfo.getName());
 		writer.endElement();
-		writer.startElement("description");
-		writer.writeText(serviceUnitInfo.getDescription());
-		writer.endElement();
+		if (serviceUnitInfo.getDescription() != null) {
+			writer.startElement("description");
+			writer.writeText(serviceUnitInfo.getDescription());
+			writer.endElement();
+		}
 		writer.endElement();
 
 		writer.startElement("target");
