@@ -36,8 +36,14 @@ import org.apache.maven.project.ProjectBuildingException;
 import org.apache.servicemix.jbi.management.task.DeployServiceAssemblyTask;
 import org.apache.servicemix.jbi.management.task.InstallComponentTask;
 import org.apache.servicemix.jbi.management.task.InstallSharedLibraryTask;
+import org.apache.servicemix.jbi.management.task.ShutDownComponentTask;
 import org.apache.servicemix.jbi.management.task.StartComponentTask;
 import org.apache.servicemix.jbi.management.task.StartServiceAssemblyTask;
+import org.apache.servicemix.jbi.management.task.StopComponentTask;
+import org.apache.servicemix.jbi.management.task.StopServiceAssemblyTask;
+import org.apache.servicemix.jbi.management.task.UndeployServiceAssemblyTask;
+import org.apache.servicemix.jbi.management.task.UninstallComponentTask;
+import org.apache.servicemix.jbi.management.task.UninstallSharedLibraryTask;
 
 /**
  * A Mojo that can take any project and determine its JBI dependencies and then
@@ -52,6 +58,12 @@ import org.apache.servicemix.jbi.management.task.StartServiceAssemblyTask;
  *              dependencies) to it
  */
 public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
+
+	private static final String JBI_SHARED_LIBRARY = "jbi-shared-library";
+
+	private static final String JBI_COMPONENT = "jbi-component";
+
+	private static final String JBI_SERVICE_ASSEMBLY = "jbi-service-assembly";
 
 	private List deploymentTypes;
 
@@ -79,6 +91,11 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 	 * @parameter default-value="${project.remoteArtifactRepositories}"
 	 */
 	private List remoteRepos;
+
+	/**
+	 * @parameter default-value="true"
+	 */
+	private boolean deployDependencies;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		deployProject();
@@ -121,9 +138,39 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 			getLog()
 					.info(
 							"-----------------------------------------------------------");
-			while (!dependencies.empty()) {
-				deployDependency((JbiDeployableArtifact) dependencies.pop());
+
+			if (deployDependencies) {
+				// We need to stop all the dependencies first
+				for (Iterator iterator = dependencies.iterator(); iterator
+						.hasNext();) {
+					JbiDeployableArtifact jbiDeployable = (JbiDeployableArtifact) iterator
+							.next();
+
+					if (isDeployed(jbiDeployable)) {
+						stopDependency(jbiDeployable);
+						undeployDependency(jbiDeployable);
+					}
+				}
+
+				// Now we can walk the dependencies bottom up - re-deploying and
+				// starting them
+				while (!dependencies.empty()) {
+					JbiDeployableArtifact jbiDeployable = (JbiDeployableArtifact) dependencies
+							.pop();
+					deployDependency(jbiDeployable);
+					startDependency(jbiDeployable);
+				}
+			} else {
+				JbiDeployableArtifact jbiDeployable = (JbiDeployableArtifact) dependencies
+						.firstElement();
+				if (isDeployed(jbiDeployable)) {
+					stopDependency(jbiDeployable);
+					undeployDependency(jbiDeployable);
+				}
+				deployDependency(jbiDeployable);
+				startDependency(jbiDeployable);
 			}
+
 		} catch (Exception e) {
 			throw new MojoExecutionException("Unable to deploy project, "
 					+ e.getMessage(), e);
@@ -131,37 +178,99 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 
 	}
 
-	private void deployDependency(JbiDeployableArtifact jbiDeployable) {
-
-		getLog().info(
-				"Deploying " + jbiDeployable.getType() + " from "
-						+ jbiDeployable.getFile());
-		if ("jbi-shared-library".equals(jbiDeployable.getType())) {
-			InstallSharedLibraryTask componentTask = new InstallSharedLibraryTask();
-			initializeJbiTask(componentTask);
-			componentTask.setFile(jbiDeployable.getFile());
-			componentTask.execute();
-		} else if ("jbi-service-assembly".equals(jbiDeployable.getType())) {
-			DeployServiceAssemblyTask componentTask = new DeployServiceAssemblyTask();
-			initializeJbiTask(componentTask);
-			componentTask.setFile(jbiDeployable.getFile());
-			componentTask.execute();
-
+	private void startDependency(JbiDeployableArtifact jbiDeployable) {
+		getLog().info("Starting " + jbiDeployable.getName());
+		if (JBI_SERVICE_ASSEMBLY.equals(jbiDeployable.getType())) {
 			StartServiceAssemblyTask startTask = new StartServiceAssemblyTask();
 			initializeJbiTask(startTask);
 			startTask.setName(jbiDeployable.getName());
 			startTask.execute();
 		}
-		if ("jbi-component".equals(jbiDeployable.getType())) {
-			InstallComponentTask componentTask = new InstallComponentTask();
-			initializeJbiTask(componentTask);
-			componentTask.setFile(jbiDeployable.getFile());
-			componentTask.execute();
-
+		if (JBI_COMPONENT.equals(jbiDeployable.getType())) {
 			StartComponentTask startTask = new StartComponentTask();
 			initializeJbiTask(startTask);
 			startTask.setName(jbiDeployable.getName());
 			startTask.execute();
+		}
+	}
+
+	private void undeployDependency(JbiDeployableArtifact jbiDeployable) {
+		getLog().info("Undeploying " + jbiDeployable.getFile());
+		if (JBI_SHARED_LIBRARY.equals(jbiDeployable.getType())) {
+			UninstallSharedLibraryTask sharedLibraryTask = new UninstallSharedLibraryTask();
+			initializeJbiTask(sharedLibraryTask);
+			sharedLibraryTask.setName(jbiDeployable.getName());
+			sharedLibraryTask.execute();
+		} else if (JBI_SERVICE_ASSEMBLY.equals(jbiDeployable.getType())) {
+			UndeployServiceAssemblyTask serviceAssemblyTask = new UndeployServiceAssemblyTask();
+			initializeJbiTask(serviceAssemblyTask);
+			serviceAssemblyTask.setName(jbiDeployable.getName());
+			serviceAssemblyTask.execute();
+		}
+		if (JBI_COMPONENT.equals(jbiDeployable.getType())) {
+			UninstallComponentTask componentTask = new UninstallComponentTask();
+			initializeJbiTask(componentTask);
+			componentTask.setName(jbiDeployable.getName());
+			componentTask.execute();
+		}
+	}
+
+	private boolean isDeployed(JbiDeployableArtifact jbiDeployable) {
+		IsDeployedTask isDeployedTask = new IsDeployedTask();
+		isDeployedTask.setType(jbiDeployable.getType());
+		isDeployedTask.setName(jbiDeployable.getName());
+		initializeJbiTask(isDeployedTask);
+		isDeployedTask.execute();
+		boolean deployed = isDeployedTask.isDeployed();
+		if (deployed)
+			getLog().info(jbiDeployable.getName() + " is deployed");
+		else
+			getLog().info(jbiDeployable.getName() + " is not deployed");
+		return deployed;
+	}
+
+	private void stopDependency(JbiDeployableArtifact jbiDeployable) {
+		getLog().info("Stopping " + jbiDeployable.getName());
+		if (JBI_SERVICE_ASSEMBLY.equals(jbiDeployable.getType())) {
+			StopServiceAssemblyTask stopTask = new StopServiceAssemblyTask();
+			initializeJbiTask(stopTask);
+			stopTask.setName(jbiDeployable.getName());
+			stopTask.execute();
+		}
+		if (JBI_COMPONENT.equals(jbiDeployable.getType())) {
+			StopComponentTask stopTask = new StopComponentTask();
+			initializeJbiTask(stopTask);
+			stopTask.setName(jbiDeployable.getName());
+			stopTask.execute();
+
+			ShutDownComponentTask shutdownTask = new ShutDownComponentTask();
+			initializeJbiTask(shutdownTask);
+			shutdownTask.setName(jbiDeployable.getName());
+			shutdownTask.execute();
+		}
+	}
+
+	private void deployDependency(JbiDeployableArtifact jbiDeployable) {
+
+		getLog().info(
+				"Deploying " + jbiDeployable.getType() + " from "
+						+ jbiDeployable.getFile());
+		if (JBI_SHARED_LIBRARY.equals(jbiDeployable.getType())) {
+			InstallSharedLibraryTask componentTask = new InstallSharedLibraryTask();
+			initializeJbiTask(componentTask);
+			componentTask.setFile(jbiDeployable.getFile());
+			componentTask.execute();
+		} else if (JBI_SERVICE_ASSEMBLY.equals(jbiDeployable.getType())) {
+			DeployServiceAssemblyTask componentTask = new DeployServiceAssemblyTask();
+			initializeJbiTask(componentTask);
+			componentTask.setFile(jbiDeployable.getFile());
+			componentTask.execute();
+		}
+		if (JBI_COMPONENT.equals(jbiDeployable.getType())) {
+			InstallComponentTask componentTask = new InstallComponentTask();
+			initializeJbiTask(componentTask);
+			componentTask.setFile(jbiDeployable.getFile());
+			componentTask.execute();
 		}
 
 	}
@@ -169,9 +278,9 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 	private List getDeployablePackagingTypes() {
 		if (deploymentTypes == null) {
 			deploymentTypes = new ArrayList();
-			deploymentTypes.add("jbi-shared-library");
-			deploymentTypes.add("jbi-service-assembly");
-			deploymentTypes.add("jbi-component");
+			deploymentTypes.add(JBI_SHARED_LIBRARY);
+			deploymentTypes.add(JBI_SERVICE_ASSEMBLY);
+			deploymentTypes.add(JBI_COMPONENT);
 		}
 		return deploymentTypes;
 	}
@@ -220,7 +329,7 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 	}
 
 	private String getExtension(MavenProject project2) {
-		if (project2.getPackaging().equals("jbi-service-assembly"))
+		if (project2.getPackaging().equals(JBI_SERVICE_ASSEMBLY))
 			return "";
 		else
 			return "installer";
