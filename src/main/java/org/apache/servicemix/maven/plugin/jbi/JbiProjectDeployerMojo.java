@@ -37,6 +37,7 @@ import org.apache.servicemix.jbi.management.task.DeployServiceAssemblyTask;
 import org.apache.servicemix.jbi.management.task.InstallComponentTask;
 import org.apache.servicemix.jbi.management.task.InstallSharedLibraryTask;
 import org.apache.servicemix.jbi.management.task.ShutDownComponentTask;
+import org.apache.servicemix.jbi.management.task.ShutDownServiceAssemblyTask;
 import org.apache.servicemix.jbi.management.task.StartComponentTask;
 import org.apache.servicemix.jbi.management.task.StartServiceAssemblyTask;
 import org.apache.servicemix.jbi.management.task.StopComponentTask;
@@ -236,6 +237,11 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 			initializeJbiTask(stopTask);
 			stopTask.setName(jbiDeployable.getName());
 			stopTask.execute();
+
+			ShutDownServiceAssemblyTask shutdownTask = new ShutDownServiceAssemblyTask();
+			initializeJbiTask(shutdownTask);
+			shutdownTask.setName(jbiDeployable.getName());
+			shutdownTask.execute();
 		}
 		if (JBI_COMPONENT.equals(jbiDeployable.getType())) {
 			StopComponentTask stopTask = new StopComponentTask();

@@ -25,13 +25,14 @@ public class IsDeployedTask extends JbiTask {
 		this.deployed = deployed;
 	}
 
-	protected void doExecute(AdminCommandsServiceMBean acs) throws Exception {		
+	protected void doExecute(AdminCommandsServiceMBean acs) throws Exception {
 		if (JBI_SHARED_LIBRARY.equals(type)) {
 			String result = acs.listSharedLibraries(null, name);
 			setDeployed(isResultContaining(result, "shared-library", name));
 		} else if (JBI_SERVICE_ASSEMBLY.equals(type)) {
 			String result = acs.listServiceAssemblies(null, null, name);
-			setDeployed(isResultContaining(result, "service-assembly", name));
+			setDeployed(result.contains("<service-assembly-info name='" + name
+					+ "'"));
 		}
 		if (JBI_COMPONENT.equals(type)) {
 			String result = acs.listComponents(false, false, false, null, null,
@@ -45,7 +46,7 @@ public class IsDeployedTask extends JbiTask {
 
 	private boolean isResultContaining(String result, String type, String name) {
 		String componentLine = "<component-info type='" + type + "' name='"
-				+ name + "'";		
+				+ name + "'";
 		return result.contains(componentLine);
 	}
 
