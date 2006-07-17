@@ -164,7 +164,7 @@ public class GenerateComponentMojo extends AbstractJbiMojo {
 		}
 
 		ScopeArtifactFilter filter = new ScopeArtifactFilter(
-				Artifact.SCOPE_RUNTIME);
+				Artifact.SCOPE_RUNTIME);		
 
 		JbiResolutionListener listener = resolveProject();
 		// print(listener.getRootNode(), "");

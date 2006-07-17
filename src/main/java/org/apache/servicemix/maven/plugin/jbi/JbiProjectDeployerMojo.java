@@ -117,10 +117,7 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 			artifactList.addAll(project.getArtifacts());
 			Collections.sort(artifactList, new ArtifactDepthComparator());
 			for (Iterator iter = artifactList.iterator(); iter.hasNext();) {
-				Artifact artifact = (Artifact) iter.next();
-				getLog().info(
-						"For Project " + project.getArtifactId()
-								+ " -> Resolve artifact " + artifact);
+				Artifact artifact = (Artifact) iter.next();			
 				resolveArtifact(artifact, dependencies);
 			}
 
@@ -303,9 +300,7 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 							+ artifact.getArtifactId() + " assuming jar");
 		}
 
-		if (project != null) {
-			getLog().debug(
-					"Resolved artifact to project " + project.getArtifactId());
+		if (project != null) {	
 			if (getDeployablePackagingTypes().contains(project.getPackaging())) {
 				getLog().debug(
 						"Checking for dependency from project "

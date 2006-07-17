@@ -72,7 +72,23 @@
 		<dependency>
 			<groupId>org.apache.servicemix</groupId>
 			<artifactId>servicemix-core</artifactId>
-			<version>3.0-incubating-SNAPSHOT</version>
+			<version>3.0-incubating-SNAPSHOT</version>			
+		</dependency>
+		<dependency>
+			<groupId>org.apache.geronimo.specs</groupId>
+			<artifactId>geronimo-javamail_1.3.1_spec</artifactId>			
+		</dependency>
+		<dependency>
+			<groupId>org.apache.geronimo.specs</groupId>
+			<artifactId>geronimo-ejb_2.1_spec</artifactId>			
+		</dependency>
+		<dependency>
+			<groupId>org.apache.geronimo.specs</groupId>
+			<artifactId>geronimo-jta_1.0.1B_spec</artifactId>			
+		</dependency>
+		<dependency>
+			<groupId>org.apache.geronimo.specs</groupId>
+			<artifactId>geronimo-j2ee-connector_1.5_spec</artifactId>			
 		</dependency>
 	</dependencies>
 
