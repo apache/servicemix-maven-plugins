@@ -695,7 +695,7 @@
           <property>sharedLibraryFile</property>
           <required>true</required>
           <readonly>true</readonly>
-          <defaultValue>${project.build.directory}/${project.artifactId}-${project.version}.jar</defaultValue>
+          <defaultValue>${project.build.directory}/${project.artifactId}-${project.version}.zip</defaultValue>
           <type>java.lang.String</type>
           <description>The location of the shared library file</description>
         </parameter>
@@ -977,7 +977,7 @@
           <property>serviceAssemblyFile</property>
           <required>true</required>
           <readonly>true</readonly>
-          <defaultValue>${project.build.directory}/${project.artifactId}-${project.version}-installer.zip</defaultValue>
+          <defaultValue>${project.build.directory}/${project.artifactId}-${project.version}.jar</defaultValue>
           <type>java.lang.String</type>
           <description>The location of the service assembly installer file</description>
         </parameter>
