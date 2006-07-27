@@ -25,6 +25,7 @@ import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -148,7 +149,7 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 		File descriptor = new File(outputDir, JBI_DESCRIPTOR);
 
 		List serviceUnits = new ArrayList();
-
+			
 		Set artifacts = project.getArtifacts();
 		for (Iterator iter = artifacts.iterator(); iter.hasNext();) {
 			Artifact artifact = (Artifact) iter.next();
@@ -181,10 +182,35 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 
 			}
 		}
+		
+		List orderedServiceUnits = reorderServiceUnits(serviceUnits);
 
 		JbiServiceAssemblyDescriptorWriter writer = new JbiServiceAssemblyDescriptorWriter(
 				encoding);
-		writer.write(descriptor, name, description, serviceUnits);
+		writer.write(descriptor, name, description, orderedServiceUnits);
+	}
+
+	/**
+	 * Re-orders the service units to match order in the dependencies section of the pom
+	 * 
+	 * @param serviceUnits
+	 */
+	private List reorderServiceUnits(List serviceUnits) {
+		Iterator dependencies = project.getModel().getDependencies().iterator();
+		List orderedServiceUnits = new ArrayList();
+		while(dependencies.hasNext()) {
+			Dependency dependency = (Dependency) dependencies.next();
+			for (Iterator it = serviceUnits.iterator(); it.hasNext();) {
+				DependencyInformation serviceUnitInfo = (DependencyInformation) it
+						.next();
+				if (dependency.getArtifactId().equals(serviceUnitInfo.getName())) {
+					orderedServiceUnits.add(serviceUnitInfo);
+				}
+
+			}
+		}		
+		
+		return orderedServiceUnits; 
 	}
 
 	private String getComponentName(MavenProject project, Set artifacts,
