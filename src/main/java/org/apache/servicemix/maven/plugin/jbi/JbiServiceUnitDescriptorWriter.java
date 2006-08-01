@@ -56,6 +56,9 @@ public class JbiServiceUnitDescriptorWriter {
 		writer.addAttribute("xmlns", "http://java.sun.com/xml/ns/jbi");
 		writer.addAttribute("version", "1.0");
 		
+		writer.startElement("services");
+		writer.endElement();
+		
 		writer.endElement();
 
 		close(w);
