@@ -145,7 +145,7 @@ public class GenerateServiceUnitMojo extends AbstractJbiMojo {
 		}
 
 		try {
-			FileUtils.copyDirectory(serviceUnitLocation, workDirectory);
+			FileUtils.copyDirectoryStructure(serviceUnitLocation, workDirectory);
 		} catch (IOException e) {
 			throw new JbiPluginException("Unable to copy directory "
 					+ serviceUnitLocation, e);
