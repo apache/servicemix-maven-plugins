@@ -869,7 +869,7 @@
       <call>listSharedLibraries</call>      
       <requiresProject>true</requiresProject>      
       <description>
-			Uninstalls a shared library
+			Lists the currently deployed shared libraries
       </description>
       <parameters>          
         <parameter>
