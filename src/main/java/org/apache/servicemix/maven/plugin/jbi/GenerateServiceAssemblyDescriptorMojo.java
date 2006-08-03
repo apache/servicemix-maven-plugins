@@ -174,7 +174,9 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 						&& (project.getPackaging().equals("jbi-service-unit"))) {
 					DependencyInformation info = new DependencyInformation();
 					info.setName(artifact.getArtifactId());
-					info.setFilename(artifact.getFile().getName());
+                    String name = artifact.getFile().getName();
+                    name = name.substring(0, name.lastIndexOf('.')) + ".zip";
+					info.setFilename(name);
 					info.setComponent(getComponentName(project, artifacts,
 							artifact));
 					info.setDescription(project.getDescription());
