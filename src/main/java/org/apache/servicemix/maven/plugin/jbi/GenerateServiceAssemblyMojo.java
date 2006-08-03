@@ -90,7 +90,9 @@ public class GenerateServiceAssemblyMojo extends AbstractJbiMojo {
 				if ((project != null)
 						&& (project.getPackaging().equals("jbi-service-unit"))) {
 					try {
-						FileUtils.copyFileToDirectory(artifact.getFile(),
+                        String path = artifact.getFile().getAbsolutePath();
+                        path = path.substring(0, path.lastIndexOf('.')) + ".zip";
+						FileUtils.copyFileToDirectory(new File(path),
 								workDirectory);
 					} catch (IOException e) {
 						throw new JbiPluginException(e);
