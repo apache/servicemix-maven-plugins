@@ -77,9 +77,11 @@ public class ServiceMixMojo extends JbiProjectDeployerMojo {
 			startServiceMix();
 			deployProject();
 
-			getLog().info("Project deployed");
-			while (true)
-				;
+			getLog().info("Project deployed");			
+
+			while (true) {
+				Thread.sleep(1000);
+			}
 		} catch (Exception e) {
 			stopServiceMix();
 			throw new MojoExecutionException(
