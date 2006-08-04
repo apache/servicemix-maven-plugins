@@ -38,6 +38,7 @@ import org.springframework.beans.factory.DisposableBean;
  * @version $Id: GenerateComponentDescriptorMojo 314956 2005-10-12 16:27:15Z
  *          brett $
  * @goal embeddedServicemix
+ * @execute phase="compile"
  * @requiresDependencyResolution runtime
  * @description Starts a local servicemix instance using the servicemix config
  *              provided
