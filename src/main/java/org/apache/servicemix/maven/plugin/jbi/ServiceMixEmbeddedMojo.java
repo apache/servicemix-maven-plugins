@@ -17,7 +17,14 @@
 package org.apache.servicemix.maven.plugin.jbi;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.servicemix.jbi.container.SpringJBIContainer;
@@ -74,13 +81,53 @@ public class ServiceMixEmbeddedMojo extends AbstractJbiMojo {
 	}
 
 	private void startServiceMix() throws MojoExecutionException {
+        ClassLoader old = Thread.currentThread().getContextClassLoader();
 		try {
+            Thread.currentThread().setContextClassLoader(getClassLoader());
 			context = new FileSystemXmlApplicationContext(servicemixConfig
 					.getAbsolutePath());
 			container = (SpringJBIContainer) context.getBean("jbi");
 		} catch (Exception e) {
 			throw new MojoExecutionException(
 					"Unable to start the ServiceMix container", e);
-		}
+		} finally {
+		    Thread.currentThread().setContextClassLoader(old);      
+        }
 	}
+
+    /**
+     * Set up a classloader for the execution of the
+     * main class.
+     *
+     * @return
+     * @throws MojoExecutionException
+     */
+    private URLClassLoader getClassLoader() throws MojoExecutionException {
+        try {
+            Set urls = new HashSet();
+
+            URL mainClasses = new File(project.getBuild().getOutputDirectory()).toURL();
+            getLog().debug("Adding to classpath : " + mainClasses);
+            urls.add(mainClasses);
+
+            URL testClasses = new File(project.getBuild().getTestOutputDirectory()).toURL();
+            getLog().debug("Adding to classpath : " + testClasses);
+            urls.add(testClasses);
+
+            Set dependencies = project.getArtifacts();
+            Iterator iter = dependencies.iterator();
+            while (iter.hasNext()) {
+                Artifact classPathElement = (Artifact) iter.next();
+                getLog().debug("Adding artifact: " + classPathElement.getArtifactId() + " to classpath");
+                urls.add(classPathElement.getFile().toURL());
+            }
+            URLClassLoader appClassloader = new URLClassLoader(
+                            (URL[]) urls.toArray(new URL[urls.size()]),
+                            this.getClass().getClassLoader());
+            return appClassloader;
+        } catch (MalformedURLException e) {
+            throw new MojoExecutionException("Error during setting up classpath", e);
+        }
+    }
+
 }
