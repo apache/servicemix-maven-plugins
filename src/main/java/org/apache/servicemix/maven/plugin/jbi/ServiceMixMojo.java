@@ -83,7 +83,7 @@ public class ServiceMixMojo extends JbiProjectDeployerMojo {
 		} catch (Exception e) {
 			stopServiceMix();
 			throw new MojoExecutionException(
-					"Apache ServiceMix was able to deploy project", e);
+					"Apache ServiceMix was unable to deploy project", e);
 		}
 
 	}
