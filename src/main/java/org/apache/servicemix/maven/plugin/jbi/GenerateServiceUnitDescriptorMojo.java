@@ -17,17 +17,19 @@
 package org.apache.servicemix.maven.plugin.jbi;
 
 import java.io.File;
-import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.codehaus.plexus.util.FileUtils;
+import org.apache.servicemix.common.packaging.ServiceUnitAnalyzer;
 
 /**
  * A Mojo used to build the jbi.xml file for a service unit.
@@ -99,12 +101,55 @@ public class GenerateServiceUnitDescriptorMojo extends AbstractJbiMojo {
 
 		// Generate jbi descriptor and copy it to the build directory
 		getLog().info("Generating jbi.xml");
-		try {			
+		try {
 			generateJbiDescriptor();
 		} catch (JbiPluginException e) {
 			throw new MojoExecutionException("Failed to generate jbi.xml", e);
 		}
 
+	}
+
+	private void buildConnections() {
+
+	}
+
+	/**
+	 * Set up a classloader for the execution of the main class.
+	 * 
+	 * @return
+	 * @throws MojoExecutionException
+	 */
+	private URLClassLoader getClassLoader() throws MojoExecutionException {
+		try {
+			Set urls = new HashSet();
+
+			URL mainClasses = new File(project.getBuild().getOutputDirectory())
+					.toURL();
+			getLog().debug("Adding to classpath : " + mainClasses);
+			urls.add(mainClasses);
+
+			URL testClasses = new File(project.getBuild()
+					.getTestOutputDirectory()).toURL();
+			getLog().debug("Adding to classpath : " + testClasses);
+			urls.add(testClasses);
+
+			Set dependencies = project.getArtifacts();
+			Iterator iter = dependencies.iterator();
+			while (iter.hasNext()) {
+				Artifact classPathElement = (Artifact) iter.next();
+				getLog().debug(
+						"Adding artifact: " + classPathElement.getArtifactId()
+								+ " to classpath");
+				urls.add(classPathElement.getFile().toURL());
+			}
+			URLClassLoader appClassloader = new URLClassLoader((URL[]) urls
+					.toArray(new URL[urls.size()]), this.getClass()
+					.getClassLoader());
+			return appClassloader;
+		} catch (MalformedURLException e) {
+			throw new MojoExecutionException(
+					"Error during setting up classpath", e);
+		}
 	}
 
 	/**
@@ -118,10 +163,24 @@ public class GenerateServiceUnitDescriptorMojo extends AbstractJbiMojo {
 
 		File descriptor = new File(outputDir, JBI_DESCRIPTOR);
 
-		List uris = new ArrayList();		
+		List uris = new ArrayList();
 
 		JbiServiceUnitDescriptorWriter writer = new JbiServiceUnitDescriptorWriter(
 				encoding);
+
+		ServiceUnitAnalyzer serviceUnitAnalyzer = getServiceUnitAnalyzer();
+		List consumes = new ArrayList();
+		List provides = new ArrayList();
+		if (serviceUnitAnalyzer != null) {
+			consumes.addAll(serviceUnitAnalyzer.getConsumes());
+			provides.addAll(serviceUnitAnalyzer.getProvides());
+		}
+
 		writer.write(descriptor, name, description, uris);
+	}
+
+	private ServiceUnitAnalyzer getServiceUnitAnalyzer() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -75,6 +75,11 @@
             <version>3.0-incubating-SNAPSHOT</version>          
         </dependency>
         <dependency>
+            <groupId>org.apache.servicemix</groupId>
+            <artifactId>servicemix-common</artifactId>
+            <version>3.0-incubating-SNAPSHOT</version>          
+        </dependency>
+        <dependency>
             <groupId>org.apache.geronimo.specs</groupId>
             <artifactId>geronimo-javamail_1.3.1_spec</artifactId>           
         </dependency>
