@@ -45,7 +45,7 @@ public class JbiComponentDescriptorWriter {
 					+ descriptor.getAbsolutePath() + "]", ex);
 		}
 
-		XMLWriter writer = new PrettyPrintXMLWriter(w, encoding, null);
+		XMLWriter writer = new PrettyPrintXMLWriter(w, encoding, null);		
 		writer.startElement("jbi");
 		writer.addAttribute("xmlns", "http://java.sun.com/xml/ns/jbi");
 		writer.addAttribute("version", "1.0");
