@@ -32,17 +32,6 @@
     <artifactId>jbi-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
     <name>ServiceMix :: Maven2 :: JBI Plugin</name>
-    <scm>
-        <connection>
-            scm:svn:http://svn.apache.org/repos/asf/incubator/servicemix/trunk/tooling/maven2-jbi-plugin
-        </connection>
-        <developerConnection>
-            scm:svn:https://svn.apache.org/repos/asf/incubator/servicemix/trunk/tooling/maven2-jbi-plugin
-        </developerConnection>
-        <url>
-            http://svn.apache.org/viewcvs.cgi/incubator/servicemix/trunk/tooling/maven2-jbi-plugin/
-        </url>
-    </scm>
     <dependencies>
         <dependency>
             <groupId>org.apache.maven</groupId>
