@@ -119,7 +119,7 @@ public class JbiServiceUnitDescriptorWriter {
 
 	private void addQNameAttribute(XMLWriter writer, String attributeName,
 			QName attributeValue, Map namespaceMap) {
-		System.out.println("attributeName="+attributeValue);
+		System.out.println("attributeName=" + attributeValue);
 		if (attributeValue != null) {
 			StringBuffer attributeStringValue = new StringBuffer();
 			attributeStringValue.append(namespaceMap.get(attributeValue
@@ -157,7 +157,11 @@ public class JbiServiceUnitDescriptorWriter {
 			int namespaceCounter) {
 		if ((qname != null)
 				&& (!namespaceMap.containsKey(qname.getNamespaceURI()))) {
-			namespaceMap.put(qname.getNamespaceURI(), qname.getPrefix());
+			if (qname.getPrefix() == null || qname.getPrefix().equals("") ) {
+				namespaceMap.put(qname.getNamespaceURI(), "ns"
+						+ namespaceCounter++);
+			} else
+				namespaceMap.put(qname.getNamespaceURI(), qname.getPrefix());
 		}
 	}
 
