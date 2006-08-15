@@ -85,7 +85,7 @@ public class ServiceMixEmbeddedMojo extends AbstractJbiMojo {
         ClassLoader old = Thread.currentThread().getContextClassLoader();
 		try {
             Thread.currentThread().setContextClassLoader(getClassLoader());
-			context = new FileSystemXmlApplicationContext(servicemixConfig
+			context = new FileSystemXmlApplicationContext("file:///" + servicemixConfig
 					.getAbsolutePath());
 			container = (SpringJBIContainer) context.getBean("jbi");
 		} catch (Exception e) {
