@@ -62,9 +62,11 @@
 
         <!-- Checks for Javadoc comments.                     -->
         <!-- See http://checkstyle.sf.net/config_javadoc.html -->
+        <!--
         <module name="JavadocMethod"/>
         <module name="JavadocType"/>
         <module name="JavadocVariable"/>
+        -->
 
 
         <!-- Checks for Naming Conventions.                  -->
@@ -117,7 +119,9 @@
         <!-- Modifier Checks                                    -->
         <!-- See http://checkstyle.sf.net/config_modifiers.html -->
         <module name="ModifierOrder"/>
+        <!--
         <module name="RedundantModifier"/>
+        -->
 
 
         <!-- Checks for common coding problems               -->
