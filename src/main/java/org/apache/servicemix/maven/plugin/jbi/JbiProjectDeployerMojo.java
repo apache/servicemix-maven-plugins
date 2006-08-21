@@ -25,14 +25,11 @@ import java.util.List;
 import java.util.Stack;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.servicemix.jbi.management.task.DeployServiceAssemblyTask;
 import org.apache.servicemix.jbi.management.task.InstallComponentTask;
@@ -68,31 +65,6 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 	private static final String JBI_SERVICE_ASSEMBLY = "jbi-service-assembly";
 
 	private List deploymentTypes;
-
-	/**
-	 * @parameter default-value="${project}"
-	 */
-	private MavenProject project;
-
-	/**
-	 * @component
-	 */
-	private MavenProjectBuilder pb;
-
-	/**
-	 * @component
-	 */
-	private ArtifactFactory af;
-
-	/**
-	 * @parameter default-value="${localRepository}"
-	 */
-	private ArtifactRepository localRepo;
-
-	/**
-	 * @parameter default-value="${project.remoteArtifactRepositories}"
-	 */
-	private List remoteRepos;
 
 	/**
 	 * @parameter default-value="true"
@@ -293,7 +265,7 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 			throws ArtifactResolutionException, ArtifactNotFoundException {
 		MavenProject project = null;
 		try {
-			project = pb.buildFromRepository(artifact, remoteRepos, localRepo,
+			project = projectBuilder.buildFromRepository(artifact, remoteRepos, localRepo,
 					true);
 		} catch (ProjectBuildingException e) {
 			getLog().warn(
@@ -322,7 +294,7 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 	private JbiDeployableArtifact resolveDeploymentPackage(
 			MavenProject project, Artifact artifact)
 			throws ArtifactResolutionException, ArtifactNotFoundException {
-		Artifact jbiArtifact = af.createArtifactWithClassifier(artifact
+		Artifact jbiArtifact = factory.createArtifactWithClassifier(artifact
 				.getGroupId(), artifact.getArtifactId(), artifact.getVersion(),
 				"zip", getExtension(project));
 		resolver.resolve(jbiArtifact, remoteRepos, localRepo);

@@ -24,13 +24,11 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.codehaus.plexus.util.FileUtils;
 
@@ -83,21 +81,11 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 	 * @parameter expression="${project.build.directory}/classes/META-INF"
 	 */
 	private String generatedDescriptorLocation;
-
-	/**
-	 * @component
-	 */
-	private MavenProjectBuilder pb;
-
-	/**
-	 * @parameter default-value="${localRepository}"
-	 */
-	private ArtifactRepository localRepo;
-
-	/**
-	 * @parameter default-value="${project.remoteArtifactRepositories}"
-	 */
-	private List remoteRepos;
+    
+    /**
+     * Dependency graph
+     */
+    private JbiResolutionListener listener;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
@@ -121,6 +109,7 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 		// Generate jbi descriptor and copy it to the build directory
 		getLog().info("Generating jbi.xml");
 		try {
+            listener = resolveProject();
 			generateJbiDescriptor();
 		} catch (JbiPluginException e) {
 			throw new MojoExecutionException("Failed to generate jbi.xml", e);
@@ -162,7 +151,7 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 					&& (artifact.getDependencyTrail().size() == 2)) {
 				MavenProject project = null;
 				try {
-					project = pb.buildFromRepository(artifact, remoteRepos,
+					project = projectBuilder.buildFromRepository(artifact, remoteRepos,
 							localRepo);
 				} catch (ProjectBuildingException e) {
 					getLog().warn(
@@ -225,45 +214,32 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 		if (project.getProperties().getProperty("componentName") != null) {
 			return project.getProperties().getProperty("componentName");
 		}
-
-		String currentArtifact = suArtifact.getGroupId() + ":"
-				+ suArtifact.getArtifactId() + ":" + suArtifact.getType() + ":"
-				+ suArtifact.getVersion();
-
-		// Find artifacts directly under this project
-		for (Iterator iter = artifacts.iterator(); iter.hasNext();) {
-			Artifact artifact = (Artifact) iter.next();
-			if ((artifact.getDependencyTrail().size() == 3)) {
-				String parent = getDependencyParent(artifact
-						.getDependencyTrail());				
-				if (parent.equals(currentArtifact)) {					
-					MavenProject artifactProject = null;
-					try {
-						artifactProject = pb.buildFromRepository(artifact,
-								remoteRepos, localRepo);
-					} catch (ProjectBuildingException e) {
-						getLog().warn(
-								"Unable to determine packaging for dependency : "
-										+ artifact.getArtifactId()
-										+ " assuming jar");
-					}
-					getLog().info("Project "+artifactProject+" packaged "+artifactProject.getPackaging());
-					if ((artifactProject != null)
-							&& (artifactProject.getPackaging()
-									.equals("jbi-component"))) {
-						return artifact.getArtifactId();
-					}
-				}
-			}
-		}
-
+        
+        JbiResolutionListener.Node n = listener.getNode(suArtifact);
+        for (Iterator it = n.getChildren().iterator(); it.hasNext();) {
+            JbiResolutionListener.Node child = (JbiResolutionListener.Node) it.next(); 
+            MavenProject artifactProject = null;
+            try {
+                artifactProject = projectBuilder.buildFromRepository(child.getArtifact(),
+                        remoteRepos, localRepo);
+            } catch (ProjectBuildingException e) {
+                getLog().warn(
+                        "Unable to determine packaging for dependency : "
+                                + child.getArtifact().getArtifactId()
+                                + " assuming jar");
+            }
+            getLog().info("Project "+artifactProject+" packaged "+artifactProject.getPackaging());
+            if ((artifactProject != null)
+                    && (artifactProject.getPackaging()
+                            .equals("jbi-component"))) {
+                return child.getArtifact().getArtifactId();
+            }
+        }
+        
 		throw new MojoExecutionException(
 				"The service unit "
 						+ project.getArtifactId()
 						+ " does not have a dependency which is packaged as a jbi-component or a project property 'componentName'");
 	}
 
-	private String getDependencyParent(List dependencyTrail) {
-		return (String) dependencyTrail.get(dependencyTrail.size() - 2);
-	}
 }

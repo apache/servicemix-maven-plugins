@@ -22,7 +22,6 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
@@ -44,11 +43,6 @@ import org.codehaus.plexus.util.FileUtils;
  * @description injects additional libraries into service assembly
  */
 public class GenerateServiceAssemblyMojo extends AbstractJbiMojo {
-
-	/**
-	 * @component
-	 */
-	private ArtifactFactory af;
 
 	/**
 	 * Directory where the application.xml file will be auto-generated.

@@ -27,13 +27,11 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.servicemix.common.packaging.ServiceUnitAnalyzer;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
@@ -101,21 +99,6 @@ public class GenerateServiceUnitDescriptorMojo extends AbstractJbiMojo {
 	 * @parameter expression="${basedir}/src/main/resources"
 	 */
 	private File serviceUnitArtifactsDir;
-
-	/**
-	 * @component
-	 */
-	private MavenProjectBuilder pb;
-
-	/**
-	 * @parameter default-value="${localRepository}"
-	 */
-	private ArtifactRepository localRepo;
-
-	/**
-	 * @parameter default-value="${project.remoteArtifactRepositories}"
-	 */
-	private List remoteRepos;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
@@ -270,7 +253,7 @@ public class GenerateServiceUnitDescriptorMojo extends AbstractJbiMojo {
 					&& (artifact.getDependencyTrail().size() == 2)) {
 				MavenProject project = null;
 				try {
-					project = pb.buildFromRepository(artifact, remoteRepos,
+					project = projectBuilder.buildFromRepository(artifact, remoteRepos,
 							localRepo);
 				} catch (ProjectBuildingException e) {
 					getLog().warn(

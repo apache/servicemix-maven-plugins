@@ -170,7 +170,6 @@ public class GenerateComponentDescriptorMojo extends AbstractJbiMojo {
 		JbiResolutionListener listener = resolveProject();
 		// print(listener.getRootNode(), "");
 
-		Set sharedLibraries = new HashSet();
 		Set includes = new HashSet();
 		for (Iterator iter = project.getArtifacts().iterator(); iter.hasNext();) {
 			Artifact artifact = (Artifact) iter.next();

@@ -24,11 +24,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.project.MavenProjectBuilder;
 import org.codehaus.plexus.util.FileUtils;
 
 /**
@@ -94,21 +92,6 @@ public class GenerateSharedLibraryDescriptorMojo extends AbstractJbiMojo {
 	 * @parameter expression="${project.build.directory}"
 	 */
 	private String generatedDescriptorLocation;
-
-	/**
-	 * @component
-	 */
-	private MavenProjectBuilder pb;
-
-	/**
-	 * @parameter default-value="${localRepository}"
-	 */
-	private ArtifactRepository localRepo;
-
-	/**
-	 * @parameter default-value="${project.remoteArtifactRepositories}"
-	 */
-	private List remoteRepos;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
