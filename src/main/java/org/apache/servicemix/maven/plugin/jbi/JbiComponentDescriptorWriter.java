@@ -55,7 +55,7 @@ public class JbiComponentDescriptorWriter {
 		writer.startElement("component");
 		writer.addAttribute("type", type);
         writer.addAttribute("component-class-loader-delegation", componentClassLoaderDelegation);
-        writer.addAttribute("bootstrap-class-loader-delegation", componentClassLoaderDelegation);
+        writer.addAttribute("bootstrap-class-loader-delegation", bootstrapClassLoaderDelegation);
 
 		writer.startElement("identification");
 		writer.startElement("name");
