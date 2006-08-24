@@ -35,7 +35,9 @@ public class JbiComponentDescriptorWriter {
 	}
 
 	public void write(File descriptor, String component, String bootstrap,
-			String type, String name, String description, List uris)
+			String type, String name, String description, 
+            String componentClassLoaderDelegation, String bootstrapClassLoaderDelegation, 
+            List uris)
 			throws JbiPluginException {
 		FileWriter w;
 		try {
@@ -52,6 +54,8 @@ public class JbiComponentDescriptorWriter {
 
 		writer.startElement("component");
 		writer.addAttribute("type", type);
+        writer.addAttribute("component-class-loader-delegation", componentClassLoaderDelegation);
+        writer.addAttribute("bootstrap-class-loader-delegation", componentClassLoaderDelegation);
 
 		writer.startElement("identification");
 		writer.startElement("name");

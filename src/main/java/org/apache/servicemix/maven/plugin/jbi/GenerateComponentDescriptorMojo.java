@@ -106,6 +106,20 @@ public class GenerateComponentDescriptorMojo extends AbstractJbiMojo {
 	 */
 	private String generatedDescriptorLocation;
 
+    /**
+     * The component class loader delegation
+     * 
+     * @parameter expression="self-first"
+     */
+    private String componentClassLoaderDelegation;
+
+    /**
+     * The bootstrap class loader delegation
+     * 
+     * @parameter expression="self-first"
+     */
+    private String bootstrapClassLoaderDelegation;
+
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
 		getLog().debug(
@@ -223,6 +237,7 @@ public class GenerateComponentDescriptorMojo extends AbstractJbiMojo {
 		JbiComponentDescriptorWriter writer = new JbiComponentDescriptorWriter(
 				encoding);
 		writer.write(descriptor, component, bootstrap, type, name, description,
+                componentClassLoaderDelegation, bootstrapClassLoaderDelegation,
 				uris);
 	}
 }

@@ -73,11 +73,11 @@ public class GenerateSharedLibraryDescriptorMojo extends AbstractJbiMojo {
 	private String version;
 
 	/**
-	 * The shared library class loader delegate
+	 * The shared library class loader delegation
 	 * 
-	 * @parameter expression="self-first"
+	 * @parameter expression="parent-first"
 	 */
-	private String classLoaderDelegate;
+	private String classLoaderDelegation;
 
 	/**
 	 * Character encoding for the auto-generated application.xml file.
@@ -169,6 +169,6 @@ public class GenerateSharedLibraryDescriptorMojo extends AbstractJbiMojo {
 		JbiSharedLibraryDescriptorWriter writer = new JbiSharedLibraryDescriptorWriter(
 				encoding);
 		writer.write(descriptor, name, description, version,
-				classLoaderDelegate, embeddedLibraries);
+				classLoaderDelegation, embeddedLibraries);
 	}
 }
