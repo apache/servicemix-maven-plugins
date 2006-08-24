@@ -109,14 +109,14 @@ public class GenerateComponentDescriptorMojo extends AbstractJbiMojo {
     /**
      * The component class loader delegation
      * 
-     * @parameter expression="self-first"
+     * @parameter expression="parent-first"
      */
     private String componentClassLoaderDelegation;
 
     /**
      * The bootstrap class loader delegation
      * 
-     * @parameter expression="self-first"
+     * @parameter expression="parent-first"
      */
     private String bootstrapClassLoaderDelegation;
 
