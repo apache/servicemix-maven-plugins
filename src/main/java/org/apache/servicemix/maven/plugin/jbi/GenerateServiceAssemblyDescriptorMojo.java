@@ -17,6 +17,7 @@
 package org.apache.servicemix.maven.plugin.jbi;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -26,6 +27,8 @@ import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -81,11 +84,11 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 	 * @parameter expression="${project.build.directory}/classes/META-INF"
 	 */
 	private String generatedDescriptorLocation;
-    
-    /**
-     * Dependency graph
-     */
-    private JbiResolutionListener listener;
+
+	/**
+	 * Dependency graph
+	 */
+	private JbiResolutionListener listener;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
@@ -109,7 +112,7 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 		// Generate jbi descriptor and copy it to the build directory
 		getLog().info("Generating jbi.xml");
 		try {
-            listener = resolveProject();
+			listener = resolveProject();
 			generateJbiDescriptor();
 		} catch (JbiPluginException e) {
 			throw new MojoExecutionException("Failed to generate jbi.xml", e);
@@ -139,7 +142,7 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 		File descriptor = new File(outputDir, JBI_DESCRIPTOR);
 
 		List serviceUnits = new ArrayList();
-			
+
 		Set artifacts = project.getArtifacts();
 		for (Iterator iter = artifacts.iterator(); iter.hasNext();) {
 			Artifact artifact = (Artifact) iter.next();
@@ -151,8 +154,8 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 					&& (artifact.getDependencyTrail().size() == 2)) {
 				MavenProject project = null;
 				try {
-					project = projectBuilder.buildFromRepository(artifact, remoteRepos,
-							localRepo);
+					project = projectBuilder.buildFromRepository(artifact,
+							remoteRepos, localRepo);
 				} catch (ProjectBuildingException e) {
 					getLog().warn(
 							"Unable to determine packaging for dependency : "
@@ -163,8 +166,8 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 						&& (project.getPackaging().equals("jbi-service-unit"))) {
 					DependencyInformation info = new DependencyInformation();
 					info.setName(artifact.getArtifactId());
-                    String name = artifact.getFile().getName();
-                    name = name.substring(0, name.lastIndexOf('.')) + ".zip";
+					String name = artifact.getFile().getName();
+					name = name.substring(0, name.lastIndexOf('.')) + ".zip";
 					info.setFilename(name);
 					info.setComponent(getComponentName(project, artifacts,
 							artifact));
@@ -174,7 +177,7 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 
 			}
 		}
-		
+
 		List orderedServiceUnits = reorderServiceUnits(serviceUnits);
 
 		JbiServiceAssemblyDescriptorWriter writer = new JbiServiceAssemblyDescriptorWriter(
@@ -183,26 +186,53 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 	}
 
 	/**
-	 * Re-orders the service units to match order in the dependencies section of the pom
+	 * Re-orders the service units to match order in the dependencies section of
+	 * the pom
 	 * 
 	 * @param serviceUnits
+	 * @throws MojoExecutionException
 	 */
-	private List reorderServiceUnits(List serviceUnits) {
-		Iterator dependencies = project.getModel().getDependencies().iterator();
+	private List reorderServiceUnits(List serviceUnits)
+			throws MojoExecutionException {
+
+		// TODO Currently we get the model back by re-parsing it however in the
+		// future we should be able to use the getModel() - there should be a
+		// fix post 2.0.4
+
+		// Iterator dependencies =
+		// project.getModel().getDependencies().iterator();
+
+		// For now we will need to reparse the pom without processing
+		Iterator dependencies = getReparsedDependencies();		
+		
 		List orderedServiceUnits = new ArrayList();
-		while(dependencies.hasNext()) {
+		while (dependencies.hasNext()) {
 			Dependency dependency = (Dependency) dependencies.next();
 			for (Iterator it = serviceUnits.iterator(); it.hasNext();) {
 				DependencyInformation serviceUnitInfo = (DependencyInformation) it
 						.next();
-				if (dependency.getArtifactId().equals(serviceUnitInfo.getName())) {
+				if (dependency.getArtifactId()
+						.equals(serviceUnitInfo.getName())) {
+					System.out.println("Adding "
+							+ serviceUnitInfo.getFilename());
 					orderedServiceUnits.add(serviceUnitInfo);
 				}
 
 			}
-		}		
-		
-		return orderedServiceUnits; 
+		}
+
+		return orderedServiceUnits;
+	}
+
+	private Iterator getReparsedDependencies() throws MojoExecutionException {
+		MavenXpp3Reader mavenXpp3Reader = new MavenXpp3Reader();
+		try {
+			Model model = mavenXpp3Reader.read(new FileReader(new File(project
+					.getBasedir(), "pom.xml")), false);
+			return model.getDependencies().iterator();
+		} catch (Exception e) {
+			throw new MojoExecutionException("Unable to reparse the pom.xml");
+		}
 	}
 
 	private String getComponentName(MavenProject project, Set artifacts,
@@ -214,28 +244,30 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 		if (project.getProperties().getProperty("componentName") != null) {
 			return project.getProperties().getProperty("componentName");
 		}
-        
-        JbiResolutionListener.Node n = listener.getNode(suArtifact);
-        for (Iterator it = n.getChildren().iterator(); it.hasNext();) {
-            JbiResolutionListener.Node child = (JbiResolutionListener.Node) it.next(); 
-            MavenProject artifactProject = null;
-            try {
-                artifactProject = projectBuilder.buildFromRepository(child.getArtifact(),
-                        remoteRepos, localRepo);
-            } catch (ProjectBuildingException e) {
-                getLog().warn(
-                        "Unable to determine packaging for dependency : "
-                                + child.getArtifact().getArtifactId()
-                                + " assuming jar");
-            }
-            getLog().info("Project "+artifactProject+" packaged "+artifactProject.getPackaging());
-            if ((artifactProject != null)
-                    && (artifactProject.getPackaging()
-                            .equals("jbi-component"))) {
-                return child.getArtifact().getArtifactId();
-            }
-        }
-        
+
+		JbiResolutionListener.Node n = listener.getNode(suArtifact);
+		for (Iterator it = n.getChildren().iterator(); it.hasNext();) {
+			JbiResolutionListener.Node child = (JbiResolutionListener.Node) it
+					.next();
+			MavenProject artifactProject = null;
+			try {
+				artifactProject = projectBuilder.buildFromRepository(child
+						.getArtifact(), remoteRepos, localRepo);
+			} catch (ProjectBuildingException e) {
+				getLog().warn(
+						"Unable to determine packaging for dependency : "
+								+ child.getArtifact().getArtifactId()
+								+ " assuming jar");
+			}
+			getLog().info(
+					"Project " + artifactProject + " packaged "
+							+ artifactProject.getPackaging());
+			if ((artifactProject != null)
+					&& (artifactProject.getPackaging().equals("jbi-component"))) {
+				return child.getArtifact().getArtifactId();
+			}
+		}
+
 		throw new MojoExecutionException(
 				"The service unit "
 						+ project.getArtifactId()
