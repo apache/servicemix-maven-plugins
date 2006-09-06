@@ -52,12 +52,12 @@ public abstract class AbstractDeployableMojo extends AbstractJbiMojo {
 	private String jndiPath;
 
 	/**
-	 * @parameter default-value=""
+	 * @parameter default-value="smx"
 	 */
 	private String username;
 
 	/**
-	 * @parameter default-value=""
+	 * @parameter default-value="smx"
 	 */
 	private String password;
 
