@@ -71,6 +71,11 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 	 */
 	private boolean deployDependencies;
 
+	/**
+	 * @parameter default-value="false"
+	 */
+	private boolean deferExceptions;
+
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		deployProject();
 	}
@@ -90,7 +95,7 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 			artifactList.addAll(project.getArtifacts());
 			Collections.sort(artifactList, new ArtifactDepthComparator());
 			for (Iterator iter = artifactList.iterator(); iter.hasNext();) {
-				Artifact artifact = (Artifact) iter.next();			
+				Artifact artifact = (Artifact) iter.next();
 				resolveArtifact(artifact, dependencies);
 			}
 
@@ -112,14 +117,16 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 
 			if (deployDependencies) {
 				// We need to stop all the dependencies first
-				for (Iterator iterator = dependencies.iterator(); iterator
-						.hasNext();) {
-					JbiDeployableArtifact jbiDeployable = (JbiDeployableArtifact) iterator
-							.next();
+				if (!deferExceptions) {
+					for (Iterator iterator = dependencies.iterator(); iterator
+							.hasNext();) {
+						JbiDeployableArtifact jbiDeployable = (JbiDeployableArtifact) iterator
+								.next();
 
-					if (isDeployed(jbiDeployable)) {
-						stopDependency(jbiDeployable);
-						undeployDependency(jbiDeployable);
+						if (isDeployed(jbiDeployable)) {
+							stopDependency(jbiDeployable);
+							undeployDependency(jbiDeployable);
+						}
 					}
 				}
 
@@ -128,8 +135,9 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 				while (!dependencies.empty()) {
 					JbiDeployableArtifact jbiDeployable = (JbiDeployableArtifact) dependencies
 							.pop();
-					deployDependency(jbiDeployable);
-					startDependency(jbiDeployable);
+					deployDependency(jbiDeployable, deferExceptions);
+					if (!deferExceptions)
+						startDependency(jbiDeployable);
 				}
 			} else {
 				JbiDeployableArtifact jbiDeployable = (JbiDeployableArtifact) dependencies
@@ -138,7 +146,7 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 					stopDependency(jbiDeployable);
 					undeployDependency(jbiDeployable);
 				}
-				deployDependency(jbiDeployable);
+				deployDependency(jbiDeployable, deferExceptions);
 				startDependency(jbiDeployable);
 			}
 
@@ -226,7 +234,8 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 		}
 	}
 
-	private void deployDependency(JbiDeployableArtifact jbiDeployable) {
+	private void deployDependency(JbiDeployableArtifact jbiDeployable,
+			boolean doDeferExceptions) {
 
 		getLog().info(
 				"Deploying " + jbiDeployable.getType() + " from "
@@ -235,17 +244,20 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 			InstallSharedLibraryTask componentTask = new InstallSharedLibraryTask();
 			initializeJbiTask(componentTask);
 			componentTask.setFile(jbiDeployable.getFile());
+			componentTask.setDeferExceptions(doDeferExceptions);
 			componentTask.execute();
 		} else if (JBI_SERVICE_ASSEMBLY.equals(jbiDeployable.getType())) {
 			DeployServiceAssemblyTask componentTask = new DeployServiceAssemblyTask();
 			initializeJbiTask(componentTask);
 			componentTask.setFile(jbiDeployable.getFile());
+			componentTask.setDeferExceptions(doDeferExceptions);
 			componentTask.execute();
 		}
 		if (JBI_COMPONENT.equals(jbiDeployable.getType())) {
 			InstallComponentTask componentTask = new InstallComponentTask();
 			initializeJbiTask(componentTask);
 			componentTask.setFile(jbiDeployable.getFile());
+			componentTask.setDeferExceptions(doDeferExceptions);
 			componentTask.execute();
 		}
 
@@ -265,15 +277,15 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 			throws ArtifactResolutionException, ArtifactNotFoundException {
 		MavenProject project = null;
 		try {
-			project = projectBuilder.buildFromRepository(artifact, remoteRepos, localRepo,
-					true);
+			project = projectBuilder.buildFromRepository(artifact, remoteRepos,
+					localRepo, true);
 		} catch (ProjectBuildingException e) {
 			getLog().warn(
 					"Unable to determine packaging for dependency : "
 							+ artifact.getArtifactId() + " assuming jar");
 		}
 
-		if (project != null) {	
+		if (project != null) {
 			if (getDeployablePackagingTypes().contains(project.getPackaging())) {
 				getLog().debug(
 						"Checking for dependency from project "
