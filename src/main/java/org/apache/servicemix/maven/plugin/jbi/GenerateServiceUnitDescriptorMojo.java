@@ -66,6 +66,14 @@ public class GenerateServiceUnitDescriptorMojo extends AbstractJbiMojo {
 	private Boolean useServiceUnitAnalyzer = Boolean.TRUE;
 
 	/**
+	 * Single directory for extra files to include in the JBI component.
+	 * 
+	 * @parameter expression="${basedir}/src/main/resources/jbi-services.xml"
+	 * @required
+	 */
+	private File jbiServicesFile;
+
+	/**
 	 * The component name.
 	 * 
 	 * @parameter expression="${project.artifactId}"
@@ -177,7 +185,7 @@ public class GenerateServiceUnitDescriptorMojo extends AbstractJbiMojo {
 		}
 
 		ClassLoader old = Thread.currentThread().getContextClassLoader();
-		
+
 		try {
 			URLClassLoader newClassLoader = getClassLoader();
 			Thread.currentThread().setContextClassLoader(newClassLoader);
@@ -189,28 +197,29 @@ public class GenerateServiceUnitDescriptorMojo extends AbstractJbiMojo {
 			List consumes = new ArrayList();
 			List provides = new ArrayList();
 
-			if (useServiceUnitAnalyzer.booleanValue()) {
-				String serviceUnitAnalyzerClazzName = getServiceUnitAnalyzer();
-
-				// The ServiceUnitAnalyzer should give us the consumes and
-				// provides
-				if (serviceUnitAnalyzerClazzName != null) {
-					ServiceUnitAnalyzer serviceUnitAnalyzer = (ServiceUnitAnalyzer) newClassLoader
-							.loadClass(serviceUnitAnalyzerClazzName)
-							.newInstance();
-					getLog().info(
-							"Created Service Unit Analyzer "
-									+ serviceUnitAnalyzer);
-					serviceUnitAnalyzer.init(serviceUnitArtifactsDir);
-					consumes.addAll(serviceUnitAnalyzer.getConsumes());
-					provides.addAll(serviceUnitAnalyzer.getProvides());
-				}
-
+			String serviceUnitAnalyzerClazzName = getServiceUnitAnalyzer();
+			// The ServiceUnitAnalyzer should give us the consumes and
+			// provides
+			if (serviceUnitAnalyzerClazzName != null) {
+				ServiceUnitAnalyzer serviceUnitAnalyzer = (ServiceUnitAnalyzer) newClassLoader
+						.loadClass(serviceUnitAnalyzerClazzName).newInstance();
 				getLog().info(
-						"generated : consumes " + consumes + " provides "
-								+ provides);
-
+						"Created Service Unit Analyzer " + serviceUnitAnalyzer);
+				serviceUnitAnalyzer.init(serviceUnitArtifactsDir);
+				
+				// Need to determine whether we are using the dummy analyzer
+				// if so we need to give it the services file
+				if (serviceUnitAnalyzer instanceof JbiServiceFileAnalyzer) {
+					((JbiServiceFileAnalyzer)serviceUnitAnalyzer).setJbiServicesFile(jbiServicesFile);
+				}
+				consumes.addAll(serviceUnitAnalyzer.getConsumes());
+				provides.addAll(serviceUnitAnalyzer.getProvides());
 			}
+
+			getLog().info(
+					"generated : consumes " + consumes + " provides "
+							+ provides);
+
 			writer.write(descriptor, name, description, uris, consumes,
 					provides);
 		} catch (Exception e) {
@@ -222,18 +231,29 @@ public class GenerateServiceUnitDescriptorMojo extends AbstractJbiMojo {
 	}
 
 	private String getServiceUnitAnalyzer() {
-		MavenProject project = getComponentProject();
-		if (project != null) {
-			List plugins = project.getBuild().getPlugins();
-			for (Iterator iterator = plugins.iterator(); iterator.hasNext();) {
-				Plugin plugin = (Plugin) iterator.next();
-				if ("org.apache.servicemix.tooling".equals(plugin.getGroupId())
-						&& "jbi-maven-plugin".equals(plugin.getArtifactId())) {
-					Xpp3Dom o = (Xpp3Dom) plugin.getConfiguration();
-					if (o != null && o.getChild("serviceUnitAnalyzer") != null) {
-						String clazzName = o.getChild("serviceUnitAnalyzer")
-								.getValue();
-						return clazzName;
+		// We need to work out here whether we should use a dummy service unit
+		// analyzer that will examine a local services file or whether
+		// to look for the service unit analyzer from the component
+		if (jbiServicesFile.exists()) {
+			return JbiServiceFileAnalyzer.class.getCanonicalName();
+		}
+		if (useServiceUnitAnalyzer.booleanValue()) {
+			MavenProject project = getComponentProject();
+			if (project != null) {
+				List plugins = project.getBuild().getPlugins();
+				for (Iterator iterator = plugins.iterator(); iterator.hasNext();) {
+					Plugin plugin = (Plugin) iterator.next();
+					if ("org.apache.servicemix.tooling".equals(plugin
+							.getGroupId())
+							&& "jbi-maven-plugin"
+									.equals(plugin.getArtifactId())) {
+						Xpp3Dom o = (Xpp3Dom) plugin.getConfiguration();
+						if (o != null
+								&& o.getChild("serviceUnitAnalyzer") != null) {
+							String clazzName = o
+									.getChild("serviceUnitAnalyzer").getValue();
+							return clazzName;
+						}
 					}
 				}
 			}
@@ -253,8 +273,8 @@ public class GenerateServiceUnitDescriptorMojo extends AbstractJbiMojo {
 					&& (artifact.getDependencyTrail().size() == 2)) {
 				MavenProject project = null;
 				try {
-					project = projectBuilder.buildFromRepository(artifact, remoteRepos,
-							localRepo);
+					project = projectBuilder.buildFromRepository(artifact,
+							remoteRepos, localRepo);
 				} catch (ProjectBuildingException e) {
 					getLog().warn(
 							"Unable to determine packaging for dependency : "
