@@ -118,8 +118,7 @@ public class JbiServiceUnitDescriptorWriter {
 	}
 
 	private void addQNameAttribute(XMLWriter writer, String attributeName,
-			QName attributeValue, Map namespaceMap) {
-		System.out.println("attributeName=" + attributeValue);
+			QName attributeValue, Map namespaceMap) {		
 		if (attributeValue != null) {
 			StringBuffer attributeStringValue = new StringBuffer();
 			attributeStringValue.append(namespaceMap.get(attributeValue

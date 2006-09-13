@@ -115,7 +115,7 @@ public class JbiServiceFileAnalyzer implements ServiceUnitAnalyzer {
 			String prefix = prefixAndLocalPart.substring(0, prefixAndLocalPart
 					.indexOf(':'));
 			String localPart = prefixAndLocalPart.substring(prefixAndLocalPart
-					.indexOf(':'));
+					.indexOf(':')+1);
 			return new QName(childElement.lookupNamespaceURI(prefix), localPart);
 		}
 		return null;
@@ -128,7 +128,7 @@ public class JbiServiceFileAnalyzer implements ServiceUnitAnalyzer {
 			String prefix = prefixAndLocalPart.substring(0, prefixAndLocalPart
 					.indexOf(':'));
 			String localPart = prefixAndLocalPart.substring(prefixAndLocalPart
-					.indexOf(':'));
+					.indexOf(':')+1);
 			return new QName(childElement.lookupNamespaceURI(prefix), localPart);
 		}
 		return null;
