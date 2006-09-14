@@ -24,6 +24,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Dependency;
@@ -33,7 +36,13 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.servicemix.common.packaging.Consumes;
+import org.apache.servicemix.common.packaging.Provides;
 import org.codehaus.plexus.util.FileUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * A Mojo used to build the jbi.xml file for a service unit.
@@ -47,6 +56,30 @@ import org.codehaus.plexus.util.FileUtils;
  * @description generates the jbi.xml deployment descriptor for a service unit
  */
 public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
+
+	private static final String JBI_NAMESPACE = "http://java.sun.com/xml/ns/jbi";
+
+	public class Connection {
+		private Consumes consumes;
+
+		private Provides provides;
+
+		public Consumes getConsumes() {
+			return consumes;
+		}
+
+		public void setConsumes(Consumes consumes) {
+			this.consumes = consumes;
+		}
+
+		public Provides getProvides() {
+			return provides;
+		}
+
+		public void setProvides(Provides provides) {
+			this.provides = provides;
+		}
+	}
 
 	public static final String UTF_8 = "UTF-8";
 
@@ -84,6 +117,14 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 	 * @parameter expression="${project.build.directory}/classes/META-INF"
 	 */
 	private String generatedDescriptorLocation;
+
+	/**
+	 * The location of a file containing the connections elements that can be
+	 * merged into the jbi.xml
+	 * 
+	 * @parameter expression="${basedir}/src/main/resources/jbi-connections.xml"
+	 */
+	private File jbiConnectionsFile;
 
 	/**
 	 * Dependency graph
@@ -180,9 +221,105 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 
 		List orderedServiceUnits = reorderServiceUnits(serviceUnits);
 
+		List connections = getConnections();
+
 		JbiServiceAssemblyDescriptorWriter writer = new JbiServiceAssemblyDescriptorWriter(
 				encoding);
-		writer.write(descriptor, name, description, orderedServiceUnits);
+		writer.write(descriptor, name, description, orderedServiceUnits,
+				connections);
+	}
+
+	/**
+	 * Used to return a list of connections if they have been found in the
+	 * jbiConnectionsFile
+	 * 
+	 * @return A list of connections
+	 * @throws MojoExecutionException
+	 */
+	private List getConnections() throws MojoExecutionException {
+
+		if (jbiConnectionsFile.exists())
+			return parseConnectionsXml();
+		else
+			return new ArrayList();
+	}
+
+	/**
+	 * Parse the jbiConnectionsFile
+	 * 
+	 * @return
+	 * @throws MojoExecutionException
+	 */
+	private List parseConnectionsXml() throws MojoExecutionException {
+		getLog().info(
+				"Picking up connections from "
+						+ jbiConnectionsFile.getAbsolutePath());
+		List connections = new ArrayList();
+		try {
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			dbf.setNamespaceAware(true);
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			Document doc = db.parse(jbiConnectionsFile);
+
+			Node servicesNode = doc.getFirstChild();
+			if (servicesNode instanceof Element) {				
+				if (XmlDescriptorHelper.isElement(servicesNode, JBI_NAMESPACE,
+						"connections")) {
+					// We will process the children
+					Element servicesElement = (Element) servicesNode;
+					NodeList children = servicesElement.getChildNodes();
+					for (int i = 0; i < children.getLength(); i++) {
+						if (XmlDescriptorHelper.isElement(children.item(i),
+								JBI_NAMESPACE, "connection")) {
+							Connection connection = new Connection();
+							NodeList connectionChildren = children.item(i)
+									.getChildNodes();
+							for (int x = 0; x < connectionChildren.getLength(); x++) {
+								if (connectionChildren.item(x) instanceof Element) {
+									Element childElement = (Element) connectionChildren
+											.item(x);
+									if (XmlDescriptorHelper.isElement(childElement,
+											JBI_NAMESPACE,
+											"consumer")) {
+										Consumes newConsumes = new Consumes();
+										newConsumes
+												.setEndpointName(XmlDescriptorHelper
+														.getEndpointName(childElement));
+										newConsumes
+												.setInterfaceName(XmlDescriptorHelper
+														.getInterfaceName(childElement));
+										newConsumes
+												.setServiceName(XmlDescriptorHelper
+														.getServiceName(childElement));
+										connection.setConsumes(newConsumes);
+									} else if (XmlDescriptorHelper.isElement(childElement,
+											JBI_NAMESPACE,
+											"provider")) {
+										Provides newProvides = new Provides();
+										newProvides
+												.setEndpointName(XmlDescriptorHelper
+														.getEndpointName(childElement));
+										newProvides
+												.setInterfaceName(XmlDescriptorHelper
+														.getInterfaceName(childElement));
+										newProvides
+												.setServiceName(XmlDescriptorHelper
+														.getServiceName(childElement));
+										connection.setProvides(newProvides);
+									}
+								}
+							}
+							connections.add(connection);
+						}
+					}
+				}
+			}
+			getLog().info("Found " + connections.size() + " connections");
+			return connections;
+		} catch (Exception e) {
+			throw new MojoExecutionException("Unable to parse "
+					+ jbiConnectionsFile.getAbsolutePath());
+		}
 	}
 
 	/**
@@ -203,8 +340,8 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 		// project.getModel().getDependencies().iterator();
 
 		// For now we will need to reparse the pom without processing
-		Iterator dependencies = getReparsedDependencies();		
-		
+		Iterator dependencies = getReparsedDependencies();
+
 		List orderedServiceUnits = new ArrayList();
 		while (dependencies.hasNext()) {
 			Dependency dependency = (Dependency) dependencies.next();

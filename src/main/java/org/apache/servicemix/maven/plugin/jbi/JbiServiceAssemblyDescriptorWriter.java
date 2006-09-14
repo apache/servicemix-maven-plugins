@@ -20,9 +20,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.servicemix.maven.plugin.jbi.GenerateServiceAssemblyDescriptorMojo.Connection;
 import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
 import org.codehaus.plexus.util.xml.XMLWriter;
 
@@ -30,7 +33,8 @@ import org.codehaus.plexus.util.xml.XMLWriter;
  * Helper that can be used to write the jbi.xml for a service assembly
  * 
  */
-public class JbiServiceAssemblyDescriptorWriter {
+public class JbiServiceAssemblyDescriptorWriter extends
+		AbstractDescriptorWriter {
 
 	private final String encoding;
 
@@ -39,7 +43,7 @@ public class JbiServiceAssemblyDescriptorWriter {
 	}
 
 	public void write(File descriptor, String name, String description,
-			List uris) throws JbiPluginException {
+			List uris, List connections) throws JbiPluginException {
 		FileWriter w;
 		try {
 			w = new FileWriter(descriptor);
@@ -71,10 +75,65 @@ public class JbiServiceAssemblyDescriptorWriter {
 
 		}
 
+		if (!connections.isEmpty()) {
+			writer.startElement("connections");
+
+			Map namespaceMap = buildNamespaceMap(connections);
+			for (Iterator it = connections.iterator(); it.hasNext();) {
+				GenerateServiceAssemblyDescriptorMojo.Connection connection = (GenerateServiceAssemblyDescriptorMojo.Connection) it
+						.next();
+				writeConnection(namespaceMap, writer, connection);
+
+			}
+			writer.endElement();
+		}
+
 		writer.endElement();
 		writer.endElement();
 
 		close(w);
+	}
+
+	private Map buildNamespaceMap(List connections) {
+		List consumes = new ArrayList();
+		List provides = new ArrayList();
+		for (Iterator it = connections.iterator(); it.hasNext();) {
+			GenerateServiceAssemblyDescriptorMojo.Connection connection = (GenerateServiceAssemblyDescriptorMojo.Connection) it
+					.next();
+			consumes.add(connection.getConsumes());
+			provides.add(connection.getProvides());
+		}
+
+		return getNamespaceMap(provides, consumes);
+
+	}
+
+	private void writeConnection(Map namespaceMap, XMLWriter writer,
+			Connection connection) {
+		writer.startElement("connection");
+		if (connection.getConsumes() != null) {
+			writer.startElement("consumer");
+			addQNameAttribute(writer, "interface-name", connection
+					.getConsumes().getInterfaceName(), namespaceMap);
+			addQNameAttribute(writer, "service-name", connection.getConsumes()
+					.getServiceName(), namespaceMap);
+			addStringAttribute(writer, "endpoint-name", connection
+					.getConsumes().getEndpointName());
+			writer.endElement();
+		}
+		if (connection.getProvides() != null) {
+			writer.startElement("provider");
+			addQNameAttribute(writer, "interface-name", connection
+					.getProvides().getInterfaceName(), namespaceMap);
+			addQNameAttribute(writer, "service-name", connection.getProvides()
+					.getServiceName(), namespaceMap);
+			addStringAttribute(writer, "endpoint-name", connection
+					.getProvides().getEndpointName());
+			writer.endElement();
+		}
+
+		writer.endElement();
+
 	}
 
 	private void writeServiceUnit(XMLWriter writer,

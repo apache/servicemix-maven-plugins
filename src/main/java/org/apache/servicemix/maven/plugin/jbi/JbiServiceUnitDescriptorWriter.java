@@ -36,7 +36,7 @@ import org.codehaus.plexus.util.xml.XMLWriter;
  * Helper that is used to write the jbi.xml for a service unit
  * 
  */
-public class JbiServiceUnitDescriptorWriter {
+public class JbiServiceUnitDescriptorWriter extends AbstractDescriptorWriter {
 
 	private final String encoding;
 
@@ -109,59 +109,6 @@ public class JbiServiceUnitDescriptorWriter {
 		writer.endElement();
 
 		close(w);
-	}
-
-	private void addStringAttribute(XMLWriter writer, String attributeName,
-			String attributeValue) {
-		if (attributeValue != null)
-			writer.addAttribute(attributeName, attributeValue);
-	}
-
-	private void addQNameAttribute(XMLWriter writer, String attributeName,
-			QName attributeValue, Map namespaceMap) {		
-		if (attributeValue != null) {
-			StringBuffer attributeStringValue = new StringBuffer();
-			attributeStringValue.append(namespaceMap.get(attributeValue
-					.getNamespaceURI()));
-			attributeStringValue.append(":");
-			attributeStringValue.append(attributeValue.getLocalPart());
-			writer.addAttribute(attributeName, attributeStringValue.toString());
-		}
-
-	}
-
-	private Map getNamespaceMap(List provides, List consumes) {
-		Map namespaceMap = new HashMap();
-		int namespaceCounter = 1;
-		for (Iterator iterator = provides.iterator(); iterator.hasNext();) {
-			Provides providesEntry = (Provides) iterator.next();
-			resolveMapEntry(namespaceMap, providesEntry.getInterfaceName(),
-					namespaceCounter);
-			resolveMapEntry(namespaceMap, providesEntry.getServiceName(),
-					namespaceCounter);
-		}
-
-		for (Iterator iterator = consumes.iterator(); iterator.hasNext();) {
-			Consumes consumesEntry = (Consumes) iterator.next();
-			resolveMapEntry(namespaceMap, consumesEntry.getInterfaceName(),
-					namespaceCounter);
-			resolveMapEntry(namespaceMap, consumesEntry.getServiceName(),
-					namespaceCounter);
-		}
-
-		return namespaceMap;
-	}
-
-	private void resolveMapEntry(Map namespaceMap, QName qname,
-			int namespaceCounter) {
-		if ((qname != null)
-				&& (!namespaceMap.containsKey(qname.getNamespaceURI()))) {
-			if (qname.getPrefix() == null || qname.getPrefix().equals("") ) {
-				namespaceMap.put(qname.getNamespaceURI(), "ns"
-						+ namespaceCounter++);
-			} else
-				namespaceMap.put(qname.getNamespaceURI(), qname.getPrefix());
-		}
 	}
 
 	private void close(Writer closeable) {

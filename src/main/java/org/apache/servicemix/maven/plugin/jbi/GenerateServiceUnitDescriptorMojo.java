@@ -33,6 +33,8 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.servicemix.common.packaging.Consumes;
+import org.apache.servicemix.common.packaging.Provides;
 import org.apache.servicemix.common.packaging.ServiceUnitAnalyzer;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 
@@ -206,11 +208,12 @@ public class GenerateServiceUnitDescriptorMojo extends AbstractJbiMojo {
 				getLog().info(
 						"Created Service Unit Analyzer " + serviceUnitAnalyzer);
 				serviceUnitAnalyzer.init(serviceUnitArtifactsDir);
-				
+
 				// Need to determine whether we are using the dummy analyzer
 				// if so we need to give it the services file
 				if (serviceUnitAnalyzer instanceof JbiServiceFileAnalyzer) {
-					((JbiServiceFileAnalyzer)serviceUnitAnalyzer).setJbiServicesFile(jbiServicesFile);
+					((JbiServiceFileAnalyzer) serviceUnitAnalyzer)
+							.setJbiServicesFile(jbiServicesFile);
 				}
 				consumes.addAll(serviceUnitAnalyzer.getConsumes());
 				provides.addAll(serviceUnitAnalyzer.getProvides());

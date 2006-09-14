@@ -20,7 +20,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -43,6 +42,8 @@ public class JbiServiceFileAnalyzer implements ServiceUnitAnalyzer {
 	List consumes = new ArrayList();
 
 	List provides = new ArrayList();
+
+	private static final String JBI_NAMESPACE = "http://java.sun.com/xml/ns/jbi";
 
 	public List getConsumes() {
 		return consumes;
@@ -69,75 +70,42 @@ public class JbiServiceFileAnalyzer implements ServiceUnitAnalyzer {
 			Document doc = db.parse(jbiServicesFile);
 
 			Node servicesNode = doc.getFirstChild();
-			if (servicesNode instanceof Element) {
-				if (((Element) servicesNode).getNodeName().equals("services")) {
-					// We will process the children
-					Element servicesElement = (Element) servicesNode;
-					NodeList children = servicesElement.getChildNodes();
-					for (int i = 0; i < children.getLength(); i++) {
-						if (children.item(i) instanceof Element) {
-							Element childElement = (Element) children.item(i);
-							if (childElement.getNodeName().equals("consumes")) {
-								Consumes newConsumes = new Consumes();
-								newConsumes
-										.setEndpointName(getEndpointName(childElement));
-								newConsumes
-										.setInterfaceName(getInterfaceName(childElement));
-								newConsumes
-										.setServiceName(getServiceName(childElement));
-								consumes.add(newConsumes);
-							} else if (childElement.getNodeName().equals(
-									"provides")) {
-								Provides newProvides = new Provides();
-								newProvides
-										.setEndpointName(getEndpointName(childElement));
-								newProvides
-										.setInterfaceName(getInterfaceName(childElement));
-								newProvides
-										.setServiceName(getServiceName(childElement));
-								provides.add(newProvides);
-							}
+			if (XmlDescriptorHelper.isElement(servicesNode, JBI_NAMESPACE,
+					"services")) {
+				// We will process the children
+				Element servicesElement = (Element) servicesNode;
+				NodeList children = servicesElement.getChildNodes();
+				for (int i = 0; i < children.getLength(); i++) {
+					if (children.item(i) instanceof Element) {
+						Element childElement = (Element) children.item(i);
+						if (XmlDescriptorHelper.isElement(childElement,
+								JBI_NAMESPACE, "consumes")) {
+							Consumes newConsumes = new Consumes();
+							newConsumes.setEndpointName(XmlDescriptorHelper
+									.getEndpointName(childElement));
+							newConsumes.setInterfaceName(XmlDescriptorHelper
+									.getInterfaceName(childElement));
+							newConsumes.setServiceName(XmlDescriptorHelper
+									.getServiceName(childElement));
+							consumes.add(newConsumes);
+						} else if (XmlDescriptorHelper.isElement(childElement,
+								JBI_NAMESPACE, "provides")) {
+							Provides newProvides = new Provides();
+							newProvides.setEndpointName(XmlDescriptorHelper
+									.getEndpointName(childElement));
+							newProvides.setInterfaceName(XmlDescriptorHelper
+									.getInterfaceName(childElement));
+							newProvides.setServiceName(XmlDescriptorHelper
+									.getServiceName(childElement));
+							provides.add(newProvides);
 						}
 					}
 				}
 			}
+
 		} catch (Exception e) {
 			throw new MojoExecutionException("Unable to parse "
 					+ jbiServicesFile.getAbsolutePath());
 		}
-
-	}
-
-	private QName getServiceName(Element childElement) {
-		if (childElement.hasAttribute("service-name")) {
-			String prefixAndLocalPart = childElement
-					.getAttribute("service-name");
-			String prefix = prefixAndLocalPart.substring(0, prefixAndLocalPart
-					.indexOf(':'));
-			String localPart = prefixAndLocalPart.substring(prefixAndLocalPart
-					.indexOf(':')+1);
-			return new QName(childElement.lookupNamespaceURI(prefix), localPart);
-		}
-		return null;
-	}
-
-	private QName getInterfaceName(Element childElement) {
-		if (childElement.hasAttribute("interface-name")) {
-			String prefixAndLocalPart = childElement
-					.getAttribute("interface-name");
-			String prefix = prefixAndLocalPart.substring(0, prefixAndLocalPart
-					.indexOf(':'));
-			String localPart = prefixAndLocalPart.substring(prefixAndLocalPart
-					.indexOf(':')+1);
-			return new QName(childElement.lookupNamespaceURI(prefix), localPart);
-		}
-		return null;
-	}
-
-	private String getEndpointName(Element childElement) {
-		if (childElement.hasAttribute("endpoint-name")) {
-			return childElement.getAttribute("endpoint-name");
-		}
-		return null;
 	}
 }
