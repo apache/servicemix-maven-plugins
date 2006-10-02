@@ -45,7 +45,7 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
  * @version $Id: GenerateComponentDescriptorMojo 314956 2005-10-12 16:27:15Z
  *          brett $
  * @goal generate-jbi-service-unit-descriptor
- * @phase generate-resources
+ * @phase process-classes
  * @requiresDependencyResolution runtime
  * @description generates the jbi.xml deployment descriptor for a service unit
  */
