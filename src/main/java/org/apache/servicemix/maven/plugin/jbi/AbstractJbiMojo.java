@@ -17,6 +17,9 @@
 package org.apache.servicemix.maven.plugin.jbi;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,6 +40,7 @@ import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.MavenProjectHelper;
@@ -250,4 +254,42 @@ public abstract class AbstractJbiMojo extends AbstractMojo {
 		return map;
 	}
 
+	/**
+	 * Set up a classloader for the execution of the main class.
+	 * 
+	 * @return
+	 * @throws MojoExecutionException
+	 */
+	protected URLClassLoader getClassLoader() throws MojoExecutionException {
+		try {
+			Set urls = new HashSet();
+
+			URL mainClasses = new File(project.getBuild().getOutputDirectory())
+					.toURL();
+			getLog().debug("Adding to classpath : " + mainClasses);
+			urls.add(mainClasses);
+
+			URL testClasses = new File(project.getBuild()
+					.getTestOutputDirectory()).toURL();
+			getLog().debug("Adding to classpath : " + testClasses);
+			urls.add(testClasses);
+
+			Set dependencies = project.getArtifacts();
+			Iterator iter = dependencies.iterator();
+			while (iter.hasNext()) {
+				Artifact classPathElement = (Artifact) iter.next();
+				getLog().debug(
+						"Adding artifact: " + classPathElement.getFile()
+								+ " to classpath");
+				urls.add(classPathElement.getFile().toURL());
+			}
+			URLClassLoader appClassloader = new URLClassLoader((URL[]) urls
+					.toArray(new URL[urls.size()]), this.getClass()
+					.getClassLoader());
+			return appClassloader;
+		} catch (MalformedURLException e) {
+			throw new MojoExecutionException(
+					"Error during setting up classpath", e);
+		}
+	}
 }

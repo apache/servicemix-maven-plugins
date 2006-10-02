@@ -18,6 +18,7 @@ package org.apache.servicemix.maven.plugin.jbi;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -66,7 +67,6 @@ public class GenerateComponentDescriptorMojo extends AbstractJbiMojo {
 	 * The bootstrap class name.
 	 * 
 	 * @parameter
-	 * @required
 	 */
 	private String bootstrap;
 
@@ -84,6 +84,13 @@ public class GenerateComponentDescriptorMojo extends AbstractJbiMojo {
 	 * @parameter expression="${project.artifactId}"
 	 */
 	private String name;
+
+	/**
+	 * The destination of the default bootstrap.
+	 * 
+	 * @parameter expression="${project.build.directory}/classes/org/apache/servicemix/common/DefaultBootstrap.class"
+	 */
+	private File defaultBootstrapFile;
 
 	/**
 	 * The component description.
@@ -106,19 +113,19 @@ public class GenerateComponentDescriptorMojo extends AbstractJbiMojo {
 	 */
 	private String generatedDescriptorLocation;
 
-    /**
-     * The component class loader delegation
-     * 
-     * @parameter expression="parent-first"
-     */
-    private String componentClassLoaderDelegation;
+	/**
+	 * The component class loader delegation
+	 * 
+	 * @parameter expression="parent-first"
+	 */
+	private String componentClassLoaderDelegation;
 
-    /**
-     * The bootstrap class loader delegation
-     * 
-     * @parameter expression="parent-first"
-     */
-    private String bootstrapClassLoaderDelegation;
+	/**
+	 * The bootstrap class loader delegation
+	 * 
+	 * @parameter expression="parent-first"
+	 */
+	private String bootstrapClassLoaderDelegation;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
@@ -141,6 +148,9 @@ public class GenerateComponentDescriptorMojo extends AbstractJbiMojo {
 			return;
 		}
 
+		if (bootstrap == null)
+			injectBootStrap();
+
 		// Generate jbi descriptor and copy it to the build directory
 		getLog().info("Generating jbi.xml");
 		try {
@@ -155,6 +165,28 @@ public class GenerateComponentDescriptorMojo extends AbstractJbiMojo {
 		} catch (IOException e) {
 			throw new MojoExecutionException(
 					"Unable to copy jbi.xml to final destination", e);
+		}
+	}
+
+	/**
+	 * Helper method used to inject the BaseBootstrap from servicemix-commons
+	 * into the component this allows to you bypass actually having to create a
+	 * bootstrap
+	 * 
+	 * @throws MojoExecutionException
+	 * 
+	 */
+	private void injectBootStrap() throws MojoExecutionException {
+
+		try {
+			URL defaultBootStrap = getClassLoader().getResource(
+					"org/apache/servicemix/common/DefaultBootstrap.class");
+			FileUtils.copyURLToFile(defaultBootStrap, defaultBootstrapFile);
+			bootstrap = "org.apache.servicemix.common.DefaultBootstrap";
+		} catch (IOException e) {
+			throw new MojoExecutionException(
+					"Unable to copy DefaultBootstrap.class to "
+							+ defaultBootstrapFile.getAbsolutePath(), e);
 		}
 	}
 
@@ -237,7 +269,7 @@ public class GenerateComponentDescriptorMojo extends AbstractJbiMojo {
 		JbiComponentDescriptorWriter writer = new JbiComponentDescriptorWriter(
 				encoding);
 		writer.write(descriptor, component, bootstrap, type, name, description,
-                componentClassLoaderDelegation, bootstrapClassLoaderDelegation,
+				componentClassLoaderDelegation, bootstrapClassLoaderDelegation,
 				uris);
 	}
 }

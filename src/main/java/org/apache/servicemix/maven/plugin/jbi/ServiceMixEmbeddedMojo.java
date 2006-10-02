@@ -96,39 +96,4 @@ public class ServiceMixEmbeddedMojo extends AbstractJbiMojo {
         }
 	}
 
-    /**
-     * Set up a classloader for the execution of the
-     * main class.
-     *
-     * @return
-     * @throws MojoExecutionException
-     */
-    private URLClassLoader getClassLoader() throws MojoExecutionException {
-        try {
-            Set urls = new HashSet();
-
-            URL mainClasses = new File(project.getBuild().getOutputDirectory()).toURL();
-            getLog().debug("Adding to classpath : " + mainClasses);
-            urls.add(mainClasses);
-
-            URL testClasses = new File(project.getBuild().getTestOutputDirectory()).toURL();
-            getLog().debug("Adding to classpath : " + testClasses);
-            urls.add(testClasses);
-
-            Set dependencies = project.getArtifacts();
-            Iterator iter = dependencies.iterator();
-            while (iter.hasNext()) {
-                Artifact classPathElement = (Artifact) iter.next();
-                getLog().debug("Adding artifact: " + classPathElement.getArtifactId() + " to classpath");
-                urls.add(classPathElement.getFile().toURL());
-            }
-            URLClassLoader appClassloader = new URLClassLoader(
-                            (URL[]) urls.toArray(new URL[urls.size()]),
-                            this.getClass().getClassLoader());
-            return appClassloader;
-        } catch (MalformedURLException e) {
-            throw new MojoExecutionException("Error during setting up classpath", e);
-        }
-    }
-
 }
