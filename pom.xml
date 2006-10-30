@@ -32,7 +32,7 @@
 
     <artifactId>jbi-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
-    <name>ServiceMix :: Maven2 :: JBI Plugin</name>
+    <name>ServiceMix :: Maven2 JBI Plugin</name>
     <dependencies>
         <dependency>
             <groupId>org.apache.maven</groupId>
