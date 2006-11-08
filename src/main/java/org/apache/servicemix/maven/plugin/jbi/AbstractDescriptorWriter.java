@@ -35,24 +35,24 @@ public class AbstractDescriptorWriter {
 		int namespaceCounter = 1;
 		for (Iterator iterator = provides.iterator(); iterator.hasNext();) {
 			Provides providesEntry = (Provides) iterator.next();
-			resolveMapEntry(namespaceMap, providesEntry.getInterfaceName(),
+			namespaceCounter = resolveMapEntry(namespaceMap, providesEntry.getInterfaceName(),
 					namespaceCounter);
-			resolveMapEntry(namespaceMap, providesEntry.getServiceName(),
+			namespaceCounter = resolveMapEntry(namespaceMap, providesEntry.getServiceName(),
 					namespaceCounter);
 		}
 	
 		for (Iterator iterator = consumes.iterator(); iterator.hasNext();) {
 			Consumes consumesEntry = (Consumes) iterator.next();
-			resolveMapEntry(namespaceMap, consumesEntry.getInterfaceName(),
+			namespaceCounter = resolveMapEntry(namespaceMap, consumesEntry.getInterfaceName(),
 					namespaceCounter);
-			resolveMapEntry(namespaceMap, consumesEntry.getServiceName(),
+			namespaceCounter = resolveMapEntry(namespaceMap, consumesEntry.getServiceName(),
 					namespaceCounter);
 		}
 	
 		return namespaceMap;
 	}
 
-	private void resolveMapEntry(Map namespaceMap, QName qname, int namespaceCounter) {
+	private int resolveMapEntry(Map namespaceMap, QName qname, int namespaceCounter) {
 		if ((qname != null)
 				&& (!namespaceMap.containsKey(qname.getNamespaceURI()))) {
 			if (qname.getPrefix() == null || qname.getPrefix().equals("") ) {
@@ -61,6 +61,7 @@ public class AbstractDescriptorWriter {
 			} else
 				namespaceMap.put(qname.getNamespaceURI(), qname.getPrefix());
 		}
+		return namespaceCounter;
 	}
 
 }
