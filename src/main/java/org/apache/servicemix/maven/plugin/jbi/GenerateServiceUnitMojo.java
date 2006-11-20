@@ -178,7 +178,7 @@ public class GenerateServiceUnitMojo extends AbstractJbiMojo {
 					removeBranch(listener, artifact);
 				} else if ("jbi-shared-library".equals(type)) {
 					removeBranch(listener, artifact);
-				}  else if ("jar".equals(type)) {
+				}  else {
 					includes.add(artifact);
 				}
 			}
