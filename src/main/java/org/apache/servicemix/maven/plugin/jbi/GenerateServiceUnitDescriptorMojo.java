@@ -17,11 +17,8 @@
 package org.apache.servicemix.maven.plugin.jbi;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -33,8 +30,6 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
-import org.apache.servicemix.common.packaging.Consumes;
-import org.apache.servicemix.common.packaging.Provides;
 import org.apache.servicemix.common.packaging.ServiceUnitAnalyzer;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 

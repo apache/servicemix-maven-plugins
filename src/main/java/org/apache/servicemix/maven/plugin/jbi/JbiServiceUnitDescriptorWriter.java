@@ -20,12 +20,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.namespace.QName;
 
 import org.apache.servicemix.common.packaging.Consumes;
 import org.apache.servicemix.common.packaging.Provides;
