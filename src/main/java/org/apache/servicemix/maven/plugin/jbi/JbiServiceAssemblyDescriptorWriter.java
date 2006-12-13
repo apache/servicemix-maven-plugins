@@ -143,11 +143,13 @@ public class JbiServiceAssemblyDescriptorWriter extends
 		writer.startElement("name");
 		writer.writeText(serviceUnitInfo.getName());
 		writer.endElement();
-		if (serviceUnitInfo.getDescription() != null) {
-			writer.startElement("description");
-			writer.writeText(serviceUnitInfo.getDescription());
-			writer.endElement();
-		}
+		writer.startElement("description");
+        if (serviceUnitInfo.getDescription() != null) {
+            writer.writeText(serviceUnitInfo.getDescription());
+        } else {
+            writer.writeText(serviceUnitInfo.getName());
+        }
+		writer.endElement();
 		writer.endElement();
 
 		writer.startElement("target");
