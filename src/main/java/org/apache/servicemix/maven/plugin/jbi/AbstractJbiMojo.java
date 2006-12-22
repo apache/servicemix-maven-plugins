@@ -104,10 +104,7 @@ public abstract class AbstractJbiMojo extends AbstractMojo {
 	 */
 	protected ArtifactResolver resolver;
 
-	/**
-	 * @component
-	 */
-	protected ArtifactCollector collector;
+    protected ArtifactCollector collector = new GraphArtifactCollector();
 
 	/**
 	 * @component
@@ -129,8 +126,11 @@ public abstract class AbstractJbiMojo extends AbstractMojo {
 	protected void removeBranch(JbiResolutionListener listener,
 			Artifact artifact) {
 		Node n = listener.getNode(artifact);
-		if (n != null && n.getParent() != null) {
-			n.getParent().getChildren().remove(n);
+        if (n != null) {
+            for (Iterator it = n.getParents().iterator(); it.hasNext();) {
+                Node parent = (Node) it.next();
+                parent.getChildren().remove(n);
+            }
 		}
 	}
 
@@ -209,6 +209,7 @@ public abstract class AbstractJbiMojo extends AbstractMojo {
 					e);
 		}
 		JbiResolutionListener listener = new JbiResolutionListener();
+        listener.setLog(getLog());
 		try {
 			collector.collect(project.getDependencyArtifacts(), project
 					.getArtifact(), managedVersions, localRepo, remoteRepos,
@@ -219,6 +220,12 @@ public abstract class AbstractJbiMojo extends AbstractMojo {
 					"An error occurred while resolving project dependencies.",
 					e);
 		}
+        if (getLog().isDebugEnabled()) {
+            getLog().debug("Dependency graph");
+            getLog().debug("================");
+            print(listener.getRootNode(), "");
+            getLog().debug("================");
+        }
 		return listener;
 	}
 

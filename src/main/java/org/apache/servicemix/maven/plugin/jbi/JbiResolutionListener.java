@@ -19,12 +19,16 @@ package org.apache.servicemix.maven.plugin.jbi;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.ResolutionListener;
 import org.apache.maven.artifact.versioning.VersionRange;
+import org.apache.maven.plugin.logging.Log;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 /**
@@ -38,75 +42,87 @@ public class JbiResolutionListener
     private Map artifacts = new HashMap();
 
     private Node rootNode;
+    
+    private Log log;
+    
+    public void setLog(Log log) {
+        this.log = log;
+    }
+    
+    public Log getLog() {
+        return log;
+    }
 
     public void testArtifact( Artifact artifact )
     {
+        //getLog().debug("testArtifact: " + artifact);
         // intentionally blank
     }
 
     public void startProcessChildren( Artifact artifact )
     {
+        //getLog().debug("startProcessChildren: " + artifact);
         Node node = (Node) artifacts.get( artifact.getDependencyConflictId() );
         if ( parents.isEmpty() )
         {
             rootNode = node;
         }
-
         parents.push( node );
     }
 
     public void endProcessChildren( Artifact artifact )
     {
+        //getLog().debug("endProcessChildren: " + artifact);
         Node check = (Node) parents.pop();
         assert artifact.equals( check.artifact );
     }
 
     public void omitForNearer( Artifact omitted, Artifact kept )
     {
+        //getLog().debug("omitForNearer: omitted=" + omitted + ", kept=" + kept);
         assert omitted.getDependencyConflictId().equals( kept.getDependencyConflictId() );
-
-        Node prev = (Node) artifacts.get( omitted.getDependencyConflictId() );
-        if ( prev != null )
-        {
-            if ( prev.parent != null )
-            {
-                prev.parent.children.remove( prev );
-            }
-            artifacts.remove( omitted.getDependencyConflictId() );
-        }
-
-        includeArtifact( kept );
+        Node node = (Node) artifacts.get( omitted.getDependencyConflictId() );
+        assert node != null;
+        node.artifact = kept;
     }
 
     public void omitForCycle( Artifact artifact )
     {
+        //getLog().debug("omitForCycle: " + artifact);
         // intentionally blank
     }
 
     public void includeArtifact( Artifact artifact )
     {
-        if ( artifacts.containsKey( artifact.getDependencyConflictId() ) )
-        {
-            Node prev = (Node) artifacts.get( artifact.getDependencyConflictId() );
-            if ( prev.parent != null )
-            {
-                prev.parent.children.remove( prev );
-            }
-            artifacts.remove( artifact.getDependencyConflictId() );
+        //getLog().debug("includeArtifact: " + artifact);
+        Node node = (Node) artifacts.get( artifact.getDependencyConflictId() );
+        if (node == null) {
+            node = new Node();
+            artifacts.put( artifact.getDependencyConflictId(), node );
         }
-
-        Node node = new Node();
         node.artifact = artifact;
         if ( !parents.isEmpty() )
         {
-            node.parent = (Node) parents.peek();
-            node.parent.children.add( node );
+            Node parent = (Node) parents.peek();
+            parent.children.add( node );
+            node.parents.add( parent );
         }
-        artifacts.put( artifact.getDependencyConflictId(), node );
+        if (rootNode != null) {
+            //print(rootNode, "");
+        }
+    }
+    
+    protected void print(Node rootNode, String string) {
+        //getLog().debug(string + rootNode.getArtifact());
+        for (Iterator iter = rootNode.getChildren().iterator(); iter.hasNext();) {
+            Node n = (Node) iter.next();
+            print(n, string + "  ");
+        }
     }
 
     public void updateScope( Artifact artifact, String scope )
     {
+        //getLog().debug("updateScope: " + artifact);
         Node node = (Node) artifacts.get( artifact.getDependencyConflictId() );
 
         node.artifact.setScope( scope );
@@ -114,8 +130,8 @@ public class JbiResolutionListener
 
     public void manageArtifact( Artifact artifact, Artifact replacement )
     {
+        //getLog().debug("manageArtifact: artifact=" + artifact + ", replacement=" + replacement);
         Node node = (Node) artifacts.get( artifact.getDependencyConflictId() );
-
         if ( node != null )
         {
             if ( replacement.getVersion() != null )
@@ -131,16 +147,22 @@ public class JbiResolutionListener
 
     public void updateScopeCurrentPom( Artifact artifact, String key )
     {
+        
+        getLog().debug("updateScopeCurrentPom: " + artifact);
         // intentionally blank
     }
 
     public void selectVersionFromRange( Artifact artifact )
     {
+        
+        getLog().debug("selectVersionFromRange: " + artifact);
         // intentionally blank
     }
 
     public void restrictRange( Artifact artifact, Artifact artifact1, VersionRange versionRange )
     {
+        
+        getLog().debug("restrictRange: " + artifact);
         // intentionally blank
     }
 
@@ -155,13 +177,11 @@ public class JbiResolutionListener
 
     static class Node
     {
-        private Node parent;
-
-        private List children = new ArrayList();
-
+        private Set children = new HashSet();
+        private Set parents = new HashSet();
         private Artifact artifact;
 
-        public List getChildren()
+        public Set getChildren()
         {
             return children;
         }
@@ -170,9 +190,9 @@ public class JbiResolutionListener
         {
             return artifact;
         }
-        
-        public Node getParent() {
-            return parent;
+
+        public Set getParents() {
+            return parents;
         }
     }
 
