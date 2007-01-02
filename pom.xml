@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
 <!--
 
     Licensed to the Apache Software Foundation (ASF) under one or more
@@ -15,21 +17,75 @@
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
-
 -->
-<project
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
 
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.apache.servicemix</groupId>
-    <artifactId>servicemix</artifactId>
-    <version>3.1-incubating-SNAPSHOT</version>
-  </parent>
+    <parent>
+        <groupId>org.apache.servicemix</groupId>
+        <artifactId>servicemix</artifactId>
+        <version>3.1-incubating-SNAPSHOT</version>
+    </parent>
 
-  <artifactId>build</artifactId>
-  <name>Servicemix :: Build</name>
+    <artifactId>build</artifactId>
+    <packaging>maven-plugin</packaging>
+    <name>Servicemix :: Build</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-plugin-api</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-project</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-archiver</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-utils</artifactId>
+            <version>1.0.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-script-ant</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.1</version>
+                <executions>
+                    <execution>
+                        <id>legal-files</id>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <tasks>
+                                <copy file="${basedir}/../LICENSE" tofile="${basedir}/target/legal/META-INF/LICENSE" />
+                                <copy file="${basedir}/../NOTICE" tofile="${basedir}/target/legal/META-INF/NOTICE" />
+                                <copy file="${basedir}/../DISCLAIMER" tofile="${basedir}/target/legal/META-INF/DISCLAIMER" />
+                                <copy file="${basedir}/../LICENSE" tofile="${basedir}/target/classes/META-INF/LICENSE" />
+                                <copy file="${basedir}/../NOTICE" tofile="${basedir}/target/classes/META-INF/NOTICE" />
+                                <copy file="${basedir}/../DISCLAIMER" tofile="${basedir}/target/classes/META-INF/DISCLAIMER" />
+                            </tasks>
+                            <sourceRoot>${basedir}/target/legal</sourceRoot>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
