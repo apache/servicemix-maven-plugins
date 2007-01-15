@@ -41,7 +41,7 @@ public class JbiServiceUnitDescriptorWriter extends AbstractDescriptorWriter {
 		this.encoding = encoding;
 	}
 
-	public void write(File descriptor, String name, String description,
+	public void write(File descriptor, boolean bc, String name, String description,
 			List uris, List consumes, List provides) throws JbiPluginException {
 		FileWriter w;
 		try {
@@ -57,6 +57,7 @@ public class JbiServiceUnitDescriptorWriter extends AbstractDescriptorWriter {
 		writer.addAttribute("version", "1.0");
 
 		writer.startElement("services");
+		writer.addAttribute("binding-component", bc ? "true" : "false");
 
 		// We need to get all the namespaces into a hashmap so we
 		// can get the QName output correctly

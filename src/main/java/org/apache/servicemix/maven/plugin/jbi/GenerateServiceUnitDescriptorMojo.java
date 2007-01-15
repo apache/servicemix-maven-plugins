@@ -179,7 +179,9 @@ public class GenerateServiceUnitDescriptorMojo extends AbstractJbiMojo {
 					"generated : consumes " + consumes + " provides "
 							+ provides);
 
-			writer.write(descriptor, name, description, uris, consumes,
+			boolean bc = false;
+			// TODO: find if the component target is a BC ?
+			writer.write(descriptor, bc, name, description, uris, consumes,
 					provides);
 		} catch (Exception e) {
 			throw new JbiPluginException(
