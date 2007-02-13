@@ -18,10 +18,15 @@ package org.apache.servicemix.maven.plugin.jbi;
 
 import javax.xml.namespace.QName;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class XmlDescriptorHelper {
+
+        private static final Log log = LogFactory.getLog(XmlDescriptorHelper.class);
 
 	public static QName getServiceName(Element childElement) {
 		if (childElement.hasAttribute("service-name")) {
@@ -53,17 +58,17 @@ public class XmlDescriptorHelper {
 			String localPart) {
 		if (node instanceof Element) {
 			Element element = (Element) node;
-			System.out.println("Got Element nodeName:" + element.getNodeName()
+			log.debug("Got Element nodeName:" + element.getNodeName()
 					+ " namespaceUri:" + element.getNamespaceURI()
 					+ " localName:" + element.getLocalName());
 			if (localPart.equals(element.getNodeName()))
 				return true;
 			else {
 				// Compare the namespace URI and localname
-				System.out.println(namespaceUrl + "="
+				log.debug(namespaceUrl + "="
 						+ element.getNamespaceURI() + " is "
 						+ namespaceUrl.equals(element.getNamespaceURI()));
-				System.out.println(localPart + "="
+				log.debug(localPart + "="
 						+ element.getLocalName() + " is "
 						+ localPart.equals(element.getLocalName()));
 				if ((namespaceUrl.equals(element.getNamespaceURI()))

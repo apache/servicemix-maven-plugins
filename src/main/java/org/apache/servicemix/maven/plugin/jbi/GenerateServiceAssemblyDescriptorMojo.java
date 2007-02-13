@@ -350,7 +350,7 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 						.next();
 				if (dependency.getArtifactId()
 						.equals(serviceUnitInfo.getName())) {
-					System.out.println("Adding "
+					getLog().debug("Adding "
 							+ serviceUnitInfo.getFilename());
 					orderedServiceUnits.add(serviceUnitInfo);
 				}
