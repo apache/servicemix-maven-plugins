@@ -17,8 +17,8 @@
 package org.apache.servicemix.maven.plugin.jbi;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -44,9 +44,9 @@ public class JbiServiceAssemblyDescriptorWriter extends
 
 	public void write(File descriptor, String name, String description,
 			List uris, List connections) throws JbiPluginException {
-		FileWriter w;
+        PrintWriter w;
 		try {
-			w = new FileWriter(descriptor);
+			w = new PrintWriter(descriptor, encoding);
 		} catch (IOException ex) {
 			throw new JbiPluginException("Exception while opening file["
 					+ descriptor.getAbsolutePath() + "]", ex);
