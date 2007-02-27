@@ -35,8 +35,10 @@ import org.w3c.dom.NodeList;
 
 public class JbiServiceUnitDescriptorWriterTest extends TestCase {
 
-	private static final String ENCODING_UTF8 = "UTF-8";
+    private static final String ENCODING_UTF8 = "UTF-8";
+    private static final String ENCODING_UTF16 = "UTF-16";
 	private static final String ENCODING_ISO88591 = "ISO-8859-1";
+    private static final String ENCODING_ISO88592 = "ISO-8859-2";
 	private static final String JBI_NAMESPACE = "http://java.sun.com/xml/ns/jbi";
 
 	//TODO: how to fetch the build directory ('./target') from Maven property?
@@ -53,23 +55,43 @@ public class JbiServiceUnitDescriptorWriterTest extends TestCase {
 		}
 	}
 
-	public void testUTF8EncodingWrite()
-			throws Exception {
-		File descriptor = new File(outputDir, "jbi-su-UTF8.xml");
+    public void testUTF8EncodingWrite()
+            throws Exception {
+        File descriptor = new File(outputDir, "jbi-su-UTF8.xml");
+        
+        String xmlEncoding = ENCODING_UTF8;
+        writeDescriptor(descriptor, xmlEncoding);
+        verifyDescriptor(descriptor, xmlEncoding);
+    }
 
-		String xmlEncoding = ENCODING_UTF8;
-		writeDescriptor(descriptor, xmlEncoding);
-		verifyDescriptor(descriptor, xmlEncoding);
-	}
+    public void testUTF16EncodingWrite()
+            throws Exception {
+        File descriptor = new File(outputDir, "jbi-su-UTF16.xml");
+        
+        String xmlEncoding = ENCODING_UTF16;
+        writeDescriptor(descriptor, xmlEncoding);
+        verifyDescriptor(descriptor, xmlEncoding);
+    }
 
-	public void testISO88591EncodingWrite()
-			throws Exception {
-		File descriptor = new File(outputDir, "jbi-su-ISO88591.xml");
+    /*
+    public void testISO88591EncodingWrite()
+            throws Exception {
+        File descriptor = new File(outputDir, "jbi-su-ISO88591.xml");
+        
+        String xmlEncoding = ENCODING_ISO88591;
+        writeDescriptor(descriptor, xmlEncoding);
+        verifyDescriptor(descriptor, xmlEncoding);
+    }
 
-		String xmlEncoding = ENCODING_ISO88591;
-		writeDescriptor(descriptor, xmlEncoding);
-		verifyDescriptor(descriptor, xmlEncoding);
-	}
+    public void testISO88592EncodingWrite()
+            throws Exception {
+        File descriptor = new File(outputDir, "jbi-su-ISO88592.xml");
+        
+        String xmlEncoding = ENCODING_ISO88592;
+        writeDescriptor(descriptor, xmlEncoding);
+        verifyDescriptor(descriptor, xmlEncoding);
+    }
+    */
 
 	private void writeDescriptor(File descriptor, String encoding)
 			throws JbiPluginException {
