@@ -180,14 +180,14 @@ public class WsdlgenMojo
         }
 
         URLClassLoader cl = new URLClassLoader(urls, parent);
+        ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(cl);
 
         // displayClasspath(cl, "using classpath");
         // load("javax.servlet.ServletException", cl);
         // load("org.codehaus.xfire.transport.http.XFireServletController", cl);
 
         final WsdlGenTask task = new WsdlGenTask();
-
-        task.setOverridingContextClassLoader(cl);
 
         task.setProject( antProject );
 
@@ -216,6 +216,7 @@ public class WsdlgenMojo
 
             getLog().debug( "generated " + task.getGeneratedFile());
         }
+        Thread.currentThread().setContextClassLoader(oldCl);
 
         getLog().debug( "Adding outputDirectory as Project's resource.");
         Resource resource = new Resource();
