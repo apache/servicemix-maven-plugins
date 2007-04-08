@@ -25,4 +25,6 @@
               files=".+[\\\/]generated[\\\/].+\.java" />
     <suppress checks="IllegalType"
               files=".+[\\\/]JbiInvokeAction\.java" />
+    <suppress checks="ThrowsCount"
+              files=".+[\\\/]wsn[\\\/].+" />
 </suppressions>
