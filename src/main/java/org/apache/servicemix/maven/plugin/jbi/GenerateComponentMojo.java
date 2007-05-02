@@ -61,7 +61,15 @@ public class GenerateComponentMojo extends AbstractJbiMojo {
 	/**
 	 * The name of the generated war.
 	 * 
-	 * @parameter expression="${project.artifactId}-${project.version}-installer.zip"
+	 * @parameter expression="${project.build.finalName}"
+	 * @required
+	 */
+	private String finalName;
+
+	/**
+	 * The name of the generated war.
+	 * 
+	 * @parameter expression="${project.build.finalName}-installer.zip"
 	 * @required
 	 */
 	private String installerName;
@@ -153,9 +161,7 @@ public class GenerateComponentMojo extends AbstractJbiMojo {
 			}
 		}
 
-		File projectArtifact = new File(outputDirectory, project
-				.getArtifactId()
-				+ "-" + project.getVersion() + ".jar");
+		File projectArtifact = new File(outputDirectory, finalName + ".jar");
 		try {
 			FileUtils.copyFileToDirectory(projectArtifact, new File(
 					workDirectory, LIB_DIRECTORY));
