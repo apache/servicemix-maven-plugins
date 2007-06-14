@@ -27,7 +27,7 @@ public abstract class AbstractDeployableMojo extends AbstractJbiMojo {
 	private String serverProtocol;
 
 	/**
-	 * @parameter default-value="localhost"
+	 * @parameter default-value="localhost" expression="${host}"
 	 */
 	private String host;
 
@@ -42,7 +42,7 @@ public abstract class AbstractDeployableMojo extends AbstractJbiMojo {
 	private String jmxDomainName;
 
 	/**
-	 * @parameter default-value="1099"
+	 * @parameter default-value="1099" expression="${port}"
 	 */
 	protected String port;
 
@@ -52,12 +52,12 @@ public abstract class AbstractDeployableMojo extends AbstractJbiMojo {
 	private String jndiPath;
 
 	/**
-	 * @parameter default-value="smx"
+	 * @parameter default-value="smx" expression="${username}"
 	 */
 	private String username;
 
 	/**
-	 * @parameter default-value="smx"
+	 * @parameter default-value="smx" expression="${password}"
 	 */
 	private String password;
 
