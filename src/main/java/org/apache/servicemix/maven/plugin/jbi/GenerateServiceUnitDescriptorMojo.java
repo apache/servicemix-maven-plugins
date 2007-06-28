@@ -63,6 +63,13 @@ public class GenerateServiceUnitDescriptorMojo extends AbstractJbiMojo {
     private Boolean useServiceUnitAnalyzer = Boolean.TRUE;
 
     /**
+     * Specifies a serviceUnitAnalyzer class name (optional)
+     * 
+     * @parameter
+     */
+    private String serviceUnitAnalyzerClass;
+
+    /**
      * Fail if the descriptor generation fails
      * 
      * @parameter
@@ -211,6 +218,9 @@ public class GenerateServiceUnitDescriptorMojo extends AbstractJbiMojo {
             return JbiServiceFileAnalyzer.class.getCanonicalName();
         }
         if (useServiceUnitAnalyzer.booleanValue()) {
+            if (serviceUnitAnalyzerClass != null) {
+                return serviceUnitAnalyzerClass;
+            }
             MavenProject project = getComponentProject();
             if (project != null) {
                 List plugins = project.getBuild().getPlugins();
