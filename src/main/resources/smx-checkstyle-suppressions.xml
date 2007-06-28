@@ -27,4 +27,6 @@
               files=".+[\\\/]JbiInvokeAction\.java" />
     <suppress checks="ThrowsCount"
               files=".+[\\\/]wsn[\\\/].+" />
+    <suppress checks="ParameterNumber" 
+              files="(GraphArtifactCollector\.java)|(JbiComponentDescriptorWriter.java)" />
 </suppressions>
