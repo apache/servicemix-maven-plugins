@@ -61,6 +61,13 @@ public class GenerateServiceUnitDescriptorMojo extends AbstractJbiMojo {
 	 * @parameter
 	 */
 	private Boolean useServiceUnitAnalyzer = Boolean.TRUE;
+        
+        /**
+         * Fail if the descriptor generation fails
+         * 
+         * @parameter
+         */
+        private Boolean failOnJbiDescriptorFailure = Boolean.FALSE;
 
 	/**
 	 * Single directory for extra files to include in the JBI component.
@@ -128,7 +135,11 @@ public class GenerateServiceUnitDescriptorMojo extends AbstractJbiMojo {
 		try {
 			generateJbiDescriptor();
 		} catch (JbiPluginException e) {
-			throw new MojoExecutionException("Failed to generate jbi.xml", e);
+                    if (failOnJbiDescriptorFailure.booleanValue()) { 
+                        throw new MojoExecutionException("Failed to generate jbi.xml", e);
+                    } else {
+                        getLog().warn("Failed to generate jbi.xml: " + e, e);
+                    }
 		}
 
 	}
