@@ -27,6 +27,11 @@ import java.util.Set;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Dependency;
@@ -39,10 +44,6 @@ import org.apache.maven.project.ProjectBuildingException;
 import org.apache.servicemix.common.packaging.Consumes;
 import org.apache.servicemix.common.packaging.Provides;
 import org.codehaus.plexus.util.FileUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * A Mojo used to build the jbi.xml file for a service unit.
@@ -57,358 +58,343 @@ import org.w3c.dom.NodeList;
  */
 public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 
-	private static final String JBI_NAMESPACE = "http://java.sun.com/xml/ns/jbi";
+    public static final String JBI_NAMESPACE = "http://java.sun.com/xml/ns/jbi";
 
-	public class Connection {
-		private Consumes consumes;
+    public static final String UTF_8 = "UTF-8";
 
-		private Provides provides;
+    public class Connection {
+        private Consumes consumes;
 
-		public Consumes getConsumes() {
-			return consumes;
-		}
+        private Provides provides;
 
-		public void setConsumes(Consumes consumes) {
-			this.consumes = consumes;
-		}
+        public Consumes getConsumes() {
+            return consumes;
+        }
 
-		public Provides getProvides() {
-			return provides;
-		}
+        public void setConsumes(Consumes consumes) {
+            this.consumes = consumes;
+        }
 
-		public void setProvides(Provides provides) {
-			this.provides = provides;
-		}
-	}
+        public Provides getProvides() {
+            return provides;
+        }
 
-	public static final String UTF_8 = "UTF-8";
+        public void setProvides(Provides provides) {
+            this.provides = provides;
+        }
+    }
 
-	/**
-	 * Whether the jbi.xml should be generated or not.
-	 * 
-	 * @parameter
-	 */
-	private Boolean generateJbiDescriptor = Boolean.TRUE;
+    /**
+     * Whether the jbi.xml should be generated or not.
+     * 
+     * @parameter
+     */
+    private Boolean generateJbiDescriptor = Boolean.TRUE;
 
-	/**
-	 * The component name.
-	 * 
-	 * @parameter expression="${project.artifactId}"
-	 */
-	private String name;
+    /**
+     * The component name.
+     * 
+     * @parameter expression="${project.artifactId}"
+     */
+    private String name;
 
-	/**
-	 * The component description.
-	 * 
-	 * @parameter expression="${project.name}"
-	 */
-	private String description;
+    /**
+     * The component description.
+     * 
+     * @parameter expression="${project.name}"
+     */
+    private String description;
 
-	/**
-	 * Character encoding for the auto-generated application.xml file.
-	 * 
-	 * @parameter
-	 */
-	private String encoding = UTF_8;
+    /**
+     * Character encoding for the auto-generated application.xml file.
+     * 
+     * @parameter
+     */
+    private String encoding = UTF_8;
 
-	/**
-	 * Directory where the application.xml file will be auto-generated.
-	 * 
-	 * @parameter expression="${project.build.directory}/classes/META-INF"
-	 */
-	private String generatedDescriptorLocation;
+    /**
+     * Directory where the application.xml file will be auto-generated.
+     * 
+     * @parameter expression="${project.build.directory}/classes/META-INF"
+     */
+    private String generatedDescriptorLocation;
 
-	/**
-	 * The location of a file containing the connections elements that can be
-	 * merged into the jbi.xml
-	 * 
-	 * @parameter expression="${basedir}/src/main/resources/jbi-connections.xml"
-	 */
-	private File jbiConnectionsFile;
+    /**
+     * The location of a file containing the connections elements that can be
+     * merged into the jbi.xml
+     * 
+     * @parameter expression="${basedir}/src/main/resources/jbi-connections.xml"
+     */
+    private File jbiConnectionsFile;
 
-	/**
-	 * Dependency graph
-	 */
-	private JbiResolutionListener listener;
+    /**
+     * Dependency graph
+     */
+    private JbiResolutionListener listener;
 
-	public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException, MojoFailureException {
 
-		getLog()
-				.debug(
-						" ======= GenerateServiceAssemlbyDescriptorMojo settings =======");
-		getLog().debug("workDirectory[" + workDirectory + "]");
-		getLog().debug("generateJbiDescriptor[" + generateJbiDescriptor + "]");
-		getLog().debug("name[" + name + "]");
-		getLog().debug("description[" + description + "]");
-		getLog().debug("encoding[" + encoding + "]");
-		getLog().debug(
-				"generatedDescriptorLocation[" + generatedDescriptorLocation
-						+ "]");
+        getLog()
+                .debug(
+                        " ======= GenerateServiceAssemlbyDescriptorMojo settings =======");
+        getLog().debug("workDirectory[" + workDirectory + "]");
+        getLog().debug("generateJbiDescriptor[" + generateJbiDescriptor + "]");
+        getLog().debug("name[" + name + "]");
+        getLog().debug("description[" + description + "]");
+        getLog().debug("encoding[" + encoding + "]");
+        getLog().debug(
+                "generatedDescriptorLocation[" + generatedDescriptorLocation
+                        + "]");
 
-		if (!generateJbiDescriptor.booleanValue()) {
-			getLog().debug("Generation of jbi.xml is disabled");
-			return;
-		}
+        if (!generateJbiDescriptor.booleanValue()) {
+            getLog().debug("Generation of jbi.xml is disabled");
+            return;
+        }
 
-		// Generate jbi descriptor and copy it to the build directory
-		getLog().info("Generating jbi.xml");
-		try {
-			listener = resolveProject();
-			generateJbiDescriptor();
-		} catch (JbiPluginException e) {
-			throw new MojoExecutionException("Failed to generate jbi.xml", e);
-		}
+        // Generate jbi descriptor and copy it to the build directory
+        getLog().info("Generating jbi.xml");
+        try {
+            listener = resolveProject();
+            generateJbiDescriptor();
+        } catch (JbiPluginException e) {
+            throw new MojoExecutionException("Failed to generate jbi.xml", e);
+        }
 
-		try {
-			FileUtils.copyFileToDirectory(new File(generatedDescriptorLocation,
-					JBI_DESCRIPTOR), new File(getWorkDirectory(), META_INF));
-		} catch (IOException e) {
-			throw new MojoExecutionException(
-					"Unable to copy jbi.xml to final destination", e);
-		}
-	}
+        try {
+            FileUtils.copyFileToDirectory(new File(generatedDescriptorLocation,
+                    JBI_DESCRIPTOR), new File(getWorkDirectory(), META_INF));
+        } catch (IOException e) {
+            throw new MojoExecutionException(
+                    "Unable to copy jbi.xml to final destination", e);
+        }
+    }
 
-	/**
-	 * Generates the deployment descriptor if necessary.
-	 * 
-	 * @throws MojoExecutionException
-	 */
-	protected void generateJbiDescriptor() throws JbiPluginException,
-			MojoExecutionException {
-		File outputDir = new File(generatedDescriptorLocation);
-		if (!outputDir.exists()) {
-			outputDir.mkdirs();
-		}
+    /**
+     * Generates the deployment descriptor if necessary.
+     * 
+     * @throws MojoExecutionException
+     */
+    protected void generateJbiDescriptor() throws JbiPluginException,
+            MojoExecutionException {
+        File outputDir = new File(generatedDescriptorLocation);
+        if (!outputDir.exists()) {
+            outputDir.mkdirs();
+        }
 
-		File descriptor = new File(outputDir, JBI_DESCRIPTOR);
+        File descriptor = new File(outputDir, JBI_DESCRIPTOR);
 
-		List serviceUnits = new ArrayList();
+        List serviceUnits = new ArrayList();
 
-		Set artifacts = project.getArtifacts();
-		for (Iterator iter = artifacts.iterator(); iter.hasNext();) {
-			Artifact artifact = (Artifact) iter.next();
+        Set artifacts = project.getArtifacts();
+        for (Iterator iter = artifacts.iterator(); iter.hasNext();) {
+            Artifact artifact = (Artifact) iter.next();
 
-			// TODO: utilise appropriate methods from project builder
-			ScopeArtifactFilter filter = new ScopeArtifactFilter(
-					Artifact.SCOPE_RUNTIME);
-			if (!artifact.isOptional() && filter.include(artifact)
-					&& (artifact.getDependencyTrail().size() == 2)) {
-				MavenProject project = null;
-				try {
-					project = projectBuilder.buildFromRepository(artifact,
-							remoteRepos, localRepo);
-				} catch (ProjectBuildingException e) {
-					getLog().warn(
-							"Unable to determine packaging for dependency : "
-									+ artifact.getArtifactId()
-									+ " assuming jar");
-				}
-				if ((project != null)
-						&& (project.getPackaging().equals("jbi-service-unit"))) {
-					DependencyInformation info = new DependencyInformation();
-					info.setName(artifact.getArtifactId());
-					String name = artifact.getFile().getName();
-					name = name.substring(0, name.lastIndexOf('.')) + ".zip";
-					info.setFilename(name);
-					info.setComponent(getComponentName(project, artifacts,
-							artifact));
-					info.setDescription(project.getDescription());
-					serviceUnits.add(info);
-				}
+            // TODO: utilise appropriate methods from project builder
+            ScopeArtifactFilter filter = new ScopeArtifactFilter(
+                    Artifact.SCOPE_RUNTIME);
+            if (!artifact.isOptional() && filter.include(artifact)
+                    && (artifact.getDependencyTrail().size() == 2)) {
+                MavenProject project = null;
+                try {
+                    project = projectBuilder.buildFromRepository(artifact,
+                            remoteRepos, localRepo);
+                } catch (ProjectBuildingException e) {
+                    getLog().warn(
+                            "Unable to determine packaging for dependency : "
+                                    + artifact.getArtifactId()
+                                    + " assuming jar");
+                }
+                if ((project != null)
+                        && (project.getPackaging().equals("jbi-service-unit"))) {
+                    DependencyInformation info = new DependencyInformation();
+                    info.setName(artifact.getArtifactId());
+                    String fileName = artifact.getFile().getName();
+                    fileName = fileName.substring(0, fileName.lastIndexOf('.')) + ".zip";
+                    info.setFilename(fileName);
+                    info.setComponent(getComponentName(project, artifacts, artifact));
+                    info.setDescription(project.getDescription());
+                    serviceUnits.add(info);
+                }
 
-			}
-		}
+            }
+        }
 
-		List orderedServiceUnits = reorderServiceUnits(serviceUnits);
+        List orderedServiceUnits = reorderServiceUnits(serviceUnits);
 
-		List connections = getConnections();
+        List connections = getConnections();
 
-		JbiServiceAssemblyDescriptorWriter writer = new JbiServiceAssemblyDescriptorWriter(
-				encoding);
-		writer.write(descriptor, name, description, orderedServiceUnits,
-				connections);
-	}
+        JbiServiceAssemblyDescriptorWriter writer = new JbiServiceAssemblyDescriptorWriter(
+                encoding);
+        writer.write(descriptor, name, description, orderedServiceUnits,
+                connections);
+    }
 
-	/**
-	 * Used to return a list of connections if they have been found in the
-	 * jbiConnectionsFile
-	 * 
-	 * @return A list of connections
-	 * @throws MojoExecutionException
-	 */
-	private List getConnections() throws MojoExecutionException {
+    /**
+     * Used to return a list of connections if they have been found in the
+     * jbiConnectionsFile
+     * 
+     * @return A list of connections
+     * @throws MojoExecutionException
+     */
+    private List getConnections() throws MojoExecutionException {
 
-		if (jbiConnectionsFile.exists())
-			return parseConnectionsXml();
-		else
-			return new ArrayList();
-	}
+        if (jbiConnectionsFile.exists()) {
+            return parseConnectionsXml();
+        } else {
+            return new ArrayList();
+        }
+    }
 
-	/**
-	 * Parse the jbiConnectionsFile
-	 * 
-	 * @return
-	 * @throws MojoExecutionException
-	 */
-	private List parseConnectionsXml() throws MojoExecutionException {
-		getLog().info(
-				"Picking up connections from "
-						+ jbiConnectionsFile.getAbsolutePath());
-		List connections = new ArrayList();
-		try {
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			dbf.setNamespaceAware(true);
-			DocumentBuilder db = dbf.newDocumentBuilder();
-			Document doc = db.parse(jbiConnectionsFile);
+    /**
+     * Parse the jbiConnectionsFile
+     * 
+     * @return
+     * @throws MojoExecutionException
+     */
+    private List parseConnectionsXml() throws MojoExecutionException {
+        getLog().info(
+                "Picking up connections from "
+                        + jbiConnectionsFile.getAbsolutePath());
+        List connections = new ArrayList();
+        try {
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            dbf.setNamespaceAware(true);
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            Document doc = db.parse(jbiConnectionsFile);
 
-			Node servicesNode = doc.getFirstChild();
-			if (servicesNode instanceof Element) {				
-				if (XmlDescriptorHelper.isElement(servicesNode, JBI_NAMESPACE,
-						"connections")) {
-					// We will process the children
-					Element servicesElement = (Element) servicesNode;
-					NodeList children = servicesElement.getChildNodes();
-					for (int i = 0; i < children.getLength(); i++) {
-						if (XmlDescriptorHelper.isElement(children.item(i),
-								JBI_NAMESPACE, "connection")) {
-							Connection connection = new Connection();
-							NodeList connectionChildren = children.item(i)
-									.getChildNodes();
-							for (int x = 0; x < connectionChildren.getLength(); x++) {
-								if (connectionChildren.item(x) instanceof Element) {
-									Element childElement = (Element) connectionChildren
-											.item(x);
-									if (XmlDescriptorHelper.isElement(childElement,
-											JBI_NAMESPACE,
-											"consumer")) {
-										Consumes newConsumes = new Consumes();
-										newConsumes
-												.setEndpointName(XmlDescriptorHelper
-														.getEndpointName(childElement));
-										newConsumes
-												.setInterfaceName(XmlDescriptorHelper
-														.getInterfaceName(childElement));
-										newConsumes
-												.setServiceName(XmlDescriptorHelper
-														.getServiceName(childElement));
-										connection.setConsumes(newConsumes);
-									} else if (XmlDescriptorHelper.isElement(childElement,
-											JBI_NAMESPACE,
-											"provider")) {
-										Provides newProvides = new Provides();
-										newProvides
-												.setEndpointName(XmlDescriptorHelper
-														.getEndpointName(childElement));
-										newProvides
-												.setInterfaceName(XmlDescriptorHelper
-														.getInterfaceName(childElement));
-										newProvides
-												.setServiceName(XmlDescriptorHelper
-														.getServiceName(childElement));
-										connection.setProvides(newProvides);
-									}
-								}
-							}
-							connections.add(connection);
-						}
-					}
-				}
-			}
-			getLog().info("Found " + connections.size() + " connections");
-			return connections;
-		} catch (Exception e) {
-			throw new MojoExecutionException("Unable to parse "
-					+ jbiConnectionsFile.getAbsolutePath());
-		}
-	}
+            Node servicesNode = doc.getFirstChild();
+            if (servicesNode instanceof Element
+                  && XmlDescriptorHelper.isElement(servicesNode, JBI_NAMESPACE, "connections")) {
+                // We will process the children
+                Element servicesElement = (Element) servicesNode;
+                NodeList children = servicesElement.getChildNodes();
+                for (int i = 0; i < children.getLength(); i++) {
+                    if (XmlDescriptorHelper.isElement(children.item(i), JBI_NAMESPACE, "connection")) {
+                        Connection connection = new Connection();
+                        NodeList connectionChildren = children.item(i).getChildNodes();
+                        for (int x = 0; x < connectionChildren.getLength(); x++) {
+                            if (connectionChildren.item(x) instanceof Element) {
+                                Element childElement = (Element) connectionChildren.item(x);
+                                if (XmlDescriptorHelper.isElement(
+                                        childElement, JBI_NAMESPACE, "consumer")) {
+                                    Consumes newConsumes = new Consumes();
+                                    newConsumes.setEndpointName(XmlDescriptorHelper
+                                                    .getEndpointName(childElement));
+                                    newConsumes.setInterfaceName(XmlDescriptorHelper
+                                                    .getInterfaceName(childElement));
+                                    newConsumes.setServiceName(XmlDescriptorHelper
+                                                    .getServiceName(childElement));
+                                    connection.setConsumes(newConsumes);
+                                } else if (XmlDescriptorHelper.isElement(
+                                        childElement, JBI_NAMESPACE, "provider")) {
+                                    Provides newProvides = new Provides();
+                                    newProvides.setEndpointName(XmlDescriptorHelper
+                                                    .getEndpointName(childElement));
+                                    newProvides.setInterfaceName(XmlDescriptorHelper
+                                                    .getInterfaceName(childElement));
+                                    newProvides.setServiceName(XmlDescriptorHelper
+                                                    .getServiceName(childElement));
+                                    connection.setProvides(newProvides);
+                                }
+                            }
+                        }
+                        connections.add(connection);
+                    }
+                }
+            }
+            getLog().info("Found " + connections.size() + " connections");
+            return connections;
+        } catch (Exception e) {
+            throw new MojoExecutionException("Unable to parse "
+                    + jbiConnectionsFile.getAbsolutePath());
+        }
+    }
 
-	/**
-	 * Re-orders the service units to match order in the dependencies section of
-	 * the pom
-	 * 
-	 * @param serviceUnits
-	 * @throws MojoExecutionException
-	 */
-	private List reorderServiceUnits(List serviceUnits)
-			throws MojoExecutionException {
+    /**
+     * Re-orders the service units to match order in the dependencies section of
+     * the pom
+     * 
+     * @param serviceUnits
+     * @throws MojoExecutionException
+     */
+    private List reorderServiceUnits(List serviceUnits) throws MojoExecutionException {
 
-		// TODO Currently we get the model back by re-parsing it however in the
-		// future we should be able to use the getModel() - there should be a
-		// fix post 2.0.4
+        // TODO Currently we get the model back by re-parsing it however in the
+        // future we should be able to use the getModel() - there should be a
+        // fix post 2.0.4
 
-		// Iterator dependencies =
-		// project.getModel().getDependencies().iterator();
+        // Iterator dependencies =
+        // project.getModel().getDependencies().iterator();
 
-		// For now we will need to reparse the pom without processing
-		Iterator dependencies = getReparsedDependencies();
+        // For now we will need to reparse the pom without processing
+        Iterator dependencies = getReparsedDependencies();
 
-		List orderedServiceUnits = new ArrayList();
-		while (dependencies.hasNext()) {
-			Dependency dependency = (Dependency) dependencies.next();
-			for (Iterator it = serviceUnits.iterator(); it.hasNext();) {
-				DependencyInformation serviceUnitInfo = (DependencyInformation) it
-						.next();
-				if (dependency.getArtifactId()
-						.equals(serviceUnitInfo.getName())) {
-					getLog().debug("Adding "
-							+ serviceUnitInfo.getFilename());
-					orderedServiceUnits.add(serviceUnitInfo);
-				}
+        List orderedServiceUnits = new ArrayList();
+        while (dependencies.hasNext()) {
+            Dependency dependency = (Dependency) dependencies.next();
+            for (Iterator it = serviceUnits.iterator(); it.hasNext();) {
+                DependencyInformation serviceUnitInfo = (DependencyInformation) it
+                        .next();
+                if (dependency.getArtifactId()
+                        .equals(serviceUnitInfo.getName())) {
+                    getLog().debug("Adding " + serviceUnitInfo.getFilename());
+                    orderedServiceUnits.add(serviceUnitInfo);
+                }
 
-			}
-		}
+            }
+        }
 
-		return orderedServiceUnits;
-	}
+        return orderedServiceUnits;
+    }
 
-	private Iterator getReparsedDependencies() throws MojoExecutionException {
-		MavenXpp3Reader mavenXpp3Reader = new MavenXpp3Reader();
-		try {
-			Model model = mavenXpp3Reader.read(new FileReader(new File(project
-					.getBasedir(), "pom.xml")), false);
-			return model.getDependencies().iterator();
-		} catch (Exception e) {
-			throw new MojoExecutionException("Unable to reparse the pom.xml");
-		}
-	}
+    private Iterator getReparsedDependencies() throws MojoExecutionException {
+        MavenXpp3Reader mavenXpp3Reader = new MavenXpp3Reader();
+        try {
+            Model model = mavenXpp3Reader.read(new FileReader(new File(project
+                    .getBasedir(), "pom.xml")), false);
+            return model.getDependencies().iterator();
+        } catch (Exception e) {
+            throw new MojoExecutionException("Unable to reparse the pom.xml");
+        }
+    }
 
-	private String getComponentName(MavenProject project, Set artifacts,
-			Artifact suArtifact) throws MojoExecutionException {
+    private String getComponentName(MavenProject project, Set artifacts,
+            Artifact suArtifact) throws MojoExecutionException {
 
-		getLog().info(
-				"Determining component name for service unit "
-						+ project.getArtifactId());
-		if (project.getProperties().getProperty("componentName") != null) {
-			return project.getProperties().getProperty("componentName");
-		}
+        getLog().info(
+                "Determining component name for service unit "
+                        + project.getArtifactId());
+        if (project.getProperties().getProperty("componentName") != null) {
+            return project.getProperties().getProperty("componentName");
+        }
 
-		JbiResolutionListener.Node n = listener.getNode(suArtifact);
-		for (Iterator it = n.getChildren().iterator(); it.hasNext();) {
-			JbiResolutionListener.Node child = (JbiResolutionListener.Node) it
-					.next();
-			MavenProject artifactProject = null;
-			try {
-				artifactProject = projectBuilder.buildFromRepository(child
-						.getArtifact(), remoteRepos, localRepo);
-			} catch (ProjectBuildingException e) {
-				getLog().warn(
-						"Unable to determine packaging for dependency : "
-								+ child.getArtifact().getArtifactId()
-								+ " assuming jar");
-			}
-			getLog().info(
-					"Project " + artifactProject + " packaged "
-							+ artifactProject.getPackaging());
-			if ((artifactProject != null)
-					&& (artifactProject.getPackaging().equals("jbi-component"))) {
-				return child.getArtifact().getArtifactId();
-			}
-		}
+        JbiResolutionListener.Node n = listener.getNode(suArtifact);
+        for (Iterator it = n.getChildren().iterator(); it.hasNext();) {
+            JbiResolutionListener.Node child = (JbiResolutionListener.Node) it
+                    .next();
+            MavenProject artifactProject = null;
+            try {
+                artifactProject = projectBuilder.buildFromRepository(child
+                        .getArtifact(), remoteRepos, localRepo);
+            } catch (ProjectBuildingException e) {
+                getLog().warn(
+                        "Unable to determine packaging for dependency : "
+                                + child.getArtifact().getArtifactId()
+                                + " assuming jar");
+            }
+            getLog().info(
+                    "Project " + artifactProject + " packaged "
+                            + artifactProject.getPackaging());
+            if ((artifactProject != null)
+                    && (artifactProject.getPackaging().equals("jbi-component"))) {
+                return child.getArtifact().getArtifactId();
+            }
+        }
 
-		throw new MojoExecutionException(
-				"The service unit "
-						+ project.getArtifactId()
-						+ " does not have a dependency which is packaged as a jbi-component or a project property 'componentName'");
-	}
+        throw new MojoExecutionException(
+                "The service unit "
+                        + project.getArtifactId()
+                        + " does not have a dependency which is packaged as a jbi-component or a project property 'componentName'");
+    }
 
 }

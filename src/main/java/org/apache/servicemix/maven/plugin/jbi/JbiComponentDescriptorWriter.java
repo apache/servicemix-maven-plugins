@@ -28,97 +28,103 @@ import org.codehaus.plexus.util.xml.XMLWriter;
 
 public class JbiComponentDescriptorWriter {
 
-	private final String encoding;
+    private final String encoding;
 
-	public JbiComponentDescriptorWriter(String encoding) {
-		this.encoding = encoding;
-	}
+    public JbiComponentDescriptorWriter(String encoding) {
+        this.encoding = encoding;
+    }
 
-	public void write(File descriptor, String component, String bootstrap,
-			String type, String name, String description, 
-            String componentClassLoaderDelegation, String bootstrapClassLoaderDelegation, 
-            List uris)
-			throws JbiPluginException {
+    public void write(File descriptor, 
+                      String component, 
+                      String bootstrap,
+                      String type, 
+                      String name, 
+                      String description,
+                      String componentClassLoaderDelegation,
+                      String bootstrapClassLoaderDelegation, 
+                      List uris) throws JbiPluginException {
         PrintWriter w;
-		try {
-			w = new PrintWriter(descriptor, encoding);
-		} catch (IOException ex) {
-			throw new JbiPluginException("Exception while opening file["
-					+ descriptor.getAbsolutePath() + "]", ex);
-		}
+        try {
+            w = new PrintWriter(descriptor, encoding);
+        } catch (IOException ex) {
+            throw new JbiPluginException("Exception while opening file["
+                    + descriptor.getAbsolutePath() + "]", ex);
+        }
 
-		XMLWriter writer = new PrettyPrintXMLWriter(w, encoding, null);		
-		writer.startElement("jbi");
-		writer.addAttribute("xmlns", "http://java.sun.com/xml/ns/jbi");
-		writer.addAttribute("version", "1.0");
+        XMLWriter writer = new PrettyPrintXMLWriter(w, encoding, null);
+        writer.startElement("jbi");
+        writer.addAttribute("xmlns", "http://java.sun.com/xml/ns/jbi");
+        writer.addAttribute("version", "1.0");
 
-		writer.startElement("component");
-		writer.addAttribute("type", type);
-        writer.addAttribute("component-class-loader-delegation", componentClassLoaderDelegation);
-        writer.addAttribute("bootstrap-class-loader-delegation", bootstrapClassLoaderDelegation);
+        writer.startElement("component");
+        writer.addAttribute("type", type);
+        writer.addAttribute("component-class-loader-delegation",
+                componentClassLoaderDelegation);
+        writer.addAttribute("bootstrap-class-loader-delegation",
+                bootstrapClassLoaderDelegation);
 
-		writer.startElement("identification");
-		writer.startElement("name");
-		writer.writeText(name);
-		writer.endElement();
-		writer.startElement("description");
-		writer.writeText(description);
-		writer.endElement();
-		writer.endElement();
+        writer.startElement("identification");
+        writer.startElement("name");
+        writer.writeText(name);
+        writer.endElement();
+        writer.startElement("description");
+        writer.writeText(description);
+        writer.endElement();
+        writer.endElement();
 
-		writer.startElement("component-class-name");
-		writer.writeText(component);
-		writer.endElement();
-		writer.startElement("component-class-path");
-		for (Iterator it = uris.iterator(); it.hasNext();) {
-			DependencyInformation info = (DependencyInformation) it.next();
-			if ("jar".equals(info.getType())) {
-				writer.startElement("path-element");
-				writer.writeText(info.getFilename());
-				writer.endElement();
-			}
-		}
-		writer.endElement();
+        writer.startElement("component-class-name");
+        writer.writeText(component);
+        writer.endElement();
+        writer.startElement("component-class-path");
+        for (Iterator it = uris.iterator(); it.hasNext();) {
+            DependencyInformation info = (DependencyInformation) it.next();
+            if ("jar".equals(info.getType())) {
+                writer.startElement("path-element");
+                writer.writeText(info.getFilename());
+                writer.endElement();
+            }
+        }
+        writer.endElement();
 
-		writer.startElement("bootstrap-class-name");
-		writer.writeText(bootstrap);
-		writer.endElement();
-		writer.startElement("bootstrap-class-path");
-		for (Iterator it = uris.iterator(); it.hasNext();) {
-			DependencyInformation info = (DependencyInformation) it.next();
-			if ("jar".equals(info.getType())) {
-				writer.startElement("path-element");
-				writer.writeText(info.getFilename());
-				writer.endElement();
-			}
-		}
-		writer.endElement();
+        writer.startElement("bootstrap-class-name");
+        writer.writeText(bootstrap);
+        writer.endElement();
+        writer.startElement("bootstrap-class-path");
+        for (Iterator it = uris.iterator(); it.hasNext();) {
+            DependencyInformation info = (DependencyInformation) it.next();
+            if ("jar".equals(info.getType())) {
+                writer.startElement("path-element");
+                writer.writeText(info.getFilename());
+                writer.endElement();
+            }
+        }
+        writer.endElement();
 
-		for (Iterator it = uris.iterator(); it.hasNext();) {
-			DependencyInformation info = (DependencyInformation) it.next();
-			if ("jbi-shared-library".equals(info.getType())) {
-				writer.startElement("shared-library");
-				writer.addAttribute("version", info.getVersion());
-				writer.writeText(info.getName());
-				writer.endElement();
-			}
-		}
+        for (Iterator it = uris.iterator(); it.hasNext();) {
+            DependencyInformation info = (DependencyInformation) it.next();
+            if ("jbi-shared-library".equals(info.getType())) {
+                writer.startElement("shared-library");
+                writer.addAttribute("version", info.getVersion());
+                writer.writeText(info.getName());
+                writer.endElement();
+            }
+        }
 
-		writer.endElement();
+        writer.endElement();
 
-		writer.endElement();
+        writer.endElement();
 
-		close(w);
-	}
+        close(w);
+    }
 
-	private void close(Writer closeable) {
-		if (closeable != null) {
-			try {
-				closeable.close();
-			} catch (Exception e) {
-				// TODO: warn
-			}
-		}
-	}
+    private void close(Writer closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (Exception e) {
+                // TODO: warn
+            }
+        }
+    }
 
 }

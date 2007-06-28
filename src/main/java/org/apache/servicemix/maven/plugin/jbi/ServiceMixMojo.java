@@ -39,81 +39,82 @@ import org.codehaus.plexus.util.FileUtils;
  */
 public class ServiceMixMojo extends JbiProjectDeployerMojo {
 
-	private JBIContainer jbiContainer;
+    private JBIContainer jbiContainer;
 
-	/**
-	 * @parameter default-value="${project.build.directory}/servicemix/install"
-	 */
-	private String installDirectory;
+    /**
+     * @parameter default-value="${project.build.directory}/servicemix/install"
+     */
+    private String installDirectory;
 
-	/**
-	 * @parameter default-value="${project.build.directory}/servicemix/deploy"
-	 */
-	private String deploymentDirectory;
+    /**
+     * @parameter default-value="${project.build.directory}/servicemix/deploy"
+     */
+    private String deploymentDirectory;
 
-	/**
-	 * @parameter default-value="${project.build.directory}/servicemix/rootDir"
-	 */
-	private String rootDirectory;
+    /**
+     * @parameter default-value="${project.build.directory}/servicemix/rootDir"
+     */
+    private String rootDirectory;
 
-	/**
-	 * @parameter default-value="true"
-	 */
-	private boolean cleanStart;
+    /**
+     * @parameter default-value="true"
+     */
+    private boolean cleanStart;
 
-	public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException, MojoFailureException {
 
-		try {
+        try {
 
-			if (cleanStart) {
-				getLog().info(
-						"Cleaning ServiceMix root directory [" + rootDirectory
-								+ "]");
-				File rootDir = new File(rootDirectory);
-				FileUtils.deleteDirectory(rootDir);
-				rootDir.mkdirs();
-			}
+            if (cleanStart) {
+                getLog().info(
+                        "Cleaning ServiceMix root directory [" + rootDirectory
+                                + "]");
+                File rootDir = new File(rootDirectory);
+                FileUtils.deleteDirectory(rootDir);
+                rootDir.mkdirs();
+            }
 
-			startServiceMix();
-			deployProject();
+            startServiceMix();
+            deployProject();
 
-			getLog().info("Project deployed");			
+            getLog().info("Project deployed");
 
-			while (true) {
-				Thread.sleep(1000);
-			}
-		} catch (Exception e) {
-			stopServiceMix();
-			throw new MojoExecutionException(
-					"Apache ServiceMix was unable to deploy project", e);
-		}
+            while (true) {
+                Thread.sleep(1000);
+            }
+        } catch (Exception e) {
+            stopServiceMix();
+            throw new MojoExecutionException(
+                    "Apache ServiceMix was unable to deploy project", e);
+        }
 
-	}
+    }
 
-	private void stopServiceMix() {
-		getLog().info("Shutting down Apache ServiceMix");
-		if (jbiContainer != null)
-			try {
-				jbiContainer.shutDown();
-			} catch (JBIException e) {
-				getLog().warn(e);
-			}
-	}
+    private void stopServiceMix() {
+        getLog().info("Shutting down Apache ServiceMix");
+        if (jbiContainer != null) {
+            try {
+                jbiContainer.shutDown();
+            } catch (JBIException e) {
+                getLog().warn(e);
+            }
+        }
+    }
 
-	private void startServiceMix() throws MojoExecutionException {
-		try {
-			getLog().info("Starting Apache ServiceMix");
-			jbiContainer = new JBIContainer();
-			jbiContainer.setRmiPort(Integer.parseInt(port));
-			jbiContainer.setCreateMBeanServer(true);
-			jbiContainer.setInstallationDirPath(installDirectory);
-			jbiContainer.setDeploymentDirPath(deploymentDirectory);
-			jbiContainer.setRootDir(rootDirectory);
-			jbiContainer.init();
-			jbiContainer.start();
-		} catch (JBIException e) {
-			throw new MojoExecutionException(
-					"Unable to start the JBI container", e);
-		}
-	}
+    private void startServiceMix() throws MojoExecutionException {
+        try {
+            getLog().info("Starting Apache ServiceMix");
+            jbiContainer = new JBIContainer();
+            jbiContainer.setRmiPort(Integer.parseInt(port));
+            jbiContainer.setCreateMBeanServer(true);
+            jbiContainer.setInstallationDirPath(installDirectory);
+            jbiContainer.setDeploymentDirPath(deploymentDirectory);
+            jbiContainer.setRootDir(rootDirectory);
+            jbiContainer.init();
+            jbiContainer.start();
+        } catch (JBIException e) {
+            throw new MojoExecutionException(
+                    "Unable to start the JBI container", e);
+        }
+    }
 }

@@ -37,55 +37,55 @@ import org.springframework.beans.factory.DisposableBean;
  */
 public class ServiceMixEmbeddedMojo extends AbstractJbiMojo {
 
-	/**
-	 * @parameter default-value="${basedir}/src/main/resources/servicemix.xml"
-	 */
-	private File servicemixConfig;
+    /**
+     * @parameter default-value="${basedir}/src/main/resources/servicemix.xml"
+     */
+    private File servicemixConfig;
 
-	private FileSystemXmlApplicationContext context;
+    private FileSystemXmlApplicationContext context;
 
-	private SpringJBIContainer container;
+    private SpringJBIContainer container;
 
-	public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException, MojoFailureException {
 
-		try {
-			startServiceMix();
+        try {
+            startServiceMix();
 
-			Object lock = new Object();
-			container.setShutdownLock(lock);
+            Object lock = new Object();
+            container.setShutdownLock(lock);
 
-			// lets wait until we're killed.
-			synchronized (lock) {
-				lock.wait();
-			}
-		} catch (Exception e) {
-			throw new MojoExecutionException(
-					"Apache ServiceMix was able to deploy project", e);
-		} finally {
-			if (context instanceof DisposableBean) {
-				try {
-					((DisposableBean) context).destroy();
-				} catch (Exception e) {
-					// Ignore
-				}
-			}
-		}
-
-	}
-
-	private void startServiceMix() throws MojoExecutionException {
-        ClassLoader old = Thread.currentThread().getContextClassLoader();
-		try {
-            Thread.currentThread().setContextClassLoader(getClassLoader());
-			context = new FileSystemXmlApplicationContext("file:///" + servicemixConfig
-					.getAbsolutePath());
-			container = (SpringJBIContainer) context.getBean("jbi");
-		} catch (Exception e) {
-			throw new MojoExecutionException(
-					"Unable to start the ServiceMix container", e);
-		} finally {
-		    Thread.currentThread().setContextClassLoader(old);      
+            // lets wait until we're killed.
+            synchronized (lock) {
+                lock.wait();
+            }
+        } catch (Exception e) {
+            throw new MojoExecutionException(
+                    "Apache ServiceMix was able to deploy project", e);
+        } finally {
+            if (context instanceof DisposableBean) {
+                try {
+                    ((DisposableBean) context).destroy();
+                } catch (Exception e) {
+                    // Ignore
+                }
+            }
         }
-	}
+
+    }
+
+    private void startServiceMix() throws MojoExecutionException {
+        ClassLoader old = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(getClassLoader());
+            context = new FileSystemXmlApplicationContext("file:///"
+                    + servicemixConfig.getAbsolutePath());
+            container = (SpringJBIContainer) context.getBean("jbi");
+        } catch (Exception e) {
+            throw new MojoExecutionException(
+                    "Unable to start the ServiceMix container", e);
+        } finally {
+            Thread.currentThread().setContextClassLoader(old);
+        }
+    }
 
 }

@@ -35,88 +35,93 @@ import org.codehaus.plexus.util.xml.XMLWriter;
  */
 public class JbiServiceUnitDescriptorWriter extends AbstractDescriptorWriter {
 
-	private final String encoding;
+    private final String encoding;
 
-	public JbiServiceUnitDescriptorWriter(String encoding) {
-		this.encoding = encoding;
-	}
+    public JbiServiceUnitDescriptorWriter(String encoding) {
+        this.encoding = encoding;
+    }
 
-	public void write(File descriptor, boolean bc, String name, String description,
-			List uris, List consumes, List provides) throws JbiPluginException {
-		PrintWriter w;
-		try {
-			w = new PrintWriter(descriptor, encoding);
-		} catch (IOException ex) {
-			throw new JbiPluginException("Exception while opening file["
-					+ descriptor.getAbsolutePath() + "]", ex);
-		}
+    public void write(File descriptor, 
+                      boolean bc, 
+                      String name,
+                      String description, 
+                      List uris, 
+                      List consumes, 
+                      List provides) throws JbiPluginException {
+        PrintWriter w;
+        try {
+            w = new PrintWriter(descriptor, encoding);
+        } catch (IOException ex) {
+            throw new JbiPluginException("Exception while opening file["
+                    + descriptor.getAbsolutePath() + "]", ex);
+        }
 
-		XMLWriter writer = new PrettyPrintXMLWriter(w, encoding, null);
-		writer.startElement("jbi");
-		writer.addAttribute("xmlns", "http://java.sun.com/xml/ns/jbi");
-		writer.addAttribute("version", "1.0");
+        XMLWriter writer = new PrettyPrintXMLWriter(w, encoding, null);
+        writer.startElement("jbi");
+        writer.addAttribute("xmlns", "http://java.sun.com/xml/ns/jbi");
+        writer.addAttribute("version", "1.0");
 
-		writer.startElement("services");
-		writer.addAttribute("binding-component", bc ? "true" : "false");
+        writer.startElement("services");
+        writer.addAttribute("binding-component", bc ? "true" : "false");
 
-		// We need to get all the namespaces into a hashmap so we
-		// can get the QName output correctly
-		Map namespaceMap = getNamespaceMap(provides, consumes);
+        // We need to get all the namespaces into a hashmap so we
+        // can get the QName output correctly
+        Map namespaceMap = getNamespaceMap(provides, consumes);
 
-		// Set-up the namespaces
-		for (Iterator iterator = namespaceMap.keySet().iterator(); iterator
-				.hasNext();) {
-			String key = (String) iterator.next();
-			StringBuffer namespaceDecl = new StringBuffer();
-			namespaceDecl.append("xmlns:");
-			namespaceDecl.append(namespaceMap.get(key));
-			writer.addAttribute(namespaceDecl.toString(), key);
-		}
+        // Set-up the namespaces
+        for (Iterator iterator = namespaceMap.keySet().iterator(); iterator
+                .hasNext();) {
+            String key = (String) iterator.next();
+            StringBuffer namespaceDecl = new StringBuffer();
+            namespaceDecl.append("xmlns:");
+            namespaceDecl.append(namespaceMap.get(key));
+            writer.addAttribute(namespaceDecl.toString(), key);
+        }
 
-		// Put in the provides
-		for (Iterator iterator = provides.iterator(); iterator.hasNext();) {
-			Provides providesEntry = (Provides) iterator.next();
-			writer.startElement("provides");
-			addQNameAttribute(writer, "interface-name", providesEntry
-					.getInterfaceName(), namespaceMap);
-			addQNameAttribute(writer, "service-name", providesEntry
-					.getServiceName(), namespaceMap);
-			addStringAttribute(writer, "endpoint-name", providesEntry
-					.getEndpointName());
-			writer.endElement();
-		}
+        // Put in the provides
+        for (Iterator iterator = provides.iterator(); iterator.hasNext();) {
+            Provides providesEntry = (Provides) iterator.next();
+            writer.startElement("provides");
+            addQNameAttribute(writer, "interface-name", providesEntry
+                    .getInterfaceName(), namespaceMap);
+            addQNameAttribute(writer, "service-name", providesEntry
+                    .getServiceName(), namespaceMap);
+            addStringAttribute(writer, "endpoint-name", providesEntry
+                    .getEndpointName());
+            writer.endElement();
+        }
 
-		// Put in the consumes
-		for (Iterator iterator = consumes.iterator(); iterator.hasNext();) {
-			Consumes consumesEntry = (Consumes) iterator.next();
-			writer.startElement("consumes");
-			addQNameAttribute(writer, "interface-name", consumesEntry
-					.getInterfaceName(), namespaceMap);
-			addQNameAttribute(writer, "service-name", consumesEntry
-					.getServiceName(), namespaceMap);
-			addStringAttribute(writer, "endpoint-name", consumesEntry
-					.getEndpointName());
+        // Put in the consumes
+        for (Iterator iterator = consumes.iterator(); iterator.hasNext();) {
+            Consumes consumesEntry = (Consumes) iterator.next();
+            writer.startElement("consumes");
+            addQNameAttribute(writer, "interface-name", consumesEntry
+                    .getInterfaceName(), namespaceMap);
+            addQNameAttribute(writer, "service-name", consumesEntry
+                    .getServiceName(), namespaceMap);
+            addStringAttribute(writer, "endpoint-name", consumesEntry
+                    .getEndpointName());
 
-			// TODO Handling of LinkType?
+            // TODO Handling of LinkType?
 
-			writer.endElement();
-		}
+            writer.endElement();
+        }
 
-		writer.endElement();
+        writer.endElement();
 
-		writer.endElement();
+        writer.endElement();
 
-		close(w);
-	}
+        close(w);
+    }
 
-	private void close(Writer closeable) {
-		if (closeable != null) {
-			try {
-				closeable.close();
-			} catch (Exception e) {
-				// TODO: warn
-			}
-		}
-	}
+    private void close(Writer closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (Exception e) {
+                // TODO: warn
+            }
+        }
+    }
 
 }

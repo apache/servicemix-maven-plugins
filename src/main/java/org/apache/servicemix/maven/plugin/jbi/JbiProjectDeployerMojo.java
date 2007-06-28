@@ -58,328 +58,357 @@ import org.apache.servicemix.jbi.management.task.UninstallSharedLibraryTask;
  */
 public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 
-	private static final String JBI_SHARED_LIBRARY = "jbi-shared-library";
+    private static final String JBI_SHARED_LIBRARY = "jbi-shared-library";
 
-	private static final String JBI_COMPONENT = "jbi-component";
+    private static final String JBI_COMPONENT = "jbi-component";
 
-	private static final String JBI_SERVICE_ASSEMBLY = "jbi-service-assembly";
+    private static final String JBI_SERVICE_ASSEMBLY = "jbi-service-assembly";
 
-	private List deploymentTypes;
+    private List deploymentTypes;
 
-	/**
-	 * @parameter default-value="true" expression="${deployDependencies}"
-	 */
-	private boolean deployDependencies;
-    
+    /**
+     * @parameter default-value="true" expression="${deployDependencies}"
+     */
+    private boolean deployDependencies;
+
     /**
      * @parameter default-value="false" expression="${forceUpdate}"
      */
     private boolean forceUpdate;
 
-	/**
-	 * @parameter default-value="true" expression="${deferExceptions}"
-	 */
-	private boolean deferExceptions;
-    
+    /**
+     * @parameter default-value="true" expression="${deferExceptions}"
+     */
+    private boolean deferExceptions;
+
     /**
      * @parameter default-value="true" expression="${deployChildren}"
      */
     private boolean deployChildren;
 
-	public void execute() throws MojoExecutionException, MojoFailureException {
-		deployProject();
-	}
+    public void execute() throws MojoExecutionException, MojoFailureException {
+        deployProject();
+    }
 
-	protected void deployProject() throws MojoExecutionException {
-		if (!deployChildren && !getDeployablePackagingTypes().contains(project.getPackaging())) {
-			throw new MojoExecutionException(
-					"Project must be of packaging type ["
-							+ getDeployablePackagingTypes() + "]");
-		}
+    protected void deployProject() throws MojoExecutionException {
+        if (!deployChildren
+                && !getDeployablePackagingTypes().contains(
+                        project.getPackaging())) {
+            throw new MojoExecutionException(
+                    "Project must be of packaging type ["
+                            + getDeployablePackagingTypes() + "]");
+        }
 
-		try {
-			Stack dependencies = new Stack();
+        try {
+            Stack dependencies = new Stack();
             if (deployChildren) {
                 resolveArtifact(project.getArtifact(), dependencies);
             } else {
-    			dependencies.add(resolveDeploymentPackage(project, project.getArtifact()));
-    			ArrayList artifactList = new ArrayList();
-    			artifactList.addAll(project.getArtifacts());
-    			Collections.sort(artifactList, new ArtifactDepthComparator());
-    			for (Iterator iter = artifactList.iterator(); iter.hasNext();) {
-    				Artifact artifact = (Artifact) iter.next();
-    				resolveArtifact(artifact, dependencies);
-    			}
+                dependencies.add(resolveDeploymentPackage(project, project
+                        .getArtifact()));
+                List artifactList = new ArrayList();
+                artifactList.addAll(project.getArtifacts());
+                Collections.sort(artifactList, new ArtifactDepthComparator());
+                for (Iterator iter = artifactList.iterator(); iter.hasNext();) {
+                    Artifact artifact = (Artifact) iter.next();
+                    resolveArtifact(artifact, dependencies);
+                }
             }
 
-			getLog().info("------------------ Deployment Analysis --------------------");
-			getLog().info(project.getName() + " has " + (dependencies.size() - 1)
-							+ " child dependencies");
+            getLog()
+                    .info(
+                            "------------------ Deployment Analysis --------------------");
+            getLog().info(
+                    project.getName() + " has " + (dependencies.size() - 1)
+                            + " child dependencies");
 
-			for (Iterator iterator = dependencies.iterator(); iterator.hasNext();) {
-				getLog().info(" - " + iterator.next());
-			}
+            for (Iterator iterator = dependencies.iterator(); iterator
+                    .hasNext();) {
+                getLog().info(" - " + iterator.next());
+            }
 
-			getLog().info("-----------------------------------------------------------");
+            getLog()
+                    .info(
+                            "-----------------------------------------------------------");
 
-			if (deployDependencies) {
-				// We need to stop all the dependencies first
-				if (!deferExceptions) {
-					for (Iterator iterator = dependencies.iterator(); iterator.hasNext();) {
-						JbiDeployableArtifact jbiDeployable = (JbiDeployableArtifact) iterator.next();
+            if (deployDependencies) {
+                // We need to stop all the dependencies first
+                if (!deferExceptions) {
+                    for (Iterator iterator = dependencies.iterator(); iterator
+                            .hasNext();) {
+                        JbiDeployableArtifact jbiDeployable = (JbiDeployableArtifact) iterator
+                                .next();
 
-						if (forceUpdate && isDeployed(jbiDeployable)) {
-							stopDependency(jbiDeployable);
-							undeployDependency(jbiDeployable);
-						}
-					}
-				}
-
-				// Now we can walk the dependencies bottom up - re-deploying and
-				// starting them
-				while (!dependencies.empty()) {
-					JbiDeployableArtifact jbiDeployable = (JbiDeployableArtifact) dependencies
-							.pop();
-                    if (forceUpdate || !isDeployed(jbiDeployable)) {
-    					deployDependency(jbiDeployable, deferExceptions);
-    					if (!deferExceptions) {
-    						startDependency(jbiDeployable);
+                        if (forceUpdate && isDeployed(jbiDeployable)) {
+                            stopDependency(jbiDeployable);
+                            undeployDependency(jbiDeployable);
                         }
                     }
-				}
-			} else {
-				JbiDeployableArtifact jbiDeployable = (JbiDeployableArtifact) dependencies
-						.firstElement();
-				if (isDeployed(jbiDeployable)) {
-					stopDependency(jbiDeployable);
-					undeployDependency(jbiDeployable);
-				}
-				deployDependency(jbiDeployable, deferExceptions);
-				startDependency(jbiDeployable);
-			}
+                }
 
-		} catch (Exception e) {
-			throw new MojoExecutionException("Unable to deploy project, "
-					+ e.getMessage(), e);
-		}
+                // Now we can walk the dependencies bottom up - re-deploying and
+                // starting them
+                while (!dependencies.empty()) {
+                    JbiDeployableArtifact jbiDeployable = (JbiDeployableArtifact) dependencies
+                            .pop();
+                    if (forceUpdate || !isDeployed(jbiDeployable)) {
+                        deployDependency(jbiDeployable, deferExceptions);
+                        if (!deferExceptions) {
+                            startDependency(jbiDeployable);
+                        }
+                    }
+                }
+            } else {
+                JbiDeployableArtifact jbiDeployable = (JbiDeployableArtifact) dependencies
+                        .firstElement();
+                if (isDeployed(jbiDeployable)) {
+                    stopDependency(jbiDeployable);
+                    undeployDependency(jbiDeployable);
+                }
+                deployDependency(jbiDeployable, deferExceptions);
+                startDependency(jbiDeployable);
+            }
 
-	}
+        } catch (Exception e) {
+            throw new MojoExecutionException("Unable to deploy project, "
+                    + e.getMessage(), e);
+        }
 
-	private void startDependency(JbiDeployableArtifact jbiDeployable) {
-		getLog().info("Starting " + jbiDeployable.getName());
-		if (JBI_SERVICE_ASSEMBLY.equals(jbiDeployable.getType())) {
-			StartServiceAssemblyTask startTask = new StartServiceAssemblyTask();
-			initializeJbiTask(startTask);
-			startTask.setName(jbiDeployable.getName());
-			startTask.execute();
-		}
-		if (JBI_COMPONENT.equals(jbiDeployable.getType())) {
-			StartComponentTask startTask = new StartComponentTask();
-			initializeJbiTask(startTask);
-			startTask.setName(jbiDeployable.getName());
-			startTask.execute();
-		}
-	}
+    }
 
-	private void undeployDependency(JbiDeployableArtifact jbiDeployable) {
-		getLog().info("Undeploying " + jbiDeployable.getFile());
-		if (JBI_SHARED_LIBRARY.equals(jbiDeployable.getType())) {
-			UninstallSharedLibraryTask sharedLibraryTask = new UninstallSharedLibraryTask();
-			initializeJbiTask(sharedLibraryTask);
-			sharedLibraryTask.setName(jbiDeployable.getName());
-			sharedLibraryTask.execute();
-		} else if (JBI_SERVICE_ASSEMBLY.equals(jbiDeployable.getType())) {
-			UndeployServiceAssemblyTask serviceAssemblyTask = new UndeployServiceAssemblyTask();
-			initializeJbiTask(serviceAssemblyTask);
-			serviceAssemblyTask.setName(jbiDeployable.getName());
-			serviceAssemblyTask.execute();
-		}
-		if (JBI_COMPONENT.equals(jbiDeployable.getType())) {
-			UninstallComponentTask componentTask = new UninstallComponentTask();
-			initializeJbiTask(componentTask);
-			componentTask.setName(jbiDeployable.getName());
-			componentTask.execute();
-		}
-	}
+    private void startDependency(JbiDeployableArtifact jbiDeployable) {
+        getLog().info("Starting " + jbiDeployable.getName());
+        if (JBI_SERVICE_ASSEMBLY.equals(jbiDeployable.getType())) {
+            StartServiceAssemblyTask startTask = new StartServiceAssemblyTask();
+            initializeJbiTask(startTask);
+            startTask.setName(jbiDeployable.getName());
+            startTask.execute();
+        }
+        if (JBI_COMPONENT.equals(jbiDeployable.getType())) {
+            StartComponentTask startTask = new StartComponentTask();
+            initializeJbiTask(startTask);
+            startTask.setName(jbiDeployable.getName());
+            startTask.execute();
+        }
+    }
 
-	private boolean isDeployed(JbiDeployableArtifact jbiDeployable) {
-		IsDeployedTask isDeployedTask = new IsDeployedTask();
-		isDeployedTask.setType(jbiDeployable.getType());
-		isDeployedTask.setName(jbiDeployable.getName());
-		initializeJbiTask(isDeployedTask);
-		isDeployedTask.execute();
-		boolean deployed = isDeployedTask.isDeployed();
-		if (deployed)
-			getLog().info(jbiDeployable.getName() + " is deployed");
-		else
-			getLog().info(jbiDeployable.getName() + " is not deployed");
-		return deployed;
-	}
+    private void undeployDependency(JbiDeployableArtifact jbiDeployable) {
+        getLog().info("Undeploying " + jbiDeployable.getFile());
+        if (JBI_SHARED_LIBRARY.equals(jbiDeployable.getType())) {
+            UninstallSharedLibraryTask sharedLibraryTask = new UninstallSharedLibraryTask();
+            initializeJbiTask(sharedLibraryTask);
+            sharedLibraryTask.setName(jbiDeployable.getName());
+            sharedLibraryTask.execute();
+        } else if (JBI_SERVICE_ASSEMBLY.equals(jbiDeployable.getType())) {
+            UndeployServiceAssemblyTask serviceAssemblyTask = new UndeployServiceAssemblyTask();
+            initializeJbiTask(serviceAssemblyTask);
+            serviceAssemblyTask.setName(jbiDeployable.getName());
+            serviceAssemblyTask.execute();
+        }
+        if (JBI_COMPONENT.equals(jbiDeployable.getType())) {
+            UninstallComponentTask componentTask = new UninstallComponentTask();
+            initializeJbiTask(componentTask);
+            componentTask.setName(jbiDeployable.getName());
+            componentTask.execute();
+        }
+    }
 
-	private void stopDependency(JbiDeployableArtifact jbiDeployable) {
-		getLog().info("Stopping " + jbiDeployable.getName());
-		if (JBI_SERVICE_ASSEMBLY.equals(jbiDeployable.getType())) {
-			StopServiceAssemblyTask stopTask = new StopServiceAssemblyTask();
-			initializeJbiTask(stopTask);
-			stopTask.setName(jbiDeployable.getName());
-			stopTask.execute();
+    private boolean isDeployed(JbiDeployableArtifact jbiDeployable) {
+        IsDeployedTask isDeployedTask = new IsDeployedTask();
+        isDeployedTask.setType(jbiDeployable.getType());
+        isDeployedTask.setName(jbiDeployable.getName());
+        initializeJbiTask(isDeployedTask);
+        isDeployedTask.execute();
+        boolean deployed = isDeployedTask.isDeployed();
+        if (deployed) {
+            getLog().info(jbiDeployable.getName() + " is deployed");
+        } else {
+            getLog().info(jbiDeployable.getName() + " is not deployed");
+        }
+        return deployed;
+    }
 
-			ShutDownServiceAssemblyTask shutdownTask = new ShutDownServiceAssemblyTask();
-			initializeJbiTask(shutdownTask);
-			shutdownTask.setName(jbiDeployable.getName());
-			shutdownTask.execute();
-		}
-		if (JBI_COMPONENT.equals(jbiDeployable.getType())) {
-			StopComponentTask stopTask = new StopComponentTask();
-			initializeJbiTask(stopTask);
-			stopTask.setName(jbiDeployable.getName());
-			stopTask.execute();
+    private void stopDependency(JbiDeployableArtifact jbiDeployable) {
+        getLog().info("Stopping " + jbiDeployable.getName());
+        if (JBI_SERVICE_ASSEMBLY.equals(jbiDeployable.getType())) {
+            StopServiceAssemblyTask stopTask = new StopServiceAssemblyTask();
+            initializeJbiTask(stopTask);
+            stopTask.setName(jbiDeployable.getName());
+            stopTask.execute();
 
-			ShutDownComponentTask shutdownTask = new ShutDownComponentTask();
-			initializeJbiTask(shutdownTask);
-			shutdownTask.setName(jbiDeployable.getName());
-			shutdownTask.execute();
-		}
-	}
+            ShutDownServiceAssemblyTask shutdownTask = new ShutDownServiceAssemblyTask();
+            initializeJbiTask(shutdownTask);
+            shutdownTask.setName(jbiDeployable.getName());
+            shutdownTask.execute();
+        }
+        if (JBI_COMPONENT.equals(jbiDeployable.getType())) {
+            StopComponentTask stopTask = new StopComponentTask();
+            initializeJbiTask(stopTask);
+            stopTask.setName(jbiDeployable.getName());
+            stopTask.execute();
 
-	private void deployDependency(JbiDeployableArtifact jbiDeployable,
-			boolean doDeferExceptions) {
+            ShutDownComponentTask shutdownTask = new ShutDownComponentTask();
+            initializeJbiTask(shutdownTask);
+            shutdownTask.setName(jbiDeployable.getName());
+            shutdownTask.execute();
+        }
+    }
 
-		getLog().info(
-				"Deploying " + jbiDeployable.getType() + " from "
-						+ jbiDeployable.getFile());
-		if (JBI_SHARED_LIBRARY.equals(jbiDeployable.getType())) {
-			InstallSharedLibraryTask componentTask = new InstallSharedLibraryTask();
-			initializeJbiTask(componentTask);
-			componentTask.setFile(jbiDeployable.getFile());
-			componentTask.setDeferExceptions(doDeferExceptions);
-			componentTask.execute();
-		} else if (JBI_SERVICE_ASSEMBLY.equals(jbiDeployable.getType())) {
-			DeployServiceAssemblyTask componentTask = new DeployServiceAssemblyTask();
-			initializeJbiTask(componentTask);
-			componentTask.setFile(jbiDeployable.getFile());
-			componentTask.setDeferExceptions(doDeferExceptions);
-			componentTask.execute();
-		}
-		if (JBI_COMPONENT.equals(jbiDeployable.getType())) {
-			InstallComponentTask componentTask = new InstallComponentTask();
-			initializeJbiTask(componentTask);
-			componentTask.setFile(jbiDeployable.getFile());
-			componentTask.setDeferExceptions(doDeferExceptions);
-			componentTask.execute();
-		}
+    private void deployDependency(JbiDeployableArtifact jbiDeployable,
+            boolean doDeferExceptions) {
 
-	}
+        getLog().info(
+                "Deploying " + jbiDeployable.getType() + " from "
+                        + jbiDeployable.getFile());
+        if (JBI_SHARED_LIBRARY.equals(jbiDeployable.getType())) {
+            InstallSharedLibraryTask componentTask = new InstallSharedLibraryTask();
+            initializeJbiTask(componentTask);
+            componentTask.setFile(jbiDeployable.getFile());
+            componentTask.setDeferExceptions(doDeferExceptions);
+            componentTask.execute();
+        } else if (JBI_SERVICE_ASSEMBLY.equals(jbiDeployable.getType())) {
+            DeployServiceAssemblyTask componentTask = new DeployServiceAssemblyTask();
+            initializeJbiTask(componentTask);
+            componentTask.setFile(jbiDeployable.getFile());
+            componentTask.setDeferExceptions(doDeferExceptions);
+            componentTask.execute();
+        }
+        if (JBI_COMPONENT.equals(jbiDeployable.getType())) {
+            InstallComponentTask componentTask = new InstallComponentTask();
+            initializeJbiTask(componentTask);
+            componentTask.setFile(jbiDeployable.getFile());
+            componentTask.setDeferExceptions(doDeferExceptions);
+            componentTask.execute();
+        }
 
-	private List getDeployablePackagingTypes() {
-		if (deploymentTypes == null) {
-			deploymentTypes = new ArrayList();
-			deploymentTypes.add(JBI_SHARED_LIBRARY);
-			deploymentTypes.add(JBI_SERVICE_ASSEMBLY);
-			deploymentTypes.add(JBI_COMPONENT);
-		}
-		return deploymentTypes;
-	}
+    }
 
-	private Collection resolveArtifact(Artifact artifact, Stack dependencies)
-			throws ArtifactResolutionException, ArtifactNotFoundException {
-		MavenProject project = null;
-		try {
-			project = projectBuilder.buildFromRepository(artifact, remoteRepos, localRepo, false);
-		} catch (ProjectBuildingException e) {
-			getLog().warn("Unable to determine packaging for dependency : "
-							+ artifact.getArtifactId() + " assuming jar");
-		}
+    private List getDeployablePackagingTypes() {
+        if (deploymentTypes == null) {
+            deploymentTypes = new ArrayList();
+            deploymentTypes.add(JBI_SHARED_LIBRARY);
+            deploymentTypes.add(JBI_SERVICE_ASSEMBLY);
+            deploymentTypes.add(JBI_COMPONENT);
+        }
+        return deploymentTypes;
+    }
 
-		if (project != null) {
-			if (getDeployablePackagingTypes().contains(project.getPackaging())) {
-				getLog().debug("Checking for dependency from project " + project.getArtifactId());
-				JbiDeployableArtifact deployableArtifact = resolveDeploymentPackage(project, artifact);
-				if (!dependencies.contains(deployableArtifact)) {
-					getLog().debug("Adding dependency from project " + project.getArtifactId());
-					dependencies.push(deployableArtifact);
-				}
-                ArrayList artifactList = new ArrayList();
+    private Collection resolveArtifact(Artifact artifact, 
+                                       Stack dependencies) throws ArtifactResolutionException, ArtifactNotFoundException {
+        MavenProject project = null;
+        try {
+            project = projectBuilder.buildFromRepository(artifact, remoteRepos,
+                    localRepo, false);
+        } catch (ProjectBuildingException e) {
+            getLog().warn(
+                    "Unable to determine packaging for dependency : "
+                            + artifact.getArtifactId() + " assuming jar");
+        }
+
+        if (project != null) {
+            if (getDeployablePackagingTypes().contains(project.getPackaging())) {
+                getLog().debug(
+                        "Checking for dependency from project "
+                                + project.getArtifactId());
+                JbiDeployableArtifact deployableArtifact = resolveDeploymentPackage(
+                        project, artifact);
+                if (!dependencies.contains(deployableArtifact)) {
+                    getLog().debug(
+                            "Adding dependency from project "
+                                    + project.getArtifactId());
+                    dependencies.push(deployableArtifact);
+                }
+                List artifactList = new ArrayList();
                 artifactList.addAll(project.getArtifacts());
                 Collections.sort(artifactList, new ArtifactDepthComparator());
                 for (Iterator iter = artifactList.iterator(); iter.hasNext();) {
                     resolveArtifact((Artifact) iter.next(), dependencies);
                 }
-			} else {
-			    getLog().debug("Ignoring non-jbi dependency: " + project.getArtifactId() + " of type " + project.getPackaging());         
+            } else {
+                getLog().debug(
+                        "Ignoring non-jbi dependency: "
+                                + project.getArtifactId() + " of type "
+                                + project.getPackaging());
             }
-		}
-		return dependencies;
-	}
+        }
+        return dependencies;
+    }
 
-	private JbiDeployableArtifact resolveDeploymentPackage(
-			MavenProject project, Artifact artifact)
-			throws ArtifactResolutionException, ArtifactNotFoundException {
-		Artifact jbiArtifact = factory.createArtifactWithClassifier(artifact
-				.getGroupId(), artifact.getArtifactId(), artifact.getVersion(),
-				"zip", getExtension(project));
-		resolver.resolve(jbiArtifact, remoteRepos, localRepo);
-		return new JbiDeployableArtifact(project.getArtifactId(), project
-				.getPackaging(), jbiArtifact.getFile().getAbsolutePath());
-	}
+    private JbiDeployableArtifact resolveDeploymentPackage(
+            MavenProject project, 
+            Artifact artifact) throws ArtifactResolutionException, ArtifactNotFoundException {
+        Artifact jbiArtifact = factory.createArtifactWithClassifier(artifact
+                .getGroupId(), artifact.getArtifactId(), artifact.getVersion(),
+                "zip", getExtension(project));
+        resolver.resolve(jbiArtifact, remoteRepos, localRepo);
+        return new JbiDeployableArtifact(project.getArtifactId(), project
+                .getPackaging(), jbiArtifact.getFile().getAbsolutePath());
+    }
 
-	private String getExtension(MavenProject project2) {
-		if (project2.getPackaging().equals(JBI_SERVICE_ASSEMBLY))
-			return "";
-		else
-			return "installer";
-	}
+    private String getExtension(MavenProject project2) {
+        if (project2.getPackaging().equals(JBI_SERVICE_ASSEMBLY)) {
+            return "";
+        } else {
+            return "installer";
+        }
+    }
 
-	private class ArtifactDepthComparator implements Comparator {
+    private class ArtifactDepthComparator implements Comparator {
 
-		public int compare(Object arg0, Object arg1) {
-			int size1 = ((Artifact) arg0).getDependencyTrail().size();
-			int size2 = ((Artifact) arg1).getDependencyTrail().size();
-			if (size1 == size2)
-				return 0;
-			if (size1 > size2)
-				return 1;
-			else
-				return -1;
-		}
+        public int compare(Object arg0, Object arg1) {
+            int size1 = ((Artifact) arg0).getDependencyTrail().size();
+            int size2 = ((Artifact) arg1).getDependencyTrail().size();
+            if (size1 == size2) {
+                return 0;
+            }
+            if (size1 > size2) {
+                return 1;
+            } else {
+                return -1;
+            }
+        }
 
-	}
+    }
 
-	private class JbiDeployableArtifact {
-		private String file;
+    private class JbiDeployableArtifact {
+        private String file;
 
-		private String type;
+        private String type;
 
-		private String name;
+        private String name;
 
-		public String getName() {
-			return name;
-		}
+        public JbiDeployableArtifact(String name, String type, String file) {
+            this.name = name;
+            this.file = file;
+            this.type = type;
+        }
 
-		public JbiDeployableArtifact(String name, String type, String file) {
-			this.name = name;
-			this.file = file;
-			this.type = type;
-		}
+        public String getName() {
+            return name;
+        }
 
-		public String getFile() {
-			return file;
-		}
+        public String getFile() {
+            return file;
+        }
 
-		public String getType() {
-			return type;
-		}
+        public String getType() {
+            return type;
+        }
 
-		public String toString() {
-			return type + " : " + file;
-		}
+        public String toString() {
+            return type + " : " + file;
+        }
 
-		public boolean equals(Object obj) {
-			if (obj instanceof JbiDeployableArtifact)
-				return ((JbiDeployableArtifact) obj).toString().equals(
-						this.toString());
-			else
-				return false;
-		}
-	}
+        public boolean equals(Object obj) {
+            if (obj instanceof JbiDeployableArtifact) {
+                return ((JbiDeployableArtifact) obj).toString().equals(this.toString());
+            } else {
+                return false;
+            }
+        }
+        
+        public int hashCode() {
+            return toString().hashCode();
+        }
+    }
 }

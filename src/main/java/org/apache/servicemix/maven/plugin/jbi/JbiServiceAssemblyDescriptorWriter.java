@@ -34,146 +34,146 @@ import org.codehaus.plexus.util.xml.XMLWriter;
  * 
  */
 public class JbiServiceAssemblyDescriptorWriter extends
-		AbstractDescriptorWriter {
+        AbstractDescriptorWriter {
 
-	private final String encoding;
+    private final String encoding;
 
-	public JbiServiceAssemblyDescriptorWriter(String encoding) {
-		this.encoding = encoding;
-	}
+    public JbiServiceAssemblyDescriptorWriter(String encoding) {
+        this.encoding = encoding;
+    }
 
-	public void write(File descriptor, String name, String description,
-			List uris, List connections) throws JbiPluginException {
+    public void write(File descriptor, String name, String description,
+            List uris, List connections) throws JbiPluginException {
         PrintWriter w;
-		try {
-			w = new PrintWriter(descriptor, encoding);
-		} catch (IOException ex) {
-			throw new JbiPluginException("Exception while opening file["
-					+ descriptor.getAbsolutePath() + "]", ex);
-		}
+        try {
+            w = new PrintWriter(descriptor, encoding);
+        } catch (IOException ex) {
+            throw new JbiPluginException("Exception while opening file["
+                    + descriptor.getAbsolutePath() + "]", ex);
+        }
 
-		XMLWriter writer = new PrettyPrintXMLWriter(w, encoding, null);
-		writer.startElement("jbi");
-		writer.addAttribute("xmlns", "http://java.sun.com/xml/ns/jbi");
-		writer.addAttribute("version", "1.0");
+        XMLWriter writer = new PrettyPrintXMLWriter(w, encoding, null);
+        writer.startElement("jbi");
+        writer.addAttribute("xmlns", "http://java.sun.com/xml/ns/jbi");
+        writer.addAttribute("version", "1.0");
 
-		writer.startElement("service-assembly");
+        writer.startElement("service-assembly");
 
-		writer.startElement("identification");
-		writer.startElement("name");
-		writer.writeText(name);
-		writer.endElement();
-		writer.startElement("description");
-		writer.writeText(description);
-		writer.endElement();
-		writer.endElement();
+        writer.startElement("identification");
+        writer.startElement("name");
+        writer.writeText(name);
+        writer.endElement();
+        writer.startElement("description");
+        writer.writeText(description);
+        writer.endElement();
+        writer.endElement();
 
-		for (Iterator it = uris.iterator(); it.hasNext();) {
-			DependencyInformation serviceUnitInfo = (DependencyInformation) it
-					.next();
-			writeServiceUnit(writer, serviceUnitInfo);
+        for (Iterator it = uris.iterator(); it.hasNext();) {
+            DependencyInformation serviceUnitInfo = (DependencyInformation) it
+                    .next();
+            writeServiceUnit(writer, serviceUnitInfo);
 
-		}
+        }
 
-		if (!connections.isEmpty()) {
-			writer.startElement("connections");
+        if (!connections.isEmpty()) {
+            writer.startElement("connections");
 
-			Map namespaceMap = buildNamespaceMap(connections);
-			for (Iterator it = connections.iterator(); it.hasNext();) {
-				GenerateServiceAssemblyDescriptorMojo.Connection connection = (GenerateServiceAssemblyDescriptorMojo.Connection) it
-						.next();
-				writeConnection(namespaceMap, writer, connection);
+            Map namespaceMap = buildNamespaceMap(connections);
+            for (Iterator it = connections.iterator(); it.hasNext();) {
+                GenerateServiceAssemblyDescriptorMojo.Connection connection = (GenerateServiceAssemblyDescriptorMojo.Connection) it
+                        .next();
+                writeConnection(namespaceMap, writer, connection);
 
-			}
-			writer.endElement();
-		}
+            }
+            writer.endElement();
+        }
 
-		writer.endElement();
-		writer.endElement();
+        writer.endElement();
+        writer.endElement();
 
-		close(w);
-	}
+        close(w);
+    }
 
-	private Map buildNamespaceMap(List connections) {
-		List consumes = new ArrayList();
-		List provides = new ArrayList();
-		for (Iterator it = connections.iterator(); it.hasNext();) {
-			GenerateServiceAssemblyDescriptorMojo.Connection connection = (GenerateServiceAssemblyDescriptorMojo.Connection) it
-					.next();
-			consumes.add(connection.getConsumes());
-			provides.add(connection.getProvides());
-		}
+    private Map buildNamespaceMap(List connections) {
+        List consumes = new ArrayList();
+        List provides = new ArrayList();
+        for (Iterator it = connections.iterator(); it.hasNext();) {
+            GenerateServiceAssemblyDescriptorMojo.Connection connection = (GenerateServiceAssemblyDescriptorMojo.Connection) it
+                    .next();
+            consumes.add(connection.getConsumes());
+            provides.add(connection.getProvides());
+        }
 
-		return getNamespaceMap(provides, consumes);
+        return getNamespaceMap(provides, consumes);
 
-	}
+    }
 
-	private void writeConnection(Map namespaceMap, XMLWriter writer,
-			Connection connection) {
-		writer.startElement("connection");
-		if (connection.getConsumes() != null) {
-			writer.startElement("consumer");
-			addQNameAttribute(writer, "interface-name", connection
-					.getConsumes().getInterfaceName(), namespaceMap);
-			addQNameAttribute(writer, "service-name", connection.getConsumes()
-					.getServiceName(), namespaceMap);
-			addStringAttribute(writer, "endpoint-name", connection
-					.getConsumes().getEndpointName());
-			writer.endElement();
-		}
-		if (connection.getProvides() != null) {
-			writer.startElement("provider");
-			addQNameAttribute(writer, "interface-name", connection
-					.getProvides().getInterfaceName(), namespaceMap);
-			addQNameAttribute(writer, "service-name", connection.getProvides()
-					.getServiceName(), namespaceMap);
-			addStringAttribute(writer, "endpoint-name", connection
-					.getProvides().getEndpointName());
-			writer.endElement();
-		}
+    private void writeConnection(Map namespaceMap, XMLWriter writer,
+            Connection connection) {
+        writer.startElement("connection");
+        if (connection.getConsumes() != null) {
+            writer.startElement("consumer");
+            addQNameAttribute(writer, "interface-name", connection
+                    .getConsumes().getInterfaceName(), namespaceMap);
+            addQNameAttribute(writer, "service-name", connection.getConsumes()
+                    .getServiceName(), namespaceMap);
+            addStringAttribute(writer, "endpoint-name", connection
+                    .getConsumes().getEndpointName());
+            writer.endElement();
+        }
+        if (connection.getProvides() != null) {
+            writer.startElement("provider");
+            addQNameAttribute(writer, "interface-name", connection
+                    .getProvides().getInterfaceName(), namespaceMap);
+            addQNameAttribute(writer, "service-name", connection.getProvides()
+                    .getServiceName(), namespaceMap);
+            addStringAttribute(writer, "endpoint-name", connection
+                    .getProvides().getEndpointName());
+            writer.endElement();
+        }
 
-		writer.endElement();
+        writer.endElement();
 
-	}
+    }
 
-	private void writeServiceUnit(XMLWriter writer,
-			DependencyInformation serviceUnitInfo) throws JbiPluginException {
-		writer.startElement("service-unit");
-		writer.startElement("identification");
-		writer.startElement("name");
-		writer.writeText(serviceUnitInfo.getName());
-		writer.endElement();
-		writer.startElement("description");
+    private void writeServiceUnit(XMLWriter writer,
+            DependencyInformation serviceUnitInfo) throws JbiPluginException {
+        writer.startElement("service-unit");
+        writer.startElement("identification");
+        writer.startElement("name");
+        writer.writeText(serviceUnitInfo.getName());
+        writer.endElement();
+        writer.startElement("description");
         if (serviceUnitInfo.getDescription() != null) {
             writer.writeText(serviceUnitInfo.getDescription());
         } else {
             writer.writeText(serviceUnitInfo.getName());
         }
-		writer.endElement();
-		writer.endElement();
+        writer.endElement();
+        writer.endElement();
 
-		writer.startElement("target");
-		writer.startElement("artifacts-zip");
-		writer.writeText(serviceUnitInfo.getFilename());
-		writer.endElement();
+        writer.startElement("target");
+        writer.startElement("artifacts-zip");
+        writer.writeText(serviceUnitInfo.getFilename());
+        writer.endElement();
 
-		writer.startElement("component-name");
-		writer.writeText(serviceUnitInfo.getComponent());
-		writer.endElement();
+        writer.startElement("component-name");
+        writer.writeText(serviceUnitInfo.getComponent());
+        writer.endElement();
 
-		writer.endElement();
+        writer.endElement();
 
-		writer.endElement();
-	}
+        writer.endElement();
+    }
 
-	private void close(Writer closeable) {
-		if (closeable != null) {
-			try {
-				closeable.close();
-			} catch (Exception e) {
-				// TODO: warn
-			}
-		}
-	}
+    private void close(Writer closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (Exception e) {
+                // TODO: warn
+            }
+        }
+    }
 
 }

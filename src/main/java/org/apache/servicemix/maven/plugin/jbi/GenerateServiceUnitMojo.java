@@ -49,153 +49,150 @@ import org.codehaus.plexus.util.FileUtils;
  */
 public class GenerateServiceUnitMojo extends AbstractJbiMojo {
 
-	/**
-	 * The name of the generated war.
-	 * 
-	 * @parameter expression="${project.artifactId}-${project.version}.zip"
-	 * @required
-	 */
-	private String serviceUnitName;
+    /**
+     * The name of the generated war.
+     * 
+     * @parameter expression="${project.artifactId}-${project.version}.zip"
+     * @required
+     */
+    private String serviceUnitName;
 
-	/**
-	 * The directory for the generated JBI component.
-	 * 
-	 * @parameter expression="${project.build.directory}"
-	 * @required
-	 */
-	private File outputDirectory;
+    /**
+     * The directory for the generated JBI component.
+     * 
+     * @parameter expression="${project.build.directory}"
+     * @required
+     */
+    private File outputDirectory;
 
-	/**
-	 * The Zip archiver.
-	 * 
-	 * @parameter expression="${component.org.codehaus.plexus.archiver.Archiver#jar}"
-	 * @required
-	 */
-	private JarArchiver jarArchiver;
+    /**
+     * The Zip archiver.
+     * 
+     * @parameter expression="${component.org.codehaus.plexus.archiver.Archiver#jar}"
+     * @required
+     */
+    private JarArchiver jarArchiver;
 
-	/**
-	 * The maven archive configuration to use.
-	 * 
-	 * @parameter
-	 */
-	private MavenArchiveConfiguration archive = new MavenArchiveConfiguration();
+    /**
+     * The maven archive configuration to use.
+     * 
+     * @parameter
+     */
+    private MavenArchiveConfiguration archive = new MavenArchiveConfiguration();
 
-	/**
-	 * Directory where the application.xml file will be auto-generated.
-	 * 
-	 * @parameter expression="${project.build.directory}/classes"
-	 */
-	private File serviceUnitLocation;
+    /**
+     * Directory where the application.xml file will be auto-generated.
+     * 
+     * @parameter expression="${project.build.directory}/classes"
+     */
+    private File serviceUnitLocation;
 
-	public void execute() throws MojoExecutionException, MojoFailureException {
-		try {
+    public void execute() throws MojoExecutionException, MojoFailureException {
+        try {
 
-			createUnpackedInstaller();
+            createUnpackedInstaller();
 
-			File serviceUnitFile = new File(outputDirectory, serviceUnitName);
-			createArchive(serviceUnitFile);
+            File serviceUnitFile = new File(outputDirectory, serviceUnitName);
+            createArchive(serviceUnitFile);
 
-			projectHelper.attachArtifact(project, "zip", "", new File(
-					outputDirectory, serviceUnitName));
+            projectHelper.attachArtifact(project, "zip", "", new File(
+                    outputDirectory, serviceUnitName));
 
-		} catch (JbiPluginException e) {
-			throw new MojoExecutionException("Failed to create service unit", e);
-		}
+        } catch (JbiPluginException e) {
+            throw new MojoExecutionException("Failed to create service unit", e);
+        }
 
-	}
+    }
 
-	private void createArchive(File installerFile) throws JbiPluginException {
-		try {
+    private void createArchive(File installerFile) throws JbiPluginException {
+        try {
 
-			// generate war file
-			getLog().info(
-					"Generating service unit "
-							+ installerFile.getAbsolutePath());
-			MavenArchiver archiver = new MavenArchiver();
-			archiver.setArchiver(jarArchiver);
-			archiver.setOutputFile(installerFile);
-			jarArchiver.addDirectory(workDirectory);
+            // generate war file
+            getLog().info(
+                    "Generating service unit "
+                            + installerFile.getAbsolutePath());
+            MavenArchiver archiver = new MavenArchiver();
+            archiver.setArchiver(jarArchiver);
+            archiver.setOutputFile(installerFile);
+            jarArchiver.addDirectory(workDirectory);
 
-			// create archive
-			archiver.createArchive(getProject(), archive);
+            // create archive
+            archiver.createArchive(getProject(), archive);
 
-		} catch (ArchiverException e) {
-			throw new JbiPluginException("Error creating service unit: "
-					+ e.getMessage(), e);
-		} catch (ManifestException e) {
-			throw new JbiPluginException("Error creating service unit: "
-					+ e.getMessage(), e);
-		} catch (IOException e) {
-			throw new JbiPluginException("Error creating service unit: "
-					+ e.getMessage(), e);
-		} catch (DependencyResolutionRequiredException e) {
-			throw new JbiPluginException("Error creating service unit: "
-					+ e.getMessage(), e);
-		}
+        } catch (ArchiverException e) {
+            throw new JbiPluginException("Error creating service unit: "
+                    + e.getMessage(), e);
+        } catch (ManifestException e) {
+            throw new JbiPluginException("Error creating service unit: "
+                    + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new JbiPluginException("Error creating service unit: "
+                    + e.getMessage(), e);
+        } catch (DependencyResolutionRequiredException e) {
+            throw new JbiPluginException("Error creating service unit: "
+                    + e.getMessage(), e);
+        }
 
-	}
+    }
 
-	private void createUnpackedInstaller() throws JbiPluginException {
+    private void createUnpackedInstaller() throws JbiPluginException {
 
-		if (!workDirectory.isDirectory()) {
-			if (!workDirectory.mkdirs()) {
-				throw new JbiPluginException(
-						"Unable to create work directory: " + workDirectory);
-			}
-		}
+        if (!workDirectory.isDirectory() && !workDirectory.mkdirs()) {
+            throw new JbiPluginException("Unable to create work directory: " + workDirectory);
+        }
 
-		try {
-			FileUtils.copyDirectoryStructure(serviceUnitLocation, workDirectory);
-		} catch (IOException e) {
-			throw new JbiPluginException("Unable to copy directory "
-					+ serviceUnitLocation, e);
-		}
+        try {
+            FileUtils.copyDirectoryStructure(serviceUnitLocation, workDirectory);
+        } catch (IOException e) {
+            throw new JbiPluginException("Unable to copy directory "
+                    + serviceUnitLocation, e);
+        }
 
-		ScopeArtifactFilter filter = new ScopeArtifactFilter(
-				Artifact.SCOPE_RUNTIME);
+        ScopeArtifactFilter filter = new ScopeArtifactFilter(
+                Artifact.SCOPE_RUNTIME);
 
-		JbiResolutionListener listener = resolveProject();
-		// print(listener.getRootNode(), "");
-		
-		Set includes = new HashSet();
-		for (Iterator iter = project.getArtifacts().iterator(); iter.hasNext();) {
-			Artifact artifact = (Artifact) iter.next();
-			if (!artifact.isOptional() && filter.include(artifact)) {
-				MavenProject project = null;
-				getLog().info("Resolving "+artifact);
-				try {
-					project = projectBuilder.buildFromRepository(artifact,
-							remoteRepos, localRepo);
-				} catch (ProjectBuildingException e) {
-					getLog().warn(
-							"Unable to determine packaging for dependency : "
-									+ artifact.getArtifactId()
-									+ " assuming jar");
-				}
-				String type = project != null ? project.getPackaging()
-						: artifact.getType();
-				if ("jbi-component".equals(type)) {
-					removeBranch(listener, artifact);
-				} else if ("jbi-shared-library".equals(type)) {
-					removeBranch(listener, artifact);
-				}  else {
-					includes.add(artifact);
-				}
-			}
-		}
-		// print(listener.getRootNode(), "");
+        JbiResolutionListener listener = resolveProject();
+        // print(listener.getRootNode(), "");
 
-		for (Iterator iter = retainArtifacts(includes, listener).iterator(); iter
-				.hasNext();) {
-			Artifact artifact = (Artifact) iter.next();
-			try {
-				getLog().info("Including: " + artifact);
-				FileUtils.copyFileToDirectory(artifact.getFile(), new File(
-						workDirectory, LIB_DIRECTORY));
-			} catch (IOException e) {
-				throw new JbiPluginException("Unable to copy file "
-						+ artifact.getFile(), e);
-			}
-		}
-	}
+        Set includes = new HashSet();
+        for (Iterator iter = project.getArtifacts().iterator(); iter.hasNext();) {
+            Artifact artifact = (Artifact) iter.next();
+            if (!artifact.isOptional() && filter.include(artifact)) {
+                MavenProject project = null;
+                getLog().info("Resolving " + artifact);
+                try {
+                    project = projectBuilder.buildFromRepository(artifact,
+                            remoteRepos, localRepo);
+                } catch (ProjectBuildingException e) {
+                    getLog().warn(
+                            "Unable to determine packaging for dependency : "
+                                    + artifact.getArtifactId()
+                                    + " assuming jar");
+                }
+                String type = project != null ? project.getPackaging()
+                        : artifact.getType();
+                if ("jbi-component".equals(type)) {
+                    removeBranch(listener, artifact);
+                } else if ("jbi-shared-library".equals(type)) {
+                    removeBranch(listener, artifact);
+                } else {
+                    includes.add(artifact);
+                }
+            }
+        }
+        // print(listener.getRootNode(), "");
+
+        for (Iterator iter = retainArtifacts(includes, listener).iterator(); iter
+                .hasNext();) {
+            Artifact artifact = (Artifact) iter.next();
+            try {
+                getLog().info("Including: " + artifact);
+                FileUtils.copyFileToDirectory(artifact.getFile(), new File(
+                        workDirectory, LIB_DIRECTORY));
+            } catch (IOException e) {
+                throw new JbiPluginException("Unable to copy file "
+                        + artifact.getFile(), e);
+            }
+        }
+    }
 }

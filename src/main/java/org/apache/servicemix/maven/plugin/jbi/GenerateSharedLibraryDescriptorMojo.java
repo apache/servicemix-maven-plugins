@@ -42,133 +42,136 @@ import org.codehaus.plexus.util.FileUtils;
  */
 public class GenerateSharedLibraryDescriptorMojo extends AbstractJbiMojo {
 
-	public static final String UTF_8 = "UTF-8";
+    public static final String UTF_8 = "UTF-8";
 
-	/**
-	 * Whether the jbi.xml should be generated or not.
-	 * 
-	 * @parameter
-	 */
-	private Boolean generateJbiDescriptor = Boolean.TRUE;
+    /**
+     * Whether the jbi.xml should be generated or not.
+     * 
+     * @parameter
+     */
+    private Boolean generateJbiDescriptor = Boolean.TRUE;
 
-	/**
-	 * The shared library name.
-	 * 
-	 * @parameter expression="${project.artifactId}"
-	 */
-	private String name;
+    /**
+     * The shared library name.
+     * 
+     * @parameter expression="${project.artifactId}"
+     */
+    private String name;
 
-	/**
-	 * The shared library description.
-	 * 
-	 * @parameter expression="${project.name}"
-	 */
-	private String description;
+    /**
+     * The shared library description.
+     * 
+     * @parameter expression="${project.name}"
+     */
+    private String description;
 
-	/**
-	 * The shared library version.
-	 * 
-	 * @parameter expression="${project.version}"
-	 */
-	private String version;
+    /**
+     * The shared library version.
+     * 
+     * @parameter expression="${project.version}"
+     */
+    private String version;
 
-	/**
-	 * The shared library class loader delegation
-	 * 
-	 * @parameter expression="parent-first"
-	 */
-	private String classLoaderDelegation;
+    /**
+     * The shared library class loader delegation
+     * 
+     * @parameter expression="parent-first"
+     */
+    private String classLoaderDelegation;
 
-	/**
-	 * Character encoding for the auto-generated application.xml file.
-	 * 
-	 * @parameter
-	 */
-	private String encoding = UTF_8;
+    /**
+     * Character encoding for the auto-generated application.xml file.
+     * 
+     * @parameter
+     */
+    private String encoding = UTF_8;
 
-	/**
-	 * Directory where the application.xml file will be auto-generated.
-	 * 
-	 * @parameter expression="${project.build.directory}"
-	 */
-	private String generatedDescriptorLocation;
+    /**
+     * Directory where the application.xml file will be auto-generated.
+     * 
+     * @parameter expression="${project.build.directory}"
+     */
+    private String generatedDescriptorLocation;
 
-	public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException, MojoFailureException {
 
-		getLog()
-				.debug(
-						" ======= GenerateSharedLibraryDescriptorMojo settings =======");
-		getLog().debug("workDirectory[" + workDirectory + "]");
-		getLog().debug("generateJbiDescriptor[" + generateJbiDescriptor + "]");
-		getLog().debug("name[" + name + "]");
-		getLog().debug("description[" + description + "]");
-		getLog().debug("encoding[" + encoding + "]");
-		getLog().debug("generatedDescriptorLocation[" + generatedDescriptorLocation	+ "]");
-		getLog().debug("version[" + version + "]");
+        getLog()
+                .debug(
+                        " ======= GenerateSharedLibraryDescriptorMojo settings =======");
+        getLog().debug("workDirectory[" + workDirectory + "]");
+        getLog().debug("generateJbiDescriptor[" + generateJbiDescriptor + "]");
+        getLog().debug("name[" + name + "]");
+        getLog().debug("description[" + description + "]");
+        getLog().debug("encoding[" + encoding + "]");
+        getLog().debug(
+                "generatedDescriptorLocation[" + generatedDescriptorLocation
+                        + "]");
+        getLog().debug("version[" + version + "]");
 
-		if (!generateJbiDescriptor.booleanValue()) {
-			getLog().debug("Generation of jbi.xml is disabled");
-			return;
-		}
+        if (!generateJbiDescriptor.booleanValue()) {
+            getLog().debug("Generation of jbi.xml is disabled");
+            return;
+        }
 
-		// Generate jbi descriptor and copy it to the build directory
-		getLog().info("Generating jbi.xml");
-		try {
-			generateJbiDescriptor();
-		} catch (JbiPluginException e) {
-			throw new MojoExecutionException("Failed to generate jbi.xml", e);
-		}
+        // Generate jbi descriptor and copy it to the build directory
+        getLog().info("Generating jbi.xml");
+        try {
+            generateJbiDescriptor();
+        } catch (JbiPluginException e) {
+            throw new MojoExecutionException("Failed to generate jbi.xml", e);
+        }
 
-		try {
-			FileUtils.copyFileToDirectory(new File(generatedDescriptorLocation,
-					JBI_DESCRIPTOR), new File(getWorkDirectory(), META_INF));
-		} catch (IOException e) {
-			throw new MojoExecutionException(
-					"Unable to copy jbi.xml to final destination", e);
-		}
-	}
+        try {
+            FileUtils.copyFileToDirectory(new File(generatedDescriptorLocation,
+                    JBI_DESCRIPTOR), new File(getWorkDirectory(), META_INF));
+        } catch (IOException e) {
+            throw new MojoExecutionException(
+                    "Unable to copy jbi.xml to final destination", e);
+        }
+    }
 
-	/**
-	 * Generates the deployment descriptor if necessary.
-	 */
-	protected void generateJbiDescriptor() throws JbiPluginException {
-		File outputDir = new File(generatedDescriptorLocation);
-		if (!outputDir.exists()) {
-			outputDir.mkdirs();
-		}
+    /**
+     * Generates the deployment descriptor if necessary.
+     */
+    protected void generateJbiDescriptor() throws JbiPluginException {
+        File outputDir = new File(generatedDescriptorLocation);
+        if (!outputDir.exists()) {
+            outputDir.mkdirs();
+        }
 
-		File descriptor = new File(outputDir, JBI_DESCRIPTOR);
+        File descriptor = new File(outputDir, JBI_DESCRIPTOR);
 
-		List embeddedLibraries = new ArrayList();
+        List embeddedLibraries = new ArrayList();
 
-		DependencyInformation info = new DependencyInformation();
-		info.setFilename(LIB_DIRECTORY + "/" + project.getArtifactId() + "-"
-				+ project.getVersion() + ".jar");
-		info.setVersion(project.getVersion());
-		info.setName(project.getArtifactId());
-		info.setType("jar");
-		embeddedLibraries.add(info);
+        DependencyInformation info = new DependencyInformation();
+        info.setFilename(LIB_DIRECTORY + "/" + project.getArtifactId() + "-"
+                + project.getVersion() + ".jar");
+        info.setVersion(project.getVersion());
+        info.setName(project.getArtifactId());
+        info.setType("jar");
+        embeddedLibraries.add(info);
 
-		Set artifacts = project.getArtifacts();
-		for (Iterator iter = artifacts.iterator(); iter.hasNext();) {
-			Artifact artifact = (Artifact) iter.next();
+        Set artifacts = project.getArtifacts();
+        for (Iterator iter = artifacts.iterator(); iter.hasNext();) {
+            Artifact artifact = (Artifact) iter.next();
 
-			// TODO: utilise appropriate methods from project builder
-			ScopeArtifactFilter filter = new ScopeArtifactFilter(
-					Artifact.SCOPE_RUNTIME);
-			if (!artifact.isOptional() && filter.include(artifact)) {
-				String type = artifact.getType();
-				if ("jar".equals(type)) {
-					info = new DependencyInformation();
-					info.setFilename(LIB_DIRECTORY + "/" + artifact.getFile().getName());
-					embeddedLibraries.add(info);
-				}
-			}
-		}
+            // TODO: utilise appropriate methods from project builder
+            ScopeArtifactFilter filter = new ScopeArtifactFilter(
+                    Artifact.SCOPE_RUNTIME);
+            if (!artifact.isOptional() && filter.include(artifact)) {
+                String type = artifact.getType();
+                if ("jar".equals(type)) {
+                    info = new DependencyInformation();
+                    info.setFilename(LIB_DIRECTORY + "/"
+                            + artifact.getFile().getName());
+                    embeddedLibraries.add(info);
+                }
+            }
+        }
 
-		JbiSharedLibraryDescriptorWriter writer = new JbiSharedLibraryDescriptorWriter(
-				encoding);
-		writer.write(descriptor, name, description, version,
-				classLoaderDelegation, embeddedLibraries);
-	}
+        JbiSharedLibraryDescriptorWriter writer = new JbiSharedLibraryDescriptorWriter(
+                encoding);
+        writer.write(descriptor, name, description, version,
+                classLoaderDelegation, embeddedLibraries);
+    }
 }

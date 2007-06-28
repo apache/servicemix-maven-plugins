@@ -44,144 +44,141 @@ import org.codehaus.plexus.util.FileUtils;
  */
 public class GenerateSharedLibraryMojo extends AbstractJbiMojo {
 
-	/**
-	 * The directory for the generated JBI component.
-	 * 
-	 * @parameter expression="${project.build.directory}"
-	 * @required
-	 */
-	private File outputDirectory;
+    /**
+     * The directory for the generated JBI component.
+     * 
+     * @parameter expression="${project.build.directory}"
+     * @required
+     */
+    private File outputDirectory;
 
-	/**
-	 * The name of the generated war.
-	 * 
-	 * @parameter expression="${project.artifactId}-${project.version}.zip"
-	 * @required
-	 */
-	private String sharedLibraryName;
-	
-	/**
-	 * The name of the generated war.
-	 * 
-	 * @parameter expression="${project.artifactId}-${project.version}.jar"
-	 * @required
-	 */
-	private String jarName;
+    /**
+     * The name of the generated war.
+     * 
+     * @parameter expression="${project.artifactId}-${project.version}.zip"
+     * @required
+     */
+    private String sharedLibraryName;
 
-	/**
-	 * The Zip archiver.
-	 * 
-	 * @parameter expression="${component.org.codehaus.plexus.archiver.Archiver#jar}"
-	 * @required
-	 */
-	private JarArchiver jarArchiver;
+    /**
+     * The name of the generated war.
+     * 
+     * @parameter expression="${project.artifactId}-${project.version}.jar"
+     * @required
+     */
+    private String jarName;
 
-	/**
-	 * Single directory for extra files to include in the JBI component.
-	 * 
-	 * @parameter expression="${basedir}/src/main/jbi"
-	 * @required
-	 */
-	private File jbiSourceDirectory;
+    /**
+     * The Zip archiver.
+     * 
+     * @parameter expression="${component.org.codehaus.plexus.archiver.Archiver#jar}"
+     * @required
+     */
+    private JarArchiver jarArchiver;
 
-	/**
-	 * The maven archive configuration to use.
-	 * 
-	 * @parameter
-	 */
-	private MavenArchiveConfiguration archive = new MavenArchiveConfiguration();
+    /**
+     * Single directory for extra files to include in the JBI component.
+     * 
+     * @parameter expression="${basedir}/src/main/jbi"
+     * @required
+     */
+    private File jbiSourceDirectory;
 
-	public void execute() throws MojoExecutionException, MojoFailureException {
+    /**
+     * The maven archive configuration to use.
+     * 
+     * @parameter
+     */
+    private MavenArchiveConfiguration archive = new MavenArchiveConfiguration();
 
-		getLog().debug(" ======= GenerateInstallerMojo settings =======");
-		getLog().debug("workDirectory[" + workDirectory + "]");
-		getLog().debug("installerName[" + sharedLibraryName + "]");
-		getLog().debug("jbiSourceDirectory[" + jbiSourceDirectory + "]");
+    public void execute() throws MojoExecutionException, MojoFailureException {
 
-		try {
+        getLog().debug(" ======= GenerateInstallerMojo settings =======");
+        getLog().debug("workDirectory[" + workDirectory + "]");
+        getLog().debug("installerName[" + sharedLibraryName + "]");
+        getLog().debug("jbiSourceDirectory[" + jbiSourceDirectory + "]");
 
-			createUnpackedSharedLibrary();
+        try {
 
-			File installerFile = new File(outputDirectory, sharedLibraryName);
-			createArchive(installerFile);
-			
-			projectHelper.attachArtifact(project,"jar", "", new File(
-					outputDirectory, jarName));
+            createUnpackedSharedLibrary();
 
-			projectHelper.attachArtifact(project,"zip", "installer", new File(
-					outputDirectory, sharedLibraryName));
+            File installerFile = new File(outputDirectory, sharedLibraryName);
+            createArchive(installerFile);
 
-		} catch (JbiPluginException e) {
-			throw new MojoExecutionException("Failed to create shared library",
-					e);
-		}
-	}
+            projectHelper.attachArtifact(project, "jar", "", new File(
+                    outputDirectory, jarName));
 
-	private void createArchive(File installerFile) throws JbiPluginException {
-		try {
+            projectHelper.attachArtifact(project, "zip", "installer", new File(
+                    outputDirectory, sharedLibraryName));
 
-			// generate war file
-			getLog().info(
-					"Generating shared library "
-							+ installerFile.getAbsolutePath());
-			MavenArchiver archiver = new MavenArchiver();
-			archiver.setArchiver(jarArchiver);
-			archiver.setOutputFile(installerFile);
-			jarArchiver.addDirectory(workDirectory);
-			if (jbiSourceDirectory.isDirectory()) {
-				jarArchiver.addDirectory(jbiSourceDirectory, null,
-						DirectoryScanner.DEFAULTEXCLUDES);
-			}
-			// create archive
-			archiver.createArchive(getProject(), archive);
+        } catch (JbiPluginException e) {
+            throw new MojoExecutionException("Failed to create shared library",
+                    e);
+        }
+    }
 
-		} catch (Exception e) {
-			throw new JbiPluginException("Error creating shared library: "
-					+ e.getMessage(), e);
-		}
-	}
+    private void createArchive(File installerFile) throws JbiPluginException {
+        try {
 
-	private void createUnpackedSharedLibrary() throws JbiPluginException {
+            // generate war file
+            getLog().info(
+                    "Generating shared library "
+                            + installerFile.getAbsolutePath());
+            MavenArchiver archiver = new MavenArchiver();
+            archiver.setArchiver(jarArchiver);
+            archiver.setOutputFile(installerFile);
+            jarArchiver.addDirectory(workDirectory);
+            if (jbiSourceDirectory.isDirectory()) {
+                jarArchiver.addDirectory(jbiSourceDirectory, null,
+                        DirectoryScanner.DEFAULTEXCLUDES);
+            }
+            // create archive
+            archiver.createArchive(getProject(), archive);
 
-		if (!workDirectory.isDirectory()) {
-			if (!workDirectory.mkdirs()) {
-				throw new JbiPluginException(
-						"Unable to create work directory: " + workDirectory);
-			}
-		}
+        } catch (Exception e) {
+            throw new JbiPluginException("Error creating shared library: "
+                    + e.getMessage(), e);
+        }
+    }
 
-		File projectArtifact = new File(outputDirectory, project
-				.getArtifactId()
-				+ "-" + project.getVersion() + ".jar");
-		try {
-			FileUtils.copyFileToDirectory(projectArtifact, new File(
-					workDirectory, LIB_DIRECTORY));
-			
-		} catch (IOException e) {
-			throw new JbiPluginException("Unable to copy file "
-					+ projectArtifact, e);
-		}
-		
-		Set artifacts = project.getArtifacts();
-		for (Iterator iter = artifacts.iterator(); iter.hasNext();) {
-			Artifact artifact = (Artifact) iter.next();
+    private void createUnpackedSharedLibrary() throws JbiPluginException {
 
-			// TODO: utilise appropriate methods from project builder
-			ScopeArtifactFilter filter = new ScopeArtifactFilter(
-					Artifact.SCOPE_RUNTIME);
-			if (!artifact.isOptional() && filter.include(artifact)) {
-				String type = artifact.getType();
-				if ("jar".equals(type)) {
-					try {
-						FileUtils.copyFileToDirectory(artifact.getFile(),
-								new File(workDirectory, LIB_DIRECTORY));
-					} catch (IOException e) {
-						throw new JbiPluginException("Unable to copy file "
-								+ artifact.getFile(), e);
-					}
-				}
-			}
-		}
-	}
+        if (!workDirectory.isDirectory() && !workDirectory.mkdirs()) {
+            throw new JbiPluginException("Unable to create work directory: " + workDirectory);
+        }
+
+        File projectArtifact = new File(outputDirectory, project
+                .getArtifactId()
+                + "-" + project.getVersion() + ".jar");
+        try {
+            FileUtils.copyFileToDirectory(projectArtifact, new File(
+                    workDirectory, LIB_DIRECTORY));
+
+        } catch (IOException e) {
+            throw new JbiPluginException("Unable to copy file "
+                    + projectArtifact, e);
+        }
+
+        Set artifacts = project.getArtifacts();
+        for (Iterator iter = artifacts.iterator(); iter.hasNext();) {
+            Artifact artifact = (Artifact) iter.next();
+
+            // TODO: utilise appropriate methods from project builder
+            ScopeArtifactFilter filter = new ScopeArtifactFilter(
+                    Artifact.SCOPE_RUNTIME);
+            if (!artifact.isOptional() && filter.include(artifact)) {
+                String type = artifact.getType();
+                if ("jar".equals(type)) {
+                    try {
+                        FileUtils.copyFileToDirectory(artifact.getFile(),
+                                new File(workDirectory, LIB_DIRECTORY));
+                    } catch (IOException e) {
+                        throw new JbiPluginException("Unable to copy file "
+                                + artifact.getFile(), e);
+                    }
+                }
+            }
+        }
+    }
 
 }

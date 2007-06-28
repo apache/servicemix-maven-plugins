@@ -32,64 +32,68 @@ import org.codehaus.plexus.util.xml.XMLWriter;
  */
 public class JbiSharedLibraryDescriptorWriter {
 
-	private final String encoding;
+    private final String encoding;
 
-	public JbiSharedLibraryDescriptorWriter(String encoding) {
-		this.encoding = encoding;
-	}
+    public JbiSharedLibraryDescriptorWriter(String encoding) {
+        this.encoding = encoding;
+    }
 
-	public void write(File descriptor, String name, String description,
-			String version, String classLoaderDelegation, List uris)
-			throws JbiPluginException {
+    public void write(File descriptor, 
+                      String name, 
+                      String description,
+                      String version, 
+                      String classLoaderDelegation, 
+                      List uris) throws JbiPluginException {
         PrintWriter w;
-		try {
-			w = new PrintWriter(descriptor, encoding);
-		} catch (IOException ex) {
-			throw new JbiPluginException("Exception while opening file["
-					+ descriptor.getAbsolutePath() + "]", ex);
-		}
+        try {
+            w = new PrintWriter(descriptor, encoding);
+        } catch (IOException ex) {
+            throw new JbiPluginException("Exception while opening file["
+                    + descriptor.getAbsolutePath() + "]", ex);
+        }
 
-		XMLWriter writer = new PrettyPrintXMLWriter(w, encoding, null);
-		writer.startElement("jbi");
-		writer.addAttribute("xmlns", "http://java.sun.com/xml/ns/jbi");
-		writer.addAttribute("version", "1.0");
+        XMLWriter writer = new PrettyPrintXMLWriter(w, encoding, null);
+        writer.startElement("jbi");
+        writer.addAttribute("xmlns", "http://java.sun.com/xml/ns/jbi");
+        writer.addAttribute("version", "1.0");
 
-		writer.startElement("shared-library");
-		writer.addAttribute("class-loader-delegation", classLoaderDelegation);
-		writer.addAttribute("version", version);
+        writer.startElement("shared-library");
+        writer.addAttribute("class-loader-delegation", classLoaderDelegation);
+        writer.addAttribute("version", version);
 
-		writer.startElement("identification");
-		writer.startElement("name");
-		writer.writeText(name);
-		writer.endElement();
-		writer.startElement("description");
-		writer.writeText(description);
-		writer.endElement();
-		writer.endElement();
+        writer.startElement("identification");
+        writer.startElement("name");
+        writer.writeText(name);
+        writer.endElement();
+        writer.startElement("description");
+        writer.writeText(description);
+        writer.endElement();
+        writer.endElement();
 
-		writer.startElement("shared-library-class-path");
-		for (Iterator it = uris.iterator(); it.hasNext();) {
-			DependencyInformation dependency = (DependencyInformation) it.next();
-			writer.startElement("path-element");
-			writer.writeText(dependency.getFilename());
-			writer.endElement();			
-		}
-		writer.endElement();
+        writer.startElement("shared-library-class-path");
+        for (Iterator it = uris.iterator(); it.hasNext();) {
+            DependencyInformation dependency = (DependencyInformation) it
+                    .next();
+            writer.startElement("path-element");
+            writer.writeText(dependency.getFilename());
+            writer.endElement();
+        }
+        writer.endElement();
 
-		writer.endElement();
-		writer.endElement();
+        writer.endElement();
+        writer.endElement();
 
-		close(w);
-	}
+        close(w);
+    }
 
-	private void close(Writer closeable) {
-		if (closeable != null) {
-			try {
-				closeable.close();
-			} catch (Exception e) {
-				// TODO: warn
-			}
-		}
-	}
+    private void close(Writer closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (Exception e) {
+                // TODO: warn
+            }
+        }
+    }
 
 }

@@ -44,56 +44,57 @@ import org.codehaus.plexus.util.FileUtils;
  */
 public class GenerateServiceAssemblyMojo extends AbstractJbiMojo {
 
-	/**
-	 * Directory where the application.xml file will be auto-generated.
-	 * 
-	 * @parameter expression="${project.build.directory}/classes"
-	 * @required
-	 */
-	private File workDirectory;
+    /**
+     * Directory where the application.xml file will be auto-generated.
+     * 
+     * @parameter expression="${project.build.directory}/classes"
+     * @required
+     */
+    private File workDirectory;
 
-	public void execute() throws MojoExecutionException, MojoFailureException {
-		try {
-			injectDependentServiceUnits();
-		} catch (Exception e) {
-			throw new MojoExecutionException("Failed to inject dependencies", e);
-		}
-	}
+    public void execute() throws MojoExecutionException, MojoFailureException {
+        try {
+            injectDependentServiceUnits();
+        } catch (Exception e) {
+            throw new MojoExecutionException("Failed to inject dependencies", e);
+        }
+    }
 
-	private void injectDependentServiceUnits() throws JbiPluginException,
-			ArtifactResolutionException, ArtifactNotFoundException {
-		Set artifacts = project.getArtifacts();
-		for (Iterator iter = artifacts.iterator(); iter.hasNext();) {
-			Artifact artifact = (Artifact) iter.next();
+    private void injectDependentServiceUnits() throws JbiPluginException,
+            ArtifactResolutionException, ArtifactNotFoundException {
+        Set artifacts = project.getArtifacts();
+        for (Iterator iter = artifacts.iterator(); iter.hasNext();) {
+            Artifact artifact = (Artifact) iter.next();
 
-			// TODO: utilise appropriate methods from project builder
-			ScopeArtifactFilter filter = new ScopeArtifactFilter(
-					Artifact.SCOPE_RUNTIME);			
-			if (!artifact.isOptional() && filter.include(artifact)
-					&& (artifact.getDependencyTrail().size() == 2)) {
-				MavenProject project = null;
-				try {
-					project = projectBuilder.buildFromRepository(artifact,
-							remoteRepos, localRepo);
-				} catch (ProjectBuildingException e) {
-					getLog().warn(
-							"Unable to determine packaging for dependency : "
-									+ artifact.getArtifactId()
-									+ " assuming jar");
-				}
-				if ((project != null)
-						&& (project.getPackaging().equals("jbi-service-unit"))) {
-					try {
+            // TODO: utilise appropriate methods from project builder
+            ScopeArtifactFilter filter = new ScopeArtifactFilter(
+                    Artifact.SCOPE_RUNTIME);
+            if (!artifact.isOptional() && filter.include(artifact)
+                    && (artifact.getDependencyTrail().size() == 2)) {
+                MavenProject project = null;
+                try {
+                    project = projectBuilder.buildFromRepository(artifact,
+                            remoteRepos, localRepo);
+                } catch (ProjectBuildingException e) {
+                    getLog().warn(
+                            "Unable to determine packaging for dependency : "
+                                    + artifact.getArtifactId()
+                                    + " assuming jar");
+                }
+                if ((project != null)
+                        && (project.getPackaging().equals("jbi-service-unit"))) {
+                    try {
                         String path = artifact.getFile().getAbsolutePath();
-                        path = path.substring(0, path.lastIndexOf('.')) + ".zip";
-						FileUtils.copyFileToDirectory(new File(path),
-								workDirectory);
-					} catch (IOException e) {
-						throw new JbiPluginException(e);
-					}
-				}
-			}
-		}
-	}
+                        path = path.substring(0, path.lastIndexOf('.'))
+                                + ".zip";
+                        FileUtils.copyFileToDirectory(new File(path),
+                                workDirectory);
+                    } catch (IOException e) {
+                        throw new JbiPluginException(e);
+                    }
+                }
+            }
+        }
+    }
 
 }
