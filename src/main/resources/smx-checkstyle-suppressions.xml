@@ -23,6 +23,8 @@
 <suppressions>
     <suppress checks=".*"
               files=".+[\\\/]generated[\\\/].+\.java" />
+    <suppress checks=".*"
+              files=".+[\\\/]archetype-resources[\\\/].+\.java" />
     <suppress checks="IllegalType"
               files=".+[\\\/]JbiInvokeAction\.java" />
     <suppress checks="ThrowsCount"
