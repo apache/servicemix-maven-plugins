@@ -29,4 +29,18 @@
               files=".+[\\\/]wsn[\\\/].+" />
     <suppress checks="ParameterNumber" 
               files="(GraphArtifactCollector\.java)|(JbiComponentDescriptorWriter.java)" />
+    <suppress checks="ParameterNumber"
+              files=".+[\\\/]JBIContainer\.java" />
+    <suppress checks="InterfaceIsType"
+              files=".+[\\\/]JbiConstants\.java" />
+    <suppress checks="InterfaceIsType"
+              files=".+[\\\/]WSAddressingConstants\.java" />
+	<suppress checks="ExecutableStatementCount"
+        	  files=".+[\\\/]DeploymentTest\.java" />
+	<suppress checks="JavaNCSS"
+        	  files=".+[\\\/]DeploymentTest\.java" />
+	<suppress checks="ExecutableStatementCount"
+        	  files=".+[\\\/]InstallationTest\.java" />
+	<suppress checks="JavaNCSS"
+        	  files=".+[\\\/]InstallationTest\.java" />
 </suppressions>
