@@ -43,4 +43,7 @@
         	  files=".+[\\\/]InstallationTest\.java" />
 	<suppress checks="JavaNCSS"
         	  files=".+[\\\/]InstallationTest\.java" />
+    <suppress checks="LineLength"
+              files=".+[\\\/]DefaultHttpProviderMarshaler\.java"
+              lines="171"/>
 </suppressions>
