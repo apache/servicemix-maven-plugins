@@ -332,6 +332,19 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
         List orderedServiceUnits = new ArrayList();
         while (dependencies.hasNext()) {
             Dependency dependency = (Dependency) dependencies.next();
+            if (dependency.getArtifactId().contains("${")) {
+                int first = dependency.getArtifactId().indexOf("${");
+                int last  = dependency.getArtifactId().indexOf("}");
+                String property = dependency.getArtifactId().substring(first + 2, last);
+                Object propValue = project.getProperties().get(property);
+                if (propValue == null) {
+                    throw new MojoExecutionException("The value for the property " + property + "is not set."
+                            + "Jbi descriptor may not be generated properly");
+                }
+                String propString = (String) propValue;
+                String artifactID = dependency.getArtifactId().replace("${" + property + "}", propString);
+                dependency.setArtifactId(artifactID);
+            }
             for (Iterator it = serviceUnits.iterator(); it.hasNext();) {
                 DependencyInformation serviceUnitInfo = (DependencyInformation) it
                         .next();
