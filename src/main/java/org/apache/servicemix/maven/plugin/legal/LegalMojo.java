@@ -75,7 +75,7 @@ public class LegalMojo extends AbstractMojo {
   	}
   	
   	protected void copyLegalFiles(File outputDir) throws IOException {
-        String[] names = { "/META-INF/DISCLAIMER", "/META-INF/NOTICE", "/META-INF/LICENSE"};
+        String[] names = { "/META-INF/NOTICE", "/META-INF/LICENSE"};
         for (int i = 0; i < names.length; i++) {
             URL res = getClass().getResource(names[i]);
             FileUtils.copyURLToFile(res, new File(outputDir, names[i]));

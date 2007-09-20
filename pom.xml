@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.apache.servicemix</groupId>
         <artifactId>servicemix</artifactId>
-        <version>3.2-incubating-SNAPSHOT</version>
+        <version>3.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>build</artifactId>
@@ -72,10 +72,8 @@
                             <tasks>
                                 <copy file="${basedir}/../LICENSE" tofile="${basedir}/target/legal/META-INF/LICENSE" />
                                 <copy file="${basedir}/../NOTICE" tofile="${basedir}/target/legal/META-INF/NOTICE" />
-                                <copy file="${basedir}/../DISCLAIMER" tofile="${basedir}/target/legal/META-INF/DISCLAIMER" />
                                 <copy file="${basedir}/../LICENSE" tofile="${basedir}/target/classes/META-INF/LICENSE" />
                                 <copy file="${basedir}/../NOTICE" tofile="${basedir}/target/classes/META-INF/NOTICE" />
-                                <copy file="${basedir}/../DISCLAIMER" tofile="${basedir}/target/classes/META-INF/DISCLAIMER" />
                             </tasks>
                             <sourceRoot>${basedir}/target/legal</sourceRoot>
                         </configuration>
