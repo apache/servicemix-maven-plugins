@@ -58,11 +58,11 @@ import org.apache.servicemix.jbi.management.task.UninstallSharedLibraryTask;
  */
 public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 
-    private static final String JBI_SHARED_LIBRARY = "jbi-shared-library";
+    public static final String JBI_SHARED_LIBRARY = "jbi-shared-library";
 
-    private static final String JBI_COMPONENT = "jbi-component";
+    public static final String JBI_COMPONENT = "jbi-component";
 
-    private static final String JBI_SERVICE_ASSEMBLY = "jbi-service-assembly";
+    public static final String JBI_SERVICE_ASSEMBLY = "jbi-service-assembly";
 
     private List deploymentTypes;
 
@@ -176,7 +176,7 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 
     }
 
-    private void startDependency(JbiDeployableArtifact jbiDeployable) {
+    protected void startDependency(JbiDeployableArtifact jbiDeployable) {
         getLog().info("Starting " + jbiDeployable.getName());
         if (JBI_SERVICE_ASSEMBLY.equals(jbiDeployable.getType())) {
             StartServiceAssemblyTask startTask = new StartServiceAssemblyTask();
@@ -192,7 +192,7 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
         }
     }
 
-    private void undeployDependency(JbiDeployableArtifact jbiDeployable) {
+    protected void undeployDependency(JbiDeployableArtifact jbiDeployable) {
         getLog().info("Undeploying " + jbiDeployable.getFile());
         if (JBI_SHARED_LIBRARY.equals(jbiDeployable.getType())) {
             UninstallSharedLibraryTask sharedLibraryTask = new UninstallSharedLibraryTask();
@@ -213,7 +213,7 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
         }
     }
 
-    private boolean isDeployed(JbiDeployableArtifact jbiDeployable) {
+    protected boolean isDeployed(JbiDeployableArtifact jbiDeployable) {
         IsDeployedTask isDeployedTask = new IsDeployedTask();
         isDeployedTask.setType(jbiDeployable.getType());
         isDeployedTask.setName(jbiDeployable.getName());
@@ -228,7 +228,7 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
         return deployed;
     }
 
-    private void stopDependency(JbiDeployableArtifact jbiDeployable) {
+    protected void stopDependency(JbiDeployableArtifact jbiDeployable) {
         getLog().info("Stopping " + jbiDeployable.getName());
         if (JBI_SERVICE_ASSEMBLY.equals(jbiDeployable.getType())) {
             StopServiceAssemblyTask stopTask = new StopServiceAssemblyTask();
@@ -254,8 +254,8 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
         }
     }
 
-    private void deployDependency(JbiDeployableArtifact jbiDeployable,
-            boolean doDeferExceptions) {
+    protected void deployDependency(JbiDeployableArtifact jbiDeployable,
+            boolean doDeferExceptions) throws MojoExecutionException {
 
         getLog().info(
                 "Deploying " + jbiDeployable.getType() + " from "
@@ -283,7 +283,7 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 
     }
 
-    private List getDeployablePackagingTypes() {
+    protected List getDeployablePackagingTypes() {
         if (deploymentTypes == null) {
             deploymentTypes = new ArrayList();
             deploymentTypes.add(JBI_SHARED_LIBRARY);
@@ -334,7 +334,7 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
         return dependencies;
     }
 
-    private JbiDeployableArtifact resolveDeploymentPackage(
+    protected JbiDeployableArtifact resolveDeploymentPackage(
             MavenProject project, 
             Artifact artifact) throws ArtifactResolutionException, ArtifactNotFoundException {
         Artifact jbiArtifact = factory.createArtifactWithClassifier(artifact
@@ -345,7 +345,7 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
                 .getPackaging(), jbiArtifact.getFile().getAbsolutePath());
     }
 
-    private String getExtension(MavenProject project2) {
+    protected String getExtension(MavenProject project2) {
         if (project2.getPackaging().equals(JBI_SERVICE_ASSEMBLY)) {
             return "";
         } else {
@@ -353,7 +353,7 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
         }
     }
 
-    private class ArtifactDepthComparator implements Comparator {
+    protected class ArtifactDepthComparator implements Comparator {
 
         public int compare(Object arg0, Object arg1) {
             int size1 = ((Artifact) arg0).getDependencyTrail().size();
@@ -370,7 +370,7 @@ public class JbiProjectDeployerMojo extends AbstractDeployableMojo {
 
     }
 
-    private class JbiDeployableArtifact {
+    protected class JbiDeployableArtifact {
         private String file;
 
         private String type;

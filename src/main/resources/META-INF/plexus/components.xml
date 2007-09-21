@@ -73,7 +73,7 @@
       <configuration>
         <phases>
           <process-classes>org.apache.servicemix.tooling:jbi-maven-plugin:generate-jbi-service-unit-descriptor</process-classes>
-          <process-resources>org.apache.maven.plugins:maven-resources-plugin:resources</process-resources>
+          <process-resources>org.apache.maven.plugins:maven-resources-plugin:resources,org.apache.servicemix.tooling:jbi-maven-plugin:generate-depends-file</process-resources>
           <compile>org.apache.maven.plugins:maven-compiler-plugin:compile</compile>
           <process-test-resources>org.apache.maven.plugins:maven-resources-plugin:testResources</process-test-resources>
           <test-compile>org.apache.maven.plugins:maven-compiler-plugin:testCompile</test-compile>
@@ -100,7 +100,7 @@
       <implementation>org.apache.maven.lifecycle.mapping.DefaultLifecycleMapping</implementation>
       <configuration>
         <phases>
-          <generate-resources>org.apache.servicemix.tooling:jbi-maven-plugin:generate-jbi-service-assembly-descriptor</generate-resources>
+          <generate-resources>org.apache.servicemix.tooling:jbi-maven-plugin:generate-jbi-service-assembly-descriptor,org.apache.servicemix.tooling:jbi-maven-plugin:generate-depends-file</generate-resources>
           <process-resources>org.apache.maven.plugins:maven-resources-plugin:resources</process-resources>
           <compile>org.apache.maven.plugins:maven-compiler-plugin:compile</compile>
           <process-test-resources>org.apache.maven.plugins:maven-resources-plugin:testResources</process-test-resources>
