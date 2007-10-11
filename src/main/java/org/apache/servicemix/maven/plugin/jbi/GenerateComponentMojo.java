@@ -191,7 +191,7 @@ public class GenerateComponentMojo extends AbstractJbiMojo {
                         : artifact.getType();
                 if ("jbi-shared-library".equals(type)) {
                     removeBranch(listener, artifact);
-                } else if ("jar".equals(type)) {
+                } else if ("jar".equals(type) || "bundle".equals(type)) {
                     includes.add(artifact);
                 }
             }
