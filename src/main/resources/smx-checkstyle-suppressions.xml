@@ -26,7 +26,7 @@
     <suppress checks="IllegalType"
               files=".+[\\\/]JbiInvokeAction\.java" />
     <suppress checks="ThrowsCount"
-              files=".+[\\\/]wsn[\\\/].+" />
+              files=".+[\\\/]wsn[\\\/].+|JCAFlow.java" />
     <suppress checks="ParameterNumber" 
               files="(GraphArtifactCollector\.java)|(JbiComponentDescriptorWriter.java)" />
     <suppress checks="ParameterNumber"
