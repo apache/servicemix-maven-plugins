@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.apache.servicemix.tooling</groupId>
         <artifactId>tooling</artifactId>
-        <version>3.2-SNAPSHOT</version>
+        <version>3.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>jbi-maven-plugin</artifactId>
@@ -59,12 +59,12 @@
         <dependency>
             <groupId>org.apache.servicemix</groupId>
             <artifactId>servicemix-core</artifactId>
-            <version>3.2-SNAPSHOT</version>          
+            <version>3.3-SNAPSHOT</version>          
         </dependency>
         <dependency>
             <groupId>org.apache.servicemix</groupId>
             <artifactId>servicemix-common</artifactId>
-            <version>3.2-SNAPSHOT</version>          
+            <version>3.3-SNAPSHOT</version>          
         </dependency>
         <dependency>
             <groupId>org.apache.geronimo.specs</groupId>
