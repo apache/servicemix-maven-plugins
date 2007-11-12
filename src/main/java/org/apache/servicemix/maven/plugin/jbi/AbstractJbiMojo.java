@@ -27,6 +27,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
@@ -46,6 +48,8 @@ import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.MavenProjectHelper;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.servicemix.maven.plugin.jbi.JbiResolutionListener.Node;
+import org.codehaus.plexus.archiver.jar.Manifest;
+import org.codehaus.plexus.archiver.jar.ManifestException;
 
 public abstract class AbstractJbiMojo extends AbstractMojo {
 
@@ -54,6 +58,10 @@ public abstract class AbstractJbiMojo extends AbstractMojo {
     public static final String JBI_DESCRIPTOR = "jbi.xml";
 
     public static final String LIB_DIRECTORY = "lib";
+
+    private static final Pattern VERSION_PATTERN = Pattern.compile("^(\\d+(\\.\\d+(\\.\\d+)?)?)-");
+
+    private static final String[] VERSION_COMPLETERS = new String[] {".0.0", ".0" };
 
     /**
      * Maven ProjectHelper
@@ -297,4 +305,34 @@ public abstract class AbstractJbiMojo extends AbstractMojo {
                     "Error during setting up classpath", e);
         }
     }
+
+    protected Manifest createManifest() throws ManifestException {
+        Manifest manifest = new Manifest();
+        manifest.getMainSection().addConfiguredAttribute(new Manifest.Attribute("Bundle-Name", project.getName()));
+        manifest.getMainSection().addConfiguredAttribute(new Manifest.Attribute("Bundle-SymbolicName", project.getArtifactId()));
+        manifest.getMainSection().addConfiguredAttribute(new Manifest.Attribute("Bundle-Version", fixBundleVersion(project.getVersion())));
+        return manifest;
+    }
+
+    private static String fixBundleVersion(String version) {
+        // Maven uses a '-' to separate the version qualifier, while
+        // OSGi uses a '.', so we need to convert the first '-' to a
+        // '.' and fill in any missing minor or micro version
+        // components if necessary.
+        final Matcher matcher = VERSION_PATTERN.matcher(version);
+        if (!matcher.lookingAt()) {
+            return version;
+        }
+        // Leave extra space for worst-case additional insertion:
+        final StringBuffer sb = new StringBuffer(version.length() + 4);
+        sb.append(matcher.group(1));
+        if (null == matcher.group(3)) {
+            final int count = null != matcher.group(2) ? 2 : 1;
+            sb.append(VERSION_COMPLETERS[count - 1]);
+        }
+        sb.append('.');
+        sb.append(version.substring(matcher.end(), version.length()));
+        return sb.toString();
+    }
+
 }

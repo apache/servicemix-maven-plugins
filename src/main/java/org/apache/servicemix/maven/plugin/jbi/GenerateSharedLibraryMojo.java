@@ -128,6 +128,7 @@ public class GenerateSharedLibraryMojo extends AbstractJbiMojo {
             archiver.setArchiver(jarArchiver);
             archiver.setOutputFile(installerFile);
             jarArchiver.addDirectory(workDirectory);
+            jarArchiver.addConfiguredManifest(createManifest());
             if (jbiSourceDirectory.isDirectory()) {
                 jarArchiver.addDirectory(jbiSourceDirectory, null,
                         DirectoryScanner.DEFAULTEXCLUDES);

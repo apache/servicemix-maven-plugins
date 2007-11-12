@@ -33,6 +33,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
+import org.codehaus.plexus.archiver.jar.Manifest;
 import org.codehaus.plexus.archiver.jar.ManifestException;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.FileUtils;
@@ -129,6 +130,8 @@ public class GenerateComponentMojo extends AbstractJbiMojo {
             archiver.setArchiver(jarArchiver);
             archiver.setOutputFile(installerFile);
             jarArchiver.addDirectory(workDirectory);
+            Manifest manifest = createManifest();
+            jarArchiver.addConfiguredManifest(manifest);
             if (jbiSourceDirectory.isDirectory()) {
                 jarArchiver.addDirectory(jbiSourceDirectory, null,
                         DirectoryScanner.DEFAULTEXCLUDES);
