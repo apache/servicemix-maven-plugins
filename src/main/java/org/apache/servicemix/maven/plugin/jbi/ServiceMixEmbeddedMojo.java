@@ -53,20 +53,20 @@ public class ServiceMixEmbeddedMojo extends AbstractJbiMojo {
 
             container.onShutDown(new Runnable() {
                 public void run() {
+                    if (context instanceof DisposableBean) {
+                        try {
+                            ((DisposableBean) context).destroy();
+                        } catch (Exception e) {
+                            // Ignore
+                        }
+                    }
+
                 }
             });
         } catch (Exception e) {
             throw new MojoExecutionException(
                     "Apache ServiceMix was able to deploy project", e);
-        } finally {
-            if (context instanceof DisposableBean) {
-                try {
-                    ((DisposableBean) context).destroy();
-                } catch (Exception e) {
-                    // Ignore
-                }
-            }
-        }
+        } 
 
     }
 
