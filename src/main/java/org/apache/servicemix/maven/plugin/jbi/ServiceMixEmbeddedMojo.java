@@ -51,13 +51,10 @@ public class ServiceMixEmbeddedMojo extends AbstractJbiMojo {
         try {
             startServiceMix();
 
-            Object lock = new Object();
-            container.setShutdownLock(lock);
-
-            // lets wait until we're killed.
-            synchronized (lock) {
-                lock.wait();
-            }
+            container.onShutDown(new Runnable() {
+                public void run() {
+                }
+            });
         } catch (Exception e) {
             throw new MojoExecutionException(
                     "Apache ServiceMix was able to deploy project", e);
