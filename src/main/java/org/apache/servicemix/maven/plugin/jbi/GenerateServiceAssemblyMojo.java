@@ -57,14 +57,6 @@ public class GenerateServiceAssemblyMojo extends AbstractJbiMojo {
     private JarArchiver jarArchiver;
 
     /**
-     * Directory where the application.xml file will be auto-generated.
-     * 
-     * @parameter expression="${project.build.directory}/sus"
-     * @required
-     */
-    private File workDirectory;
-
-    /**
      * The directory for the generated JBI component.
      *
      * @parameter expression="${project.build.directory}"
@@ -101,12 +93,10 @@ public class GenerateServiceAssemblyMojo extends AbstractJbiMojo {
 
     private void createArchive(File installerFile) throws JbiPluginException {
         try {
-            // generate war file
             getLog().info("Generating service assembly " + installerFile.getAbsolutePath());
             MavenArchiver archiver = new MavenArchiver();
             archiver.setArchiver(jarArchiver);
             archiver.setOutputFile(installerFile);
-            jarArchiver.addDirectory(workDirectory);
             jarArchiver.addConfiguredManifest(createManifest());
             jarArchiver.addDirectory(workDirectory, null, DirectoryScanner.DEFAULTEXCLUDES);
             archiver.createArchive(getProject(), archive);
