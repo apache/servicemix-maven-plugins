@@ -204,8 +204,7 @@ public class GenerateComponentDescriptorMojo extends AbstractJbiMojo {
 
         List uris = new ArrayList();
         DependencyInformation info = new DependencyInformation();
-        info.setFilename(LIB_DIRECTORY + "/" + project.getArtifactId() + "-"
-                + project.getVersion() + ".jar");
+        info.setFilename(LIB_DIRECTORY + "/" + project.getBuild().getFinalName() + ".jar");
         info.setVersion(project.getVersion());
         info.setName(project.getArtifactId());
         info.setType("jar");
