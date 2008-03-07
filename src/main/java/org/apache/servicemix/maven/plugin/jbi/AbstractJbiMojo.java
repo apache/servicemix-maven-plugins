@@ -149,10 +149,12 @@ public abstract class AbstractJbiMojo extends AbstractMojo {
     }
 
     protected Set getArtifacts(Node n, Set s) {
-        s.add(n.getArtifact());
-        for (Iterator iter = n.getChildren().iterator(); iter.hasNext();) {
-            Node c = (Node) iter.next();
-            getArtifacts(c, s);
+        if (!s.contains(n.getArtifact())) {
+            s.add(n.getArtifact());
+            for (Iterator iter = n.getChildren().iterator(); iter.hasNext();) {
+                Node c = (Node) iter.next();
+                getArtifacts(c, s);
+            }
         }
         return s;
     }
@@ -165,11 +167,10 @@ public abstract class AbstractJbiMojo extends AbstractMojo {
         }
     }
 
-    protected void print(Node rootNode, String string) {
-        getLog().info(string + rootNode.getArtifact());
-        for (Iterator iter = rootNode.getChildren().iterator(); iter.hasNext();) {
-            Node n = (Node) iter.next();
-            print(n, string + "  ");
+    protected void print(Node rootNode) {
+        for (Iterator iter = getArtifacts(rootNode, new HashSet()).iterator(); iter.hasNext();) {
+            Artifact a = (Artifact) iter.next();
+            getLog().info(" " + a);
         }
     }
 
@@ -231,7 +232,7 @@ public abstract class AbstractJbiMojo extends AbstractMojo {
         if (getLog().isDebugEnabled()) {
             getLog().debug("Dependency graph");
             getLog().debug("================");
-            print(listener.getRootNode(), "");
+            print(listener.getRootNode());
             getLog().debug("================");
         }
         return listener;
