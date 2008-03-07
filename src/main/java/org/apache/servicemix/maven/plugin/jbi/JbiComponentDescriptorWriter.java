@@ -78,7 +78,7 @@ public class JbiComponentDescriptorWriter {
         writer.startElement("component-class-path");
         for (Iterator it = uris.iterator(); it.hasNext();) {
             DependencyInformation info = (DependencyInformation) it.next();
-            if ("jar".equals(info.getType()) || "bundle".equals(info.getType())) {
+            if ("jar".equals(info.getType()) || "bundle".equals(info.getType()) || "jbi-component".equals(info.getType())) {
                 writer.startElement("path-element");
                 writer.writeText(info.getFilename());
                 writer.endElement();
