@@ -235,7 +235,7 @@ public class GenerateComponentDescriptorMojo extends AbstractJbiMojo {
                 if ("jbi-shared-library".equals(prjType)) {
                     removeChildren(listener, artifact);
                     includes.add(artifact);
-                } else if ("jar".equals(prjType) || "bundle".equals(prjType)) {
+                } else if ("jar".equals(prjType) || "bundle".equals(prjType) || "jbi-component".equals(prjType)) {
                     includes.add(artifact);
                 }
             }
