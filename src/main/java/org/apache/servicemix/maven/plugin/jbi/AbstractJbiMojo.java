@@ -309,9 +309,9 @@ public abstract class AbstractJbiMojo extends AbstractMojo {
 
     protected Manifest createManifest() throws ManifestException {
         Manifest manifest = new Manifest();
-        manifest.getMainSection().addConfiguredAttribute(new Manifest.Attribute("Bundle-Name", project.getName()));
-        manifest.getMainSection().addConfiguredAttribute(new Manifest.Attribute("Bundle-SymbolicName", project.getArtifactId()));
-        manifest.getMainSection().addConfiguredAttribute(new Manifest.Attribute("Bundle-Version", fixBundleVersion(project.getVersion())));
+        //manifest.getMainSection().addConfiguredAttribute(new Manifest.Attribute("Bundle-Name", project.getName()));
+        //manifest.getMainSection().addConfiguredAttribute(new Manifest.Attribute("Bundle-SymbolicName", project.getArtifactId()));
+        //manifest.getMainSection().addConfiguredAttribute(new Manifest.Attribute("Bundle-Version", fixBundleVersion(project.getVersion())));
         return manifest;
     }
 
