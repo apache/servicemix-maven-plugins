@@ -311,11 +311,12 @@ public abstract class AbstractJbiMojo extends AbstractMojo {
         Manifest manifest = new Manifest();
         //manifest.getMainSection().addConfiguredAttribute(new Manifest.Attribute("Bundle-Name", project.getName()));
         //manifest.getMainSection().addConfiguredAttribute(new Manifest.Attribute("Bundle-SymbolicName", project.getArtifactId()));
-        //manifest.getMainSection().addConfiguredAttribute(new Manifest.Attribute("Bundle-Version", fixBundleVersion(project.getVersion())));
+        //manifest.getMainSection().addConfiguredAttribute(new Manifest.Attribute(
+            //"Bundle-Version", fixBundleVersion(project.getVersion())));
         return manifest;
     }
 
-    private static String fixBundleVersion(String version) {
+    public static String fixBundleVersion(String version) {
         // Maven uses a '-' to separate the version qualifier, while
         // OSGi uses a '.', so we need to convert the first '-' to a
         // '.' and fill in any missing minor or micro version
