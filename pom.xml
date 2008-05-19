@@ -91,6 +91,11 @@
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-xjc</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-xjc</artifactId>
+            <version>${jaxb.impl.version}</version>
+        </dependency>
   
     </dependencies>
 
