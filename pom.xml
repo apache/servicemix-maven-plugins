@@ -23,13 +23,22 @@
 
     <parent>
         <groupId>org.apache.servicemix</groupId>
-        <artifactId>servicemix</artifactId>
-        <version>3.3-SNAPSHOT</version>
+        <artifactId>servicemix-pom</artifactId>
+        <version>1.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>build</artifactId>
+    <version>3.3-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
     <name>Servicemix :: Build</name>
+    <description></description>
+
+
+    <scm>
+        <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/maven-plugins/build/trunk</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/maven-plugins/build/trunk</developerConnection>
+        <url>http://svn.apache.org/viewcvs.cgi/servicemix/maven-plugins/build/trunk</url>
+    </scm>
 
     <dependencies>
         <dependency>
@@ -62,6 +71,14 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                </configuration>
+            </plugin>	
+            <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>1.1</version>
                 <executions>
@@ -70,10 +87,10 @@
                         <phase>generate-resources</phase>
                         <configuration>
                             <tasks>
-                                <copy file="${basedir}/../LICENSE" tofile="${basedir}/target/legal/META-INF/LICENSE" />
-                                <copy file="${basedir}/../NOTICE" tofile="${basedir}/target/legal/META-INF/NOTICE" />
-                                <copy file="${basedir}/../LICENSE" tofile="${basedir}/target/classes/META-INF/LICENSE" />
-                                <copy file="${basedir}/../NOTICE" tofile="${basedir}/target/classes/META-INF/NOTICE" />
+                                <copy file="${basedir}/LICENSE" tofile="${basedir}/target/legal/META-INF/LICENSE" />
+                                <copy file="${basedir}/NOTICE" tofile="${basedir}/target/legal/META-INF/NOTICE" />
+                                <copy file="${basedir}/LICENSE" tofile="${basedir}/target/classes/META-INF/LICENSE" />
+                                <copy file="${basedir}/NOTICE" tofile="${basedir}/target/classes/META-INF/NOTICE" />
                             </tasks>
                             <sourceRoot>${basedir}/target/legal</sourceRoot>
                         </configuration>
