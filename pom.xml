@@ -27,12 +27,16 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>build</artifactId>
-    <version>3.3-SNAPSHOT</version>
+    <artifactId>servicemix-build</artifactId>
+    <version>1.0-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
     <name>Servicemix :: Build</name>
-    <description></description>
-
+    <description>
+      This build plugin has 3 purposes:
+        * legal stuff (notice/lic)
+		* some resources for checkstyle / pmd 
+		* spring.schemas mojo
+    </description>
 
     <scm>
         <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/maven-plugins/build/trunk</connection>
