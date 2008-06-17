@@ -40,7 +40,6 @@
   <modules>
     <module>jbi-maven-plugin</module>
     <module>res-maven-plugin</module>
-    <module>xfire-maven-plugin</module>
     <module>servicemix-build</module>
   </modules>
   
