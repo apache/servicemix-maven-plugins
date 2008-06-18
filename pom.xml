@@ -97,4 +97,19 @@
     </dependency>
   </dependencies>
 
+  <repositories>
+    <!--
+    <repository>
+        <id>servicemix-m2-repo</id>
+        <name>Servicemix Maven2 Repository</name>
+        <url>http://svn.apache.org/repos/asf/servicemix/m2-repo/</url>
+    </repository>
+  -->
+    <repository>
+      <id>java.net</id>
+      <url>http://download.java.net/maven/1</url>
+      <layout>legacy</layout>
+    </repository>
+  </repositories>
+
 </project>
