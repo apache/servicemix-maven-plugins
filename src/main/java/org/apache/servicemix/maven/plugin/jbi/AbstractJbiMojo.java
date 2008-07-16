@@ -112,6 +112,11 @@ public abstract class AbstractJbiMojo extends AbstractMojo {
      */
     protected ArtifactResolver resolver;
 
+    /**
+     * @component role="org.apache.maven.artifact.resolver.ArtifactCollector" hint="graph"
+     * @required
+     * @readonly
+     */
     protected ArtifactCollector collector = new GraphArtifactCollector();
 
     /**
