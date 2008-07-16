@@ -26,6 +26,7 @@ import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
+import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -86,10 +87,18 @@ public class GenerateServiceUnitMojo extends AbstractJbiMojo {
      * @parameter expression="${project.build.directory}/classes"
      */
     private File serviceUnitLocation;
+    
+    /**
+     * ArtifactHandler to handle jbi-service-unit artifacts
+     * 
+     * @parameter expression="${component.org.apache.maven.artifact.handler.ArtifactHandler#jbi-service-unit}"
+     */
+    private ArtifactHandler handler;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
-
+        	
+            project.getArtifact().setArtifactHandler(handler);
             createUnpackedInstaller();
 
             File serviceUnitFile = new File(outputDirectory, serviceUnitName);
