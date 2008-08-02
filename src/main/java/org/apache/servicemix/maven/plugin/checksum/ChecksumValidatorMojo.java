@@ -123,19 +123,47 @@ public class ChecksumValidatorMojo extends AbstractMojo {
             
             
             String sum = checksum(pom.getFile());
-            List list = (List)checksums.get(pom.getId());
+            String key = key(pom);
+            List list = (List)checksums.get(key);
             if( list == null ) {
-                getLog().error("No checksum specified for "+pom.getId()+" in "+this.checksums+" ("+sum+")" );
+                list = (List)checksums.get(keyAnyVersion(pom));
+            }
+            if( list == null ) {
+                getLog().error("No checksum specified for "+key+" in "+this.checksums+" ("+sum+")" );
                 failed = true;
             } else if ( !list.contains(sum) && !list.contains("*") ) {
-                getLog().error("Checksum mismatch for "+pom.getId()+" in "+this.checksums+" expected one of "+list+" but was "+sum );
+                getLog().error("Checksum mismatch for "+key+" in "+this.checksums+" expected one of "+list+" but was "+sum );
                 failed = true;
             }
         }
         
         if( failed ) {
-            throw new MojoExecutionException("Invalid checksums found.. see previous error messages for more details.");
+            throw new MojoExecutionException("Invalid checksum(s) found.. see previous error messages for more details.");
         }
+    }
+
+    protected String key(Artifact pom) {
+        StringBuffer sb = new StringBuffer();
+        sb.append(pom.getGroupId());
+        sb.append("/");
+        sb.append(pom.getArtifactId());
+        sb.append("-");
+        sb.append(pom.getVersion());
+        sb.append(".");
+        sb.append(pom.getType());
+        return sb.toString();
+    }
+    
+    protected String keyAnyVersion(Artifact pom) {
+        StringBuffer sb = new StringBuffer();
+        sb.append(pom.getGroupId());
+        sb.append("/");
+        sb.append(pom.getArtifactId());
+        sb.append("-");
+        sb.append("*");
+        sb.append(".");
+        sb.append(pom.getType());
+        return sb.toString();
     }
 
     protected LinkedHashMap getCheckSums() throws MojoExecutionException {

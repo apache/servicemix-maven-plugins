@@ -74,7 +74,7 @@ public class ChecksumGeneratorMojo extends ChecksumValidatorMojo {
             for (Iterator iterator = checksums.entrySet().iterator(); iterator.hasNext();) {
                 Map.Entry i = (Map.Entry)iterator.next();            
                 StringBuffer b = new StringBuffer();
-                for (Iterator iterator2 = ((List)i.getValue()).iterator(); iterator.hasNext();) {
+                for (Iterator iterator2 = ((List)i.getValue()).iterator(); iterator2.hasNext();) {
                     String s = (String)iterator2.next();            
                     if( b.length()!=0 ) {
                         b.append("|");
@@ -103,20 +103,23 @@ public class ChecksumGeneratorMojo extends ChecksumValidatorMojo {
     /**
      * 
      * @param checksums
-     * @param pom
+     * @param artifact
      * @return true if this method modified the checksums
      * @throws MojoExecutionException
      */
-    private boolean processArtifact(HashMap checksums, Artifact pom) throws MojoExecutionException {
-        String sum = checksum(pom.getFile());
-        List sums = (List)checksums.get(pom.getId());
+    private boolean processArtifact(HashMap checksums, Artifact artifact) throws MojoExecutionException {
+        String sum = checksum(artifact.getFile());
+        List sums = (List)checksums.get(key(artifact));
+        if( sums == null ) {
+            sums = (List)checksums.get(keyAnyVersion(artifact));
+        }
         if( sums == null ) {
             sums = new ArrayList();
             sums.add(sum);
-            checksums.put(pom.getId(), sums);
+            checksums.put(key(artifact), sums);
             return true;
         } else {
-            if ( !sums.contains(sum) ) {
+            if ( !sums.contains(sum) && !sums.contains("*") ) {
                 sums.add(sum);
                 return true;
             }
