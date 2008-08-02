@@ -26,6 +26,10 @@ Maven 2 Checksum Plugin
  This plugin provides the capability validate and generate checksums
  of the project dependencies against a checksum file that is included
  as part of the project.
+ 
+ By including the dependency checksums as part of your project source, 
+ you can detect any malicious tampering of artifacts that are downloaded 
+ from third party repositories.
 
 * Goals Overview
 
@@ -41,3 +45,22 @@ Maven 2 Checksum Plugin
 
   Instructions on how to use the Checksum Plugin can be found in the
   {{{usage.html}usage}} page.
+  
+* Checksum File Format
+
+  The checksum.txt file is a property file consisting of property keys in 
+  the '<<<$groupId/$artifactId-$version.$type>>>' format and key values being 
+  using '<<<|>>>' separated list of checksum values.  A wild card, '<<<*>>>', may be 
+  used for the version or checksum.  Wild cards are needed if the project is 
+  building against a SNAPSHOT dependency who's checksum changes too often.  
+  The wild card is also needed for dependencies who's version number changes 
+  as part of the release process.
+  
+  Example checksum.txt file:
+    
++-----
+log4j/log4j-1.2.15.pom=1483490805e8f86c21240958629905e733d079eb
+log4j/log4j-1.2.15.jar=f0a0d2e29ed910808c33135a3a5a51bba6358f7b|g0b0d3e22ed920806c3f1ffa3a5a5cb4a2398ca2
+org.apache.activemq/activemq-core-*.pom=*
+org.apache.activemq/activemq-core-*.jar=*
++-----

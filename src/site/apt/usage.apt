@@ -23,16 +23,7 @@
 
 Usage
 
-* Validating the Dependency Checksums
-
-  The goals for the Validate goal are bound to the <<<process-classes>>> phase in the
-  build lifecycle.  
-
-+-----
-mvn package
-+-----
-
-* Configuring Your Checksum Plugin
+* Typical Checksum Plugin Configuration
 
 +-----
 <project>
@@ -45,7 +36,6 @@ mvn package
         <version>1.0-SNAPSHOT</version>
 		    <executions>
           <execution>
-            <id>validate-checksums</id>
             <goals>
               <goal>validate-checksums</goal>
             </goals>
@@ -55,5 +45,51 @@ mvn package
     </plugins>
   </build>
   ...
+  
+  <profiles>
+  ...
+    <profile>
+      <id>generate-checksums</id>
+      <build>
+        <defaultGoal>compile</defaultGoal>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.servicemix.tooling</groupId>
+            <artifactId>checksum-maven-plugin</artifactId>
+            <version>1.0-SNAPSHOT</version>
+    		    <executions>
+              <execution>
+                <goals>
+                  <goal>generate-checksums</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  ...
+  </profiles>
+  
 </project>
++-----
+
+
+* Initializing/Adding Checksums to the checksum file
+
+  If you use the configuration above, you will have a generate-checksums 
+  profile which will generate/update the checksums.txt file.  You will 
+  typically do this when you first start using this plugin or you change 
+  dependencies in the project.
+
++-----
+mvn -P generate-checksums
++-----
+
+* Validating Checksums
+
+  Checksums get validated once the build hits the <<<process-classes>>> build phase.
+
++-----
+mvn install
 +-----
