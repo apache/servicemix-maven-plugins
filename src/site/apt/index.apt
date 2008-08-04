@@ -33,13 +33,8 @@ Maven 2 Checksum Plugin
 
 * Goals Overview
 
-  The Checksum Plugin has two goals:
-
-  * {{{generate-checksums-mojo.html}checksum-maven-plugin:generate-checksums}} is bound to the <<<compile>>> phase and
-  is used to generate the checksum.txt file.
-
-  * {{{validate-checksums-mojo.html}checksum-maven-plugin:validate-checksums}} is bound to the <<<process-classes>>> phase and
-  is used to validate the Project dependencies against the checksum.txt file.
+  * {{{validate-checksums-mojo.html}checksum-maven-plugin:validate}} is bound to the <<<validate>>> phase and
+  is used to validate or generate the Project dependencies against the checksum.txt file.
 
 * Usage
 

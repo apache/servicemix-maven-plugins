@@ -19,6 +19,7 @@ package org.apache.servicemix.maven.plugin.checksum;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -44,11 +45,17 @@ import org.apache.maven.project.MavenProject;
  * Validates the checksums of the dependencies of the project
  * against the checksums.txt file.
  * 
- * @goal validate-checksums
- * @phase process-classes 
+ * This plugin can also be used to add all the checksums of the 
+ * dependencies of the current build to the checksum.txt file.
+ * 
+ * @requiresDependencyResolution
+ * @goal validate
+ * @phase validate 
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a> 
  */
 public class ChecksumValidatorMojo extends AbstractMojo {
+
+    static char hexTable[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
     /**
      * The maven project.
@@ -110,37 +117,12 @@ public class ChecksumValidatorMojo extends AbstractMojo {
      */
     private String checksumAlgorithm;
 
-    public void execute() throws MojoExecutionException {
-        
-        LinkedHashMap checksums = getCheckSums();
-        
-        boolean failed = false;
-        
-        for ( Iterator it = project.getArtifacts().iterator(); it.hasNext(); )
-        {
-            Artifact artifact = (Artifact) it.next();
-            Artifact pom = getPomArtifact( artifact );
-            
-            
-            String sum = checksum(pom.getFile());
-            String key = key(pom);
-            List list = (List)checksums.get(key);
-            if( list == null ) {
-                list = (List)checksums.get(keyAnyVersion(pom));
-            }
-            if( list == null ) {
-                getLog().error("No checksum specified for "+key+" in "+this.checksums+" ("+sum+")" );
-                failed = true;
-            } else if ( !list.contains(sum) && !list.contains("*") ) {
-                getLog().error("Checksum mismatch for "+key+" in "+this.checksums+" expected one of "+list+" but was "+sum );
-                failed = true;
-            }
-        }
-        
-        if( failed ) {
-            throw new MojoExecutionException("Invalid checksum(s) found.. see previous error messages for more details.");
-        }
-    }
+    /**
+     * Should we generate the checksum file instead of validating against it? 
+     * 
+     * @parameter default-value="false"
+     */
+    private boolean generate;
 
     protected String key(Artifact pom) {
         StringBuffer sb = new StringBuffer();
@@ -216,7 +198,7 @@ public class ChecksumValidatorMojo extends AbstractMojo {
         return null;
     }
 
-    String checksum(File file) throws MojoExecutionException {
+    protected String checksum(File file) throws MojoExecutionException {
         try {
             MessageDigest md = MessageDigest.getInstance(checksumAlgorithm);
             FileInputStream is=null;
@@ -244,8 +226,6 @@ public class ChecksumValidatorMojo extends AbstractMojo {
             throw new MojoExecutionException("Invalid checksum algorithm: "+checksumAlgorithm, e);
         }
     }
-
-    static char hexTable[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
     
     static String toString(byte[] digest) {
         StringBuilder rc = new StringBuilder(digest.length*2);
@@ -256,4 +236,137 @@ public class ChecksumValidatorMojo extends AbstractMojo {
         return rc.toString();
     }
 
+    public void execute() throws MojoExecutionException {
+        if( generate ) {
+            generate();
+        } else {
+            validate();
+        }
+    }
+
+    private void validate() throws MojoExecutionException {
+        LinkedHashMap checksums = getCheckSums();
+        
+        boolean failed = false;
+        
+        for ( Iterator it = project.getArtifacts().iterator(); it.hasNext(); )
+        {
+            Artifact artifact = (Artifact) it.next();
+            Artifact pom = getPomArtifact( artifact );
+            failed |= validateArtifact(checksums, pom);
+            failed |= validateArtifact(checksums, artifact);
+        }
+        
+        if( failed ) {
+            throw new MojoExecutionException("Invalid checksum(s) found.. see previous error messages for more details.");
+        }
+    }
+
+    /**
+     * 
+     * @param checksums
+     * @param artifact
+     * @return - true if validation failed.
+     * @throws MojoExecutionException
+     */
+    private boolean validateArtifact(LinkedHashMap checksums, Artifact artifact) throws MojoExecutionException {
+        String sum = checksum(artifact.getFile());
+        String key = key(artifact);
+        List list = (List)checksums.get(key);
+        if( list == null ) {
+            list = (List)checksums.get(keyAnyVersion(artifact));
+        }
+        if( list == null ) {
+            getLog().error("No checksum specified for "+key+" in "+this.checksums+" ("+sum+")" );
+            return true;
+        } else if ( !list.contains(sum) && !list.contains("*") ) {
+            getLog().error("Checksum mismatch for "+key+" in "+this.checksums+" expected one of "+list+" but was "+sum );
+            return true;
+        }
+        return false;
+    }
+
+    public void generate() throws MojoExecutionException {
+        
+        LinkedHashMap checksums = new LinkedHashMap();
+        
+        boolean modified=true;
+        try { 
+            checksums = getCheckSums();
+            modified=false;
+        } catch ( MojoExecutionException e) {
+        }
+        
+        for ( Iterator it = project.getArtifacts().iterator(); it.hasNext(); )
+        {
+            Artifact artifact = (Artifact) it.next();
+            Artifact pom = getPomArtifact( artifact );
+
+            modified |= generateArtifact(checksums, pom);
+            modified |= generateArtifact(checksums, artifact);
+            
+        }
+        
+        if( modified ) {
+            
+            // put it back to property file format
+            Properties p = new Properties();
+
+            for (Iterator iterator = checksums.entrySet().iterator(); iterator.hasNext();) {
+                Map.Entry i = (Map.Entry)iterator.next();            
+                StringBuffer b = new StringBuffer();
+                for (Iterator iterator2 = ((List)i.getValue()).iterator(); iterator2.hasNext();) {
+                    String s = (String)iterator2.next();            
+                    if( b.length()!=0 ) {
+                        b.append("|");
+                    }
+                    b.append(s);
+                }
+                p.put(i.getKey(), b.toString());
+            }
+            
+            // Store it.
+            FileOutputStream os=null;
+            try {
+                os = new FileOutputStream(this.checksums);
+                p.store(os, "");
+            } catch (Throwable e) {
+                throw new MojoExecutionException("Could not write: "+this.checksums);
+            } finally {
+                try {
+                    os.close();
+                } catch (Throwable ignore ) {
+                }
+            }
+        }
+    }
+
+    /**
+     * 
+     * @param checksums
+     * @param artifact
+     * @return true if this method modified the checksums
+     * @throws MojoExecutionException
+     */
+    private boolean generateArtifact(HashMap checksums, Artifact artifact) throws MojoExecutionException {
+        String sum = checksum(artifact.getFile());
+        List sums = (List)checksums.get(key(artifact));
+        if( sums == null ) {
+            sums = (List)checksums.get(keyAnyVersion(artifact));
+        }
+        if( sums == null ) {
+            sums = new ArrayList();
+            sums.add(sum);
+            checksums.put(key(artifact), sums);
+            return true;
+        } else {
+            if ( !sums.contains(sum) && !sums.contains("*") ) {
+                sums.add(sum);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    
 }

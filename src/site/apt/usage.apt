@@ -34,10 +34,10 @@ Usage
         <groupId>org.apache.servicemix.tooling</groupId>
         <artifactId>checksum-maven-plugin</artifactId>
         <version>1.0-SNAPSHOT</version>
-		    <executions>
+ 	    <executions>
           <execution>
             <goals>
-              <goal>validate-checksums</goal>
+              <goal>validate</goal>
             </goals>
           </execution>
         </executions>
@@ -51,17 +51,20 @@ Usage
     <profile>
       <id>generate-checksums</id>
       <build>
-        <defaultGoal>compile</defaultGoal>
+        <defaultGoal>validate</defaultGoal>
         <plugins>
           <plugin>
             <groupId>org.apache.servicemix.tooling</groupId>
             <artifactId>checksum-maven-plugin</artifactId>
             <version>1.0-SNAPSHOT</version>
-    		    <executions>
+            <executions>
               <execution>
                 <goals>
-                  <goal>generate-checksums</goal>
+                  <goal>validate</goal>
                 </goals>
+                <configuration>
+                  <generate>true</generate>
+                </configuration>
               </execution>
             </executions>
           </plugin>
@@ -88,7 +91,7 @@ mvn -P generate-checksums
 
 * Validating Checksums
 
-  Checksums get validated once the build hits the <<<process-classes>>> build phase.
+  Checksums get validated once the build hits the <<<validate>>> build phase.
 
 +-----
 mvn install
