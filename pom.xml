@@ -26,27 +26,17 @@
   
   <groupId>org.apache.servicemix.tooling</groupId>
   <artifactId>maven-plugins-pom</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0.0</version>
   
   <packaging>pom</packaging>
   <name>ServiceMix :: Maven2 Plugins POM</name>
   
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/maven-plugins/maven-plugins-pom/trunk</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/maven-plugins/maven-plugins-pom/trunk</developerConnection>
-    <url>http://svn.apache.org/viewcvs.cgi/servicemix/maven-plugins/maven-plugins-pom/trunk</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/maven-plugins/maven-plugins-pom/tags/maven-plugins-pom-1.0.0</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/maven-plugins/maven-plugins-pom/tags/maven-plugins-pom-1.0.0</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/maven-plugins/maven-plugins-pom/tags/maven-plugins-pom-1.0.0</url>
   </scm>
-  
-  <modules>
-    <module>checksum-maven-plugin</module>
-    <module>depends-maven-plugin</module>
-    <module>features-maven-plugin</module>
-    <module>jbi-maven-plugin</module>
-    <module>res-maven-plugin</module>
-    <module>xfire-maven-plugin</module>
-    <module>servicemix-build</module>
-  </modules>
-  
+    
   <reporting>
     <plugins>
       <plugin>
@@ -79,6 +69,19 @@
   </build>
   
   <profiles>
+    <profile>
+      <id>all</id>
+      <modules>
+        <module>checksum-maven-plugin</module>
+        <module>depends-maven-plugin</module>
+        <module>features-maven-plugin</module>
+        <module>jbi-maven-plugin</module>
+        <module>res-maven-plugin</module>
+        <module>xfire-maven-plugin</module>
+        <module>servicemix-build</module>
+      </modules>
+    </profile>
+    
     <profile>
       <id>release</id>
       <build>
