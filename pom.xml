@@ -38,6 +38,7 @@
   </scm>
   
   <modules>
+    <module>checksum-maven-plugin</module>
     <module>depends-maven-plugin</module>
     <module>features-maven-plugin</module>
     <module>jbi-maven-plugin</module>
