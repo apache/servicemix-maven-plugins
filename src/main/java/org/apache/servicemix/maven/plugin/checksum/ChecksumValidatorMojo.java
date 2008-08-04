@@ -17,25 +17,30 @@
  */
 package org.apache.servicemix.maven.plugin.checksum;
 
+import au.com.bytecode.opencsv.CSVReader;
+import au.com.bytecode.opencsv.CSVWriter;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
+import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -92,7 +97,7 @@ public class ChecksumValidatorMojo extends AbstractMojo {
      * @readonly
      */
     protected ArtifactFactory artifactFactory;
-
+    
     /**
      * Artifact resolver, needed to download source jars for inclusion in classpath.
      *
@@ -124,15 +129,36 @@ public class ChecksumValidatorMojo extends AbstractMojo {
      */
     private boolean generate;
 
+    /**
+     * Should the dependency artifacts be included in the checksum validation? 
+     * 
+     * @parameter default-value="true"
+     */
+    private boolean includeDependencyArtifacts;
+
+    /**
+     * Should the plugin artifacts be included in the checksum validation? 
+     * 
+     * @parameter default-value="true"
+     */
+    private boolean includePluginArtifacts;
+
+    /**
+     * Should the report artifacts be included in the checksum validation? 
+     * 
+     * @parameter default-value="true"
+     */
+    private boolean includeReportArtifacts;
+
     protected String key(Artifact pom) {
         StringBuffer sb = new StringBuffer();
         sb.append(pom.getGroupId());
         sb.append("/");
         sb.append(pom.getArtifactId());
-        sb.append("-");
-        sb.append(pom.getVersion());
-        sb.append(".");
+        sb.append("/");
         sb.append(pom.getType());
+        sb.append("/");
+        sb.append(pom.getVersion());
         return sb.toString();
     }
     
@@ -141,61 +167,26 @@ public class ChecksumValidatorMojo extends AbstractMojo {
         sb.append(pom.getGroupId());
         sb.append("/");
         sb.append(pom.getArtifactId());
-        sb.append("-");
-        sb.append("*");
-        sb.append(".");
+        sb.append("/");
         sb.append(pom.getType());
+        sb.append("/");
+        sb.append("*");
         return sb.toString();
-    }
-
-    protected LinkedHashMap getCheckSums() throws MojoExecutionException {
-        LinkedHashMap rc = new LinkedHashMap();
-        
-        if( !checksums.canRead() ) {
-            throw new MojoExecutionException("Cannot read checksum file: "+checksums);
-        }
-        
-        Properties sums = new Properties();
-        FileInputStream is=null;
-        try {
-            is = new FileInputStream(checksums);
-            sums.load(is);
-        } catch (IOException e) {
-            throw new MojoExecutionException("Could not load checksum file: "+checksums);
-        } finally {
-            try {
-                is.close();
-            } catch (Throwable e) {
-            }
-        }
-        
-        for (Iterator iterator = sums.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry i = (Map.Entry)iterator.next();            
-            String value = (String)i.getValue();
-            String[] t = value.split("\\|");
-            List values = new ArrayList(t.length);
-            for (int j = 0; j < t.length; j++) {
-                values.add(t[j].toLowerCase().trim());
-            }
-            rc.put((String)i.getKey(), values);
-        }
-        
-        return rc;
     }
     
     protected Artifact getPomArtifact(Artifact artifact) {
-        Artifact resolvedArtifact = artifactFactory.createProjectArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion());
-        try {
-            artifactResolver.resolve(resolvedArtifact, remoteArtifactRepositories, localRepository);
-        } catch (ArtifactNotFoundException e) {
-            // ignore, the jar has not been found
-        } catch (ArtifactResolutionException e) {
-            getLog().warn("Could not get pom for " + artifact);
+        return artifactFactory.createProjectArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion());
+    }
+
+    protected File resolve(Artifact artifact) throws MojoExecutionException {
+        if( !artifact.isResolved() ) {
+            try {
+                artifactResolver.resolve(artifact, remoteArtifactRepositories, localRepository);
+            } catch (Throwable e) {
+                throw new MojoExecutionException("Could not resolve the artifact for " + artifact+": "+e.getMessage(), e);
+            }
         }
-        if (resolvedArtifact.isResolved()) {
-            return resolvedArtifact;
-        }
-        return null;
+        return artifact.getFile();
     }
 
     protected String checksum(File file) throws MojoExecutionException {
@@ -245,11 +236,11 @@ public class ChecksumValidatorMojo extends AbstractMojo {
     }
 
     private void validate() throws MojoExecutionException {
-        LinkedHashMap checksums = getCheckSums();
+        LinkedHashMap checksums = loadChecksums();
         
         boolean failed = false;
         
-        for ( Iterator it = project.getArtifacts().iterator(); it.hasNext(); )
+        for ( Iterator it = getArtifacts().iterator(); it.hasNext(); )
         {
             Artifact artifact = (Artifact) it.next();
             Artifact pom = getPomArtifact( artifact );
@@ -270,7 +261,8 @@ public class ChecksumValidatorMojo extends AbstractMojo {
      * @throws MojoExecutionException
      */
     private boolean validateArtifact(LinkedHashMap checksums, Artifact artifact) throws MojoExecutionException {
-        String sum = checksum(artifact.getFile());
+        File file = resolve(artifact);        
+        String sum = checksum(file);
         String key = key(artifact);
         List list = (List)checksums.get(key);
         if( list == null ) {
@@ -292,12 +284,13 @@ public class ChecksumValidatorMojo extends AbstractMojo {
         
         boolean modified=true;
         try { 
-            checksums = getCheckSums();
+            checksums = loadChecksums();
             modified=false;
         } catch ( MojoExecutionException e) {
         }
         
-        for ( Iterator it = project.getArtifacts().iterator(); it.hasNext(); )
+        
+        for ( Iterator it = getArtifacts().iterator(); it.hasNext(); )
         {
             Artifact artifact = (Artifact) it.next();
             Artifact pom = getPomArtifact( artifact );
@@ -308,37 +301,22 @@ public class ChecksumValidatorMojo extends AbstractMojo {
         }
         
         if( modified ) {
-            
-            // put it back to property file format
-            Properties p = new Properties();
-
-            for (Iterator iterator = checksums.entrySet().iterator(); iterator.hasNext();) {
-                Map.Entry i = (Map.Entry)iterator.next();            
-                StringBuffer b = new StringBuffer();
-                for (Iterator iterator2 = ((List)i.getValue()).iterator(); iterator2.hasNext();) {
-                    String s = (String)iterator2.next();            
-                    if( b.length()!=0 ) {
-                        b.append("|");
-                    }
-                    b.append(s);
-                }
-                p.put(i.getKey(), b.toString());
-            }
-            
-            // Store it.
-            FileOutputStream os=null;
-            try {
-                os = new FileOutputStream(this.checksums);
-                p.store(os, "");
-            } catch (Throwable e) {
-                throw new MojoExecutionException("Could not write: "+this.checksums);
-            } finally {
-                try {
-                    os.close();
-                } catch (Throwable ignore ) {
-                }
-            }
+            storeChecksums(checksums);
         }
+    }
+
+    private Set getArtifacts() {
+        HashSet rc = new HashSet();
+        if( includeDependencyArtifacts ) { 
+            rc.addAll(project.getDependencyArtifacts());
+        }
+        if( includePluginArtifacts ) { 
+            rc.addAll(project.getPluginArtifacts());
+        }
+        if( includeReportArtifacts ) { 
+            rc.addAll(project.getReportArtifacts());
+        }
+        return rc;
     }
 
     /**
@@ -349,7 +327,8 @@ public class ChecksumValidatorMojo extends AbstractMojo {
      * @throws MojoExecutionException
      */
     private boolean generateArtifact(HashMap checksums, Artifact artifact) throws MojoExecutionException {
-        String sum = checksum(artifact.getFile());
+        File file = resolve(artifact);
+        String sum = checksum(file);
         List sums = (List)checksums.get(key(artifact));
         if( sums == null ) {
             sums = (List)checksums.get(keyAnyVersion(artifact));
@@ -369,4 +348,87 @@ public class ChecksumValidatorMojo extends AbstractMojo {
     }
 
     
+    protected LinkedHashMap loadChecksums() throws MojoExecutionException {
+        LinkedHashMap rc = new LinkedHashMap();
+        
+        if( !checksums.canRead() ) {
+            throw new MojoExecutionException("Cannot read checksum file: "+checksums);
+        }
+        
+        InputStream is=null;
+        try {
+            is = new FileInputStream(checksums);
+            CSVReader reader = new CSVReader(new InputStreamReader(is, "UTF-8"), '=');
+            String [] line;
+            while ((line = reader.readNext()) != null) {
+                if( line.length > 0 ) {
+                    String key = line[0].trim();
+                    List values = new ArrayList(2);
+                    if( line.length > 1 ) {
+                        String[] t = line[1].split("\\|");
+                        for (int j = 0; j < t.length; j++) {
+                            values.add(t[j].toLowerCase().trim());
+                        }
+                    }
+                    rc.put(key, values);
+                }
+            }
+            reader.close();
+        } catch (IOException e) {
+            throw new MojoExecutionException("Could not load checksum file: "+checksums);
+        } finally {
+            try {
+                is.close();
+            } catch (Throwable e) {
+            }
+        }
+                
+        return rc;
+    }
+    
+    private void storeChecksums(LinkedHashMap checksums) throws MojoExecutionException {
+        // Store it.
+        FileOutputStream os=null;
+        try {
+            boolean exists = this.checksums.exists();
+            os = new FileOutputStream(this.checksums);
+            CSVWriter writer = new CSVWriter(new OutputStreamWriter(os, "UTF-8"), '=', CSVWriter.NO_QUOTE_CHARACTER);
+
+            if( !exists ) {
+                writer.writeNext(new String[]{"# This file uses a 'property file like' syntax"});
+                writer.writeNext(new String[]{"# Entries are in the following format: 'artifact","checksum-1|...|checksum-n'"});
+                writer.writeNext(new String[]{"# Where artifact follows the following format: 'group/id/type/version'"});
+                writer.writeNext(new String[]{"# You can use '*' for the version or checksum"});
+                writer.writeNext(new String[]{""});
+            }
+            
+            for (Iterator iterator = checksums.entrySet().iterator(); iterator.hasNext();) {
+                Map.Entry i = (Map.Entry)iterator.next();            
+                StringBuffer b = new StringBuffer();
+                for (Iterator iterator2 = ((List)i.getValue()).iterator(); iterator2.hasNext();) {
+                    String s = (String)iterator2.next();            
+                    if( b.length()!=0 ) {
+                        b.append("|");
+                    }
+                    b.append(s);
+                }
+                String key = (String)i.getKey();
+                String value = b.toString();
+                if( value.length()!=0 ) {
+                    writer.writeNext(new String[]{key,value});
+                } else { 
+                    writer.writeNext(new String[]{key});
+                }
+            }
+            writer.close();
+        } catch (Throwable e) {
+            throw new MojoExecutionException("Could not write: "+this.checksums);
+        } finally {
+            try {
+                os.close();
+            } catch (Throwable ignore ) {
+            }
+        }
+    }
+
 }

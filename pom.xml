@@ -58,6 +58,11 @@
       <artifactId>plexus-utils</artifactId>
       <version>1.0.5</version>
     </dependency>
+    <dependency>
+      <groupId>net.sf.opencsv</groupId>
+      <artifactId>opencsv</artifactId>
+      <version>1.8</version>
+    </dependency>     
   </dependencies>
   
   <build>
