@@ -71,6 +71,9 @@
   <profiles>
     <profile>
       <id>all</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
       <modules>
         <module>checksum-maven-plugin</module>
         <module>depends-maven-plugin</module>
