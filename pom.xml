@@ -29,13 +29,13 @@
     <groupId>org.apache.servicemix.tooling</groupId>
     <artifactId>depends-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
-    <version>1.0</version>
+    <version>1.1-SNAPSHOT</version>
     <name>ServiceMix :: Maven2 Depends plugin</name>
 
     <scm>
-      <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/maven-plugins/depends-maven-plugin/tags/depends-maven-plugin-1.0</connection>
-      <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/maven-plugins/depends-maven-plugin/tags/depends-maven-plugin-1.0</developerConnection>
-      <url>http://svn.apache.org/viewcvs.cgi/servicemix/maven-plugins/depends-maven-plugin/tags/depends-maven-plugin-1.0</url>
+      <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/maven-plugins/depends-maven-plugin/trunk</connection>
+      <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/maven-plugins/depends-maven-plugin/trunk</developerConnection>
+      <url>http://svn.apache.org/viewcvs.cgi/servicemix/maven-plugins/depends-maven-plugin/trunk</url>
     </scm>
 
     <dependencies>
