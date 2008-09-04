@@ -72,7 +72,9 @@
     <profile>
       <id>all</id>
       <activation>
+        <!--
         <activeByDefault>true</activeByDefault>
+        -->
       </activation>
       <modules>
         <module>checksum-maven-plugin</module>
