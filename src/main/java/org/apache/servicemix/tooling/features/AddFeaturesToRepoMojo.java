@@ -114,7 +114,7 @@ public class AddFeaturesToRepoMojo extends MojoSupport {
                 String dir = groupId.replace('.', '/') + "/" + artifactId + "/" + version + "/";
                 String name = artifactId + "-" + version + (classifier != null ? "-" + classifier : "") + "." + type;
                 System.out.println("Copy:      " + dir + name);
-                copy(new URL(localRepo.getUrl() + "/" + dir + name).openStream(),
+                copy(new URL(getLocalRepoUrl() + "/" + dir + name).openStream(),
                      repository,
                      name,
                      dir,
@@ -149,9 +149,27 @@ public class AddFeaturesToRepoMojo extends MojoSupport {
             }
             String dir = groupId.replace('.', '/') + "/" + artifactId + "/" + version + "/";
             String name = artifactId + "-" + version + (classifier != null ? "-" + classifier : "") + "." + type;
-            return localRepo.getUrl() + "/" + dir + name;
+
+            return getLocalRepoUrl() + "/" + dir + name;
+        }
+        if (System.getProperty("os.name").startsWith("Windows") && uri.startsWith("file:")) {
+        	String baseDir = uri.substring(5).replace('\\', '/');
+        	String result = "file:" + baseDir;;
+        	if (baseDir.indexOf(":") > 0) {
+        		result = "file:///" + baseDir;
+        	}
+        	return result;
         }
         return uri;
+    }
+
+    private String getLocalRepoUrl() {
+    	 if (System.getProperty("os.name").startsWith("Windows")) {
+    		 return localRepo.getProtocol() + ":///" + localRepo.getBasedir().replace('\\', '/');
+
+    	 } else {
+    		 return localRepo.getUrl();
+    	 }
     }
 
     private void addFeatures(List<String> features, Set<String> transitiveFeatures, Map<String, Feature> featuresMap) {
