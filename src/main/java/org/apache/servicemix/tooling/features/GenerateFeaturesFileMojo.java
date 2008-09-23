@@ -17,17 +17,25 @@
  */
 package org.apache.servicemix.tooling.features;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -39,6 +47,9 @@ import org.apache.maven.artifact.metadata.ResolutionGroup;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
+import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
+import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -77,31 +88,58 @@ public class GenerateFeaturesFileMojo extends MojoSupport {
     /**
      * The artifact type for attaching the generated file to the project
      * 
-     * @parameter default-value="features.xml"
+     * @parameter default-value="xml"
      */
-    private String attachmentArtifactType = "features.xml";
+    private String attachmentArtifactType = "xml";
 
     /**
      * The artifact classifier for attaching the generated file to the project
      * 
-     * @parameter
+     * @parameter default-value="features"
      */
-    private String attachmentArtifactClassifier;
+    private String attachmentArtifactClassifier = "features";
 
     /**
      * Should we generate a <feature> for the current project?
      * 
-     * @parameter default-value="true"
+     * @parameter default-value="false"
      */
-    private boolean includeProject = true;
+    private boolean includeProject = false;
 
     /**
      * Should we generate a <feature> for the current project's <dependency>s?
      * 
-     * @parameter default-value="false"
+     * @parameter default-value="true"
      */
-    private boolean includeDependencies = false;
-
+    private boolean includeDependencies = true;
+    
+    /**
+     * The kernel version for which to generate the bundle
+     * 
+     * @parameter
+     */
+    private String kernelVersion;
+    
+    /**
+     * A properties file containing bundle translations
+     * 
+     * @parameter
+     */
+    private File translation;
+    
+    /*
+     * The translations
+     */
+    private Map<String, Map<VersionRange, String>> translations = new HashMap<String, Map<VersionRange,String>>() {
+    	@Override
+    	public Map<VersionRange, String> get(Object key) {
+    		if (super.get(key) == null) {
+    			super.put(key.toString(), new HashMap<VersionRange, String>());
+    		}
+    		return super.get(key);
+    	}
+    };
+    
     /*
      * These bundles are the features that will be built
      */
@@ -117,15 +155,23 @@ public class GenerateFeaturesFileMojo extends MojoSupport {
      * List of bundles included in the current feature
      */
     private Set<Artifact> currentFeature = new HashSet<Artifact>();
+    
+    /*
+     * List of missing bundles
+     */
+    private Set<Artifact> missingBundles = new TreeSet<Artifact>();
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         OutputStream out = null;
         try {
+        	prepare();
+        	getLog().info(String.format("-- Start generating %s --", outputFile.getAbsolutePath()));
             outputFile.getParentFile().mkdirs();
             out = new FileOutputStream(outputFile);
+            
             PrintStream printer = new PrintStream(out);
             populateProperties(printer);
-            getLog().info("Created: " + outputFile);
+            getLog().info(String.format("-- Done generating %s --", outputFile.getAbsolutePath()));
 
             // now lets attach it
             projectHelper.attachArtifact(project, attachmentArtifactType, attachmentArtifactClassifier, outputFile);
@@ -142,43 +188,75 @@ public class GenerateFeaturesFileMojo extends MojoSupport {
         }
     }
 
-    protected void populateProperties(PrintStream out) {
+    protected void populateProperties(PrintStream out) throws ArtifactResolutionException, ArtifactNotFoundException, IOException {
         out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         out.println("<features>");
         if (includeProject) {
             writeCurrentProjectFeature(out);
         }
         if (includeDependencies) {
-            prepare();
             writeProjectDependencyFeatures(out);
         }
         out.println("</features>");
     }
 
-    private void prepare() {
-        for (Artifact artifact : (Set<Artifact>)project.getDependencyArtifacts()) {
-            if ("provided".equals(artifact.getScope())) {
-                getLog().debug(String.format("Adding '%s' as provided bundle", artifact.toString()));
-                provided.add(artifact);
-            }
+    private void prepare() throws ArtifactResolutionException, ArtifactNotFoundException, IOException, InvalidVersionSpecificationException {
+    	if (translation != null) {
+    		InputStream stream = null;
+    		try {
+    			stream = new BufferedInputStream(new FileInputStream(translation));
+    			Properties file = new Properties();
+    			file.load(stream);
+    			for (String key : file.stringPropertyNames()) {
+    				String[] elements = key.split("/");
+    				translations.get(String.format("%s/%s", elements[0], elements[1]))
+    				            .put(VersionRange.createFromVersionSpec(elements[2]), file.getProperty(key));
+    			}
+    			getLog().info("Loaded " + translations.size() + " bundle name translation rules from " + translation.getAbsolutePath());
+    		} finally {
+    			if (stream != null) {
+    				stream.close();
+    			}
+    		}
+    	}
+    	
+    	Artifact kernel = factory.createArtifact("org.apache.servicemix.kernel", 
+    			                                 "apache-servicemix-kernel",
+    			                                 kernelVersion, Artifact.SCOPE_PROVIDED, "pom");
+    	resolver.resolve(kernel, remoteRepos, localRepo);
+    	getLog().info("-- List of bundles provided by ServiceMix Kernel " + kernelVersion + " --");
+        for (Artifact artifact : getDependencies(kernel)) {
+        	getLog().info(" " + artifact);
+            provided.add(artifact);
         }
+        getLog().info("-- <end of list>  --");
     }
 
     private void writeProjectDependencyFeatures(PrintStream out) {
         Set<Artifact> dependencies = (Set<Artifact>)project.getDependencyArtifacts();
         dependencies.removeAll(provided);
         for (Artifact artifact : dependencies) {
-            System.out.println("Adding feature " + artifact.getArtifactId() + " from " + artifact);
+            getLog().info(" Generating feature " + artifact.getArtifactId() + " from " + artifact);
             out.println("  <feature name='" + artifact.getArtifactId() + "'>");
             currentFeature.clear();
             writeBundle(out, artifact);
             features.add(artifact);
             out.println("  </feature>");
         }
-
+        if (missingBundles.size() > 0) {
+        	getLog().info("-- Some bundles were missing  --");
+        	for (Artifact artifact : missingBundles) {
+        		getLog().info(String.format(" %s", artifact));
+        	}
+        }
     }
 
     private void writeBundle(PrintStream out, Artifact artifact) {
+    	Artifact replacement = getReplacement(artifact);
+    	if (replacement != null) {
+    		writeBundle(out, replacement);
+    		return;
+    	}
         if (isProvided(artifact)) {
             getLog().debug(String.format("Skipping '%s' -- bundle will be provided at runtime", artifact));
             return;
@@ -190,7 +268,7 @@ public class GenerateFeaturesFileMojo extends MojoSupport {
         }
         // first write the dependencies
         for (Artifact dependency : getDependencies(artifact)) {
-            if (dependency.isOptional() || "test".equals(dependency.getScope())) {
+            if (dependency.isOptional() || Artifact.SCOPE_TEST.equals(dependency.getScope())) {
                 // omit optional dependencies
                 getLog().debug(String.format("Omitting optional and/or test scoped dependency '%s' for '%s'", 
                                              dependency, artifact));
@@ -206,23 +284,46 @@ public class GenerateFeaturesFileMojo extends MojoSupport {
         }
         // and then write the bundle itself
         if (isBundle(artifact)) {
+        	getLog().info(String.format("  adding bundle %s", artifact));
             writeBundle(out, artifact.getGroupId(), artifact.getArtifactId(), artifact.getBaseVersion());
         } else {
             Artifact wrapper = findServicemixBundle(artifact);
             if (wrapper != null) {
-                writeBundle(out, wrapper);
+            	getLog().info(String.format("  adding bundle %s (for %s)", wrapper, artifact));
+            	writeBundle(out, wrapper.getGroupId(), wrapper.getArtifactId(), wrapper.getBaseVersion());
             } else {
-                getLog().error(String.format("Unable to find suitable bundle for artifact '%s' -- resulting feature won't work", artifact));
+            	getLog().error(String.format(" unable to find suitable bundle for artifact '%s'", artifact));
+            	missingBundles.add(artifact);
             }
         }
     }
 
-    private Artifact findServicemixBundle(Artifact artifact) {
+	private Artifact getReplacement(Artifact artifact) {
+		String key = String.format("%s/%s", artifact.getGroupId(), artifact.getArtifactId());
+		String bundle = null;
+		for (VersionRange range : translations.get(key).keySet()) {
+			try {
+				if (range.containsVersion(artifact.getSelectedVersion())) {
+					bundle = translations.get(key).get(range);
+					break;
+				}
+			} catch (OverConstrainedVersionException e) {
+				bundle = null;
+			}
+		}
+		if (bundle != null) {
+			String[] split = bundle.split("/");
+			return factory.createArtifact(split[0], split[1], split[2], Artifact.SCOPE_PROVIDED, artifact.getArtifactHandler().getPackaging());
+		} else {
+			return null;
+		}
+	}
+
+	private Artifact findServicemixBundle(Artifact artifact) {
         Artifact noVersionWrapper = factory.createArtifact("org.apache.servicemix.bundles", 
                                                   "org.apache.servicemix.bundles." + artifact.getArtifactId(), 
                                                   "", 
                                                   artifact.getScope(), artifact.getType());
-        
         try {
             List versions = artifactMetadataSource.retrieveAvailableVersions(noVersionWrapper, localRepo, remoteRepos);
             Artifact wrapper = factory.createArtifact("org.apache.servicemix.bundles", 
@@ -313,7 +414,9 @@ public class GenerateFeaturesFileMojo extends MojoSupport {
         List<Artifact> list = new ArrayList<Artifact>();
         try {
             ResolutionGroup pom = artifactMetadataSource.retrieve(artifact, localRepo, remoteRepos);
-            list.addAll(pom.getArtifacts());
+            if (pom != null) {
+            	list.addAll(pom.getArtifacts());
+            }
         } catch (ArtifactMetadataRetrievalException e) {
             getLog().warn("Unable to retrieve metadata for " + artifact + ", not including dependencies for it");
         } catch (InvalidArtifactRTException e) {
