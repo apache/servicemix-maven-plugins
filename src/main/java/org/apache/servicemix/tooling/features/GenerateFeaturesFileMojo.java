@@ -27,10 +27,10 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -207,7 +207,8 @@ public class GenerateFeaturesFileMojo extends MojoSupport {
     			stream = new BufferedInputStream(new FileInputStream(translation));
     			Properties file = new Properties();
     			file.load(stream);
-    			for (String key : file.stringPropertyNames()) {
+    			ArrayList<String> stringNames = getStringNames(file);
+    			for (String key : stringNames) {
     				String[] elements = key.split("/");
     				translations.get(String.format("%s/%s", elements[0], elements[1]))
     				            .put(VersionRange.createFromVersionSpec(elements[2]), file.getProperty(key));
@@ -232,7 +233,21 @@ public class GenerateFeaturesFileMojo extends MojoSupport {
         getLog().info("-- <end of list>  --");
     }
 
-    private void writeProjectDependencyFeatures(PrintStream out) {
+    private ArrayList<String> getStringNames(Properties file) {
+    	// this method simulate the Properties.stringPropertyNames() of JDK6 in order to make this class 
+    	// compile with jdk5
+    	ArrayList<String> ret = new ArrayList<String>();
+    	Enumeration<?> name = file.propertyNames();
+    	while (name.hasMoreElements()) {
+    		Object ele = name.nextElement();
+    		if (ele instanceof String && file.get(ele) instanceof String) {
+    			ret.add((String)ele);
+    		}
+    	}
+		return ret;
+	}
+
+	private void writeProjectDependencyFeatures(PrintStream out) {
         Set<Artifact> dependencies = (Set<Artifact>)project.getDependencyArtifacts();
         dependencies.removeAll(provided);
         for (Artifact artifact : dependencies) {
