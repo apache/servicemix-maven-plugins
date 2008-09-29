@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
 import java.util.zip.ZipEntry;
@@ -108,15 +109,11 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
      */
     private Map<String, Map<VersionRange, Artifact>> bundleExports = new HashMap<String, Map<VersionRange, Artifact>>();
 
-    private String[] systemExports = {"javax.crypto", "javax.crypto.spec", "javax.management", "javax.management.loading",
-                                      "javax.management.modelmbean", "javax.management.monitor", "javax.management.remote",
-                                      "javax.net", "javax.net.ssl", "javax.security.cert", "javax.sql", "javax.naming",
-                                      "javax.naming.spi", "javax.xml.bind.annotation", "javax.xml.namespace", "javax.xml.parsers",
-                                      "javax.xml.stream", "javax.xml.transform", "javax.xml.transform.dom",
-                                      "javax.xml.transform.sax", "javax.xml.transform.stream", "javax.xml.validation",
-                                      "javax.xml.xpath", "org.osgi.framework", "org.w3c.dom", "org.xml.sax", "org.xml.sax.ext",
-                                      "org.xml.sax.helpers"};
-
+    /*
+     * The set of system exports
+     */
+    private List<String> systemExports = new LinkedList<String>();
+    
     /*
      * These bundles are the features that will be built
      */
@@ -126,6 +123,7 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
         PrintStream out = null;
         try {
             out = new PrintStream(new FileOutputStream(outputFile));
+            readSystemPackages();
             readKernelBundles();
             readBundles();
             writeFeatures(out);
@@ -138,6 +136,20 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
             if (out != null) {
                 out.close();
             }
+        }
+    }
+
+    private void readSystemPackages() throws IOException {
+        Properties properties = new Properties();
+        properties.load(getClass().getClassLoader().getResourceAsStream("config.properties"));
+        readSystemPackages(properties, "jre-1.5");
+        readSystemPackages(properties, "osgi");
+    }
+
+    private void readSystemPackages(Properties properties, String key) {
+        String packages = (String) properties.get(key);
+        for (String pkg : packages.split(";")) {
+            systemExports.add(pkg.trim());
         }
     }
 
@@ -322,10 +334,8 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
         }
         // remove imports for packages exported by the system bundle
         for (ManifestEntry entry : input) {
-            for (String export : systemExports) {
-                if (entry.getName().equals(export)) {
-                    output.remove(entry);
-                }
+            if (systemExports.contains(entry.getName())) {
+                output.remove(entry);
             }
         }
         return output;
@@ -388,10 +398,10 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
             while (!artifacts.isEmpty()) {
                 Artifact next = artifacts.pop();
                 if (isFeature(next)) {
-                    out.println(String.format("    <feature>%s</feature>", artifact.getArtifactId()));
+                    out.println(String.format("    <feature>%s</feature>", next.getArtifactId()));
                 } else {
-                    out.println(String.format("    <bundle>mvn:%s/%s/%s</feature>", 
-                                              artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion()));
+                    out.println(String.format("    <bundle>mvn:%s/%s/%s</bundle>", 
+                                              next.getGroupId(), next.getArtifactId(), next.getBaseVersion()));
                 }
             }
             out.println("  </feature>");
