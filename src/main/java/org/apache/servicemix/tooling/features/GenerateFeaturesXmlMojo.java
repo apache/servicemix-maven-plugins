@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
@@ -139,6 +138,9 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
         }
     }
 
+    /*
+     * Read all the system provided packages from the <code>config.properties</code> file 
+     */
     private void readSystemPackages() throws IOException {
         Properties properties = new Properties();
         properties.load(getClass().getClassLoader().getResourceAsStream("config.properties"));
@@ -146,6 +148,7 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
         readSystemPackages(properties, "osgi");
     }
 
+    
     private void readSystemPackages(Properties properties, String key) {
         String packages = (String) properties.get(key);
         for (String pkg : packages.split(";")) {
@@ -225,9 +228,48 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
      */
     private Feature getFeature(Artifact artifact) throws ArtifactResolutionException, ArtifactNotFoundException, ZipException, IOException {
         Feature feature = new Feature(artifact);
+        discoverBundles(artifact);
         addRequirements(artifact, feature);
         return feature;
     }
+
+    /*
+     * Discover bundles in the dependencies for this artifact
+     */
+    private void discoverBundles(Artifact artifact) throws ArtifactResolutionException, ArtifactNotFoundException, ZipException, IOException {
+        List<Artifact> dependencies = getDependencies(artifact);
+        for (Artifact dependency : dependencies) {
+            if (isBundle(dependency) && !isFeature(dependency)) {
+                getLog().info("  Automatically discovered bundle " + dependency);
+                registerBundle(dependency);
+            }
+        }
+    }
+
+    /*
+     * Check if the given artifact is a bundle
+     */
+    private boolean isBundle(Artifact artifact) {
+        if (artifact.getArtifactHandler().getPackaging().equals("bundle")) {
+            return true;
+        } else {
+            try {
+                Manifest manifest = getManifest(artifact);
+                if (manifest.getBsn() != null) {
+                    getLog().debug(String.format("MANIFEST.MF for '%s' contains Bundle-Name '%s'",
+                                                 artifact, manifest.getBsn().getName()));
+                    return true;
+                }
+            } catch (ZipException e) {
+                getLog().debug("Unable to determine if " + artifact + " is a bundle; defaulting to false", e);
+            } catch (IOException e) {
+                getLog().debug("Unable to determine if " + artifact + " is a bundle; defaulting to false", e);
+            } catch (Exception e) {
+                getLog().debug("Unable to determine if " + artifact + " is a bundle; defaulting to false", e);
+            }
+        }
+        return false;
+     }
 
     /*
      * Add requirements for an artifact to a feature
@@ -254,8 +296,8 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
                 } else {
                     // ...but a warning for a mandatory dependency
                     getLog().warn(
-                                  String.format("  Unable to find suitable bundle for dependency %s (%s)", 
-                                                entry.getName(), entry.getVersion()));
+                                  String.format("  Unable to find suitable bundle for dependency %s (%s) (required by %s)", 
+                                                entry.getName(), entry.getVersion(), artifact.getArtifactId()));
                 }
             } else {
                 if (feature.push(add) && !isFeature(add)) {
@@ -351,11 +393,16 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
 
     private Manifest getManifest(Artifact artifact) throws ArtifactResolutionException, ArtifactNotFoundException, ZipException,
         IOException {
-        resolver.resolve(artifact, remoteRepos, localRepo);
-        ZipFile file = new ZipFile(artifact.getFile());
-        ZipEntry entry = file.getEntry("META-INF/MANIFEST.MF");
-        Manifest manifest = new Manifest(file.getInputStream(entry));
-        return manifest;
+        File localFile = new File(localRepo.pathOf(artifact));
+        ZipFile file;
+        if (localFile.exists()) {
+            //avoid going over to the repository if the file is already on the disk
+            file = new ZipFile(localFile);
+        } else {
+            resolver.resolve(artifact, remoteRepos, localRepo);
+            file = new ZipFile(artifact.getFile());
+        }
+        return new Manifest(file.getInputStream(file.getEntry("META-INF/MANIFEST.MF")));
     }
 
     private List<Artifact> getDependencies(Artifact artifact) {
