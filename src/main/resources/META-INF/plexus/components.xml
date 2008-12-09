@@ -160,10 +160,6 @@
         </phases>
       </configuration>
     </component>
-    <component>
-      <role>org.apache.maven.artifact.resolver.ArtifactCollector</role>
-      <role-hint>graph</role-hint>
-      <implementation>org.apache.servicemix.maven.plugin.jbi.GraphArtifactCollector</implementation>
-    </component>
-  </components>
+
+c            m  </components>
 </component-set>

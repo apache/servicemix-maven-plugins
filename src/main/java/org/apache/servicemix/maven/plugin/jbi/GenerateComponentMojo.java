@@ -27,6 +27,7 @@ import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
+import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -163,55 +164,59 @@ public class GenerateComponentMojo extends AbstractJbiMojo {
 
         File projectArtifact = new File(outputDirectory, finalName + ".jar");
         try {
-            FileUtils.copyFileToDirectory(projectArtifact, new File(
-                    workDirectory, LIB_DIRECTORY));
+            FileUtils.copyFileToDirectory(projectArtifact, new File(workDirectory, LIB_DIRECTORY));
         } catch (IOException e) {
             throw new JbiPluginException("Unable to copy file "
                     + projectArtifact, e);
         }
 
-        ScopeArtifactFilter filter = new ScopeArtifactFilter(
-                Artifact.SCOPE_RUNTIME);
+        ArtifactFilter filter = new ArtifactFilter() {
+            public boolean include(Artifact artifact) {
+                return !artifact.isOptional() &&
+                        (artifact.getScope() == Artifact.SCOPE_RUNTIME || artifact.getScope() == Artifact.SCOPE_COMPILE);
+            }
+        };
 
         JbiResolutionListener listener = resolveProject();
-        // print(listener.getRootNode(), "");
+        if (getLog().isDebugEnabled()) {
+            print(listener.getRootNode(), " ");
+        }
 
-        Set includes = new HashSet();
+        Set<Artifact> includes = new HashSet<Artifact>();
+        Set<Artifact> excludes = new HashSet<Artifact>();
         for (Iterator iter = project.getArtifacts().iterator(); iter.hasNext();) {
             Artifact artifact = (Artifact) iter.next();
-            if (!artifact.isOptional() && filter.include(artifact)) {
+            if (filter.include(artifact)) {
                 MavenProject project = null;
                 try {
-                    project = projectBuilder.buildFromRepository(artifact,
-                            remoteRepos, localRepo);
+                    project = projectBuilder.buildFromRepository(artifact, remoteRepos, localRepo);
                 } catch (ProjectBuildingException e) {
-                    getLog().warn(
-                            "Unable to determine packaging for dependency : "
+                    getLog().warn("Unable to determine packaging for dependency : "
                                     + artifact.getArtifactId()
                                     + " assuming jar");
                 }
-                String type = project != null ? project.getPackaging()
-                        : artifact.getType();
+                String type = project != null ? project.getPackaging() : artifact.getType();
                 if ("jbi-shared-library".equals(type)) {
-                    removeBranch(listener, artifact);
+                    excludeBranch(listener.getNode(artifact), excludes);
                 } else if ("jar".equals(type) || "bundle".equals(type) || "jbi-component".equals(type)) {
                     includes.add(artifact);
                 }
             }
         }
-        // print(listener.getRootNode(), "");
+        pruneTree(listener.getRootNode(), excludes);
+        if (getLog().isDebugEnabled()) {
+            getLog().info("Excludes: " + excludes);
+            print(listener.getRootNode(), " ");
+        }
 
-        for (Iterator iter = retainArtifacts(includes, listener).iterator(); iter
-                .hasNext();) {
-            Artifact artifact = (Artifact) iter.next();
+        for (Artifact artifact : retainArtifacts(includes, listener)) {
             try {
                 getLog().info("Including: " + artifact);
-                FileUtils.copyFileToDirectory(artifact.getFile(), new File(
-                        workDirectory, LIB_DIRECTORY));
+                FileUtils.copyFileToDirectory(artifact.getFile(), new File(workDirectory, LIB_DIRECTORY));
             } catch (IOException e) {
-                throw new JbiPluginException("Unable to copy file "
-                        + artifact.getFile(), e);
+                throw new JbiPluginException("Unable to copy file " + artifact.getFile(), e);
             }
         }
     }
+
 }

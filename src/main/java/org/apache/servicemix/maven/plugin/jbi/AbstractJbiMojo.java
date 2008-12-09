@@ -37,6 +37,7 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactCollector;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
+import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.model.Dependency;
@@ -113,11 +114,11 @@ public abstract class AbstractJbiMojo extends AbstractMojo {
     protected ArtifactResolver resolver;
 
     /**
-     * @component role="org.apache.maven.artifact.resolver.ArtifactCollector" hint="graph"
+     * @component
      * @required
      * @readonly
      */
-    protected ArtifactCollector collector = new GraphArtifactCollector();
+    protected ArtifactCollector collector;
 
     /**
      * @component
@@ -136,57 +137,67 @@ public abstract class AbstractJbiMojo extends AbstractMojo {
         return projectHelper;
     }
 
-    protected void removeBranch(JbiResolutionListener listener,
-            Artifact artifact) {
+    protected void removeBranch(JbiResolutionListener listener, Artifact artifact) {
         Node n = listener.getNode(artifact);
         if (n != null) {
-            for (Iterator it = n.getParents().iterator(); it.hasNext();) {
-                Node parent = (Node) it.next();
+            for (Node parent : n.getParents()) {
                 parent.getChildren().remove(n);
             }
-        }
+		}
     }
 
-    protected void removeChildren(JbiResolutionListener listener,
-            Artifact artifact) {
+    protected void removeChildren(JbiResolutionListener listener, Artifact artifact) {
         Node n = listener.getNode(artifact);
         n.getChildren().clear();
     }
 
-    protected Set getArtifacts(Node n, Set s) {
-        if (!s.contains(n.getArtifact())) {
-            s.add(n.getArtifact());
-            for (Iterator iter = n.getChildren().iterator(); iter.hasNext();) {
-                Node c = (Node) iter.next();
+    protected Set<Artifact> getArtifacts(Node n, Set<Artifact> s) {
+        if (s.add(n.getArtifact())) {
+            for (Node c : n.getChildren()) {
                 getArtifacts(c, s);
             }
         }
         return s;
     }
 
-    protected void excludeBranch(Node n, Set excludes) {
-        excludes.add(n);
-        for (Iterator iter = n.getChildren().iterator(); iter.hasNext();) {
-            Node c = (Node) iter.next();
+    protected void excludeBranch(Node n, Set<Artifact> excludes) {
+        excludes.add(n.getArtifact());
+        for (Node c : n.getChildren()) {
             excludeBranch(c, excludes);
         }
     }
 
     protected void print(Node rootNode) {
-        for (Iterator iter = getArtifacts(rootNode, new HashSet()).iterator(); iter.hasNext();) {
-            Artifact a = (Artifact) iter.next();
+        for (Artifact a : getArtifacts(rootNode, new HashSet<Artifact>())) {
             getLog().info(" " + a);
         }
     }
 
-    protected Set retainArtifacts(Set includes, JbiResolutionListener listener) {
-        Set finalIncludes = new HashSet();
-        Set filteredArtifacts = getArtifacts(listener.getRootNode(),
-                new HashSet());
-        for (Iterator iter = includes.iterator(); iter.hasNext();) {
-            Artifact artifact = (Artifact) iter.next();
-            for (Iterator iter2 = filteredArtifacts.iterator(); iter2.hasNext();) {
-                Artifact filteredArtifact = (Artifact) iter2.next();
+    protected void print(Node rootNode, String pfx) {
+        getLog().info(pfx + rootNode.getArtifact());
+        for (Node child : rootNode.getChildren()) {
+            print(child, " " + pfx);
+        }
+    }
+
+    protected void pruneTree(Node node, Set<Artifact> excludes) {
+        for (Iterator<Node> iter = node.getChildren().iterator(); iter.hasNext();) {
+            Node child = iter.next();
+            if (child.getArtifact().isOptional() ||
+                    (!child.getScope().equals(Artifact.SCOPE_COMPILE) && !child.getScope().equals(Artifact.SCOPE_RUNTIME)) ||
+                    excludes.contains(child.getArtifact())) {
+                iter.remove();
+            } else {
+                pruneTree(child, excludes);
+            }
+        }
+    }
+
+    protected Set<Artifact> retainArtifacts(Set<Artifact> includes, JbiResolutionListener listener) {
+        Set<Artifact> finalIncludes = new HashSet<Artifact>();
+        Set<Artifact> filteredArtifacts = getArtifacts(listener.getRootNode(), new HashSet<Artifact>());
+        for (Artifact artifact : includes) {
+            for (Artifact filteredArtifact : filteredArtifacts) {
                 if (filteredArtifact.getArtifactId().equals(
                         artifact.getArtifactId())
                         && filteredArtifact.getType()
@@ -208,19 +219,16 @@ public abstract class AbstractJbiMojo extends AbstractMojo {
             }
 
         }
-
         return finalIncludes;
     }
+
 
     protected JbiResolutionListener resolveProject() {
         Map managedVersions = null;
         try {
-            managedVersions = createManagedVersionMap(project.getId(), project
-                    .getDependencyManagement());
+            managedVersions = createManagedVersionMap(project.getId(), project.getDependencyManagement());
         } catch (ProjectBuildingException e) {
-            getLog().error(
-                    "An error occurred while resolving project dependencies.",
-                    e);
+            getLog().error("An error occurred while resolving project dependencies.", e);
         }
         JbiResolutionListener listener = new JbiResolutionListener();
         listener.setLog(getLog());

@@ -111,15 +111,14 @@ public class JbiResolutionListener implements ResolutionListener {
     }
 
     public void updateScope(Artifact artifact, String scope) {
-        // getLog().debug("updateScope: " + artifact);
+        getLog().debug("updateScope: " + artifact);
         Node node = (Node) artifacts.get(artifact.getDependencyConflictId());
 
-        node.artifact.setScope(scope);
+        node.setScope(scope);
     }
 
     public void manageArtifact(Artifact artifact, Artifact replacement) {
-        // getLog().debug("manageArtifact: artifact=" + artifact + ",
-        // replacement=" + replacement);
+        getLog().debug("manageArtifact: artifact=" + artifact + ", replacement=" + replacement);
         Node node = (Node) artifacts.get(artifact.getDependencyConflictId());
         if (node != null) {
             if (replacement.getVersion() != null) {
@@ -159,13 +158,15 @@ public class JbiResolutionListener implements ResolutionListener {
     }
 
     static class Node {
-        private Set children = new HashSet();
+        private Set<Node> children = new HashSet<Node>();
 
-        private Set parents = new HashSet();
+        private Set<Node> parents = new HashSet<Node>();
 
         private Artifact artifact;
 
-        public Set getChildren() {
+        private String scope;
+
+        public Set<Node> getChildren() {
             return children;
         }
 
@@ -173,8 +174,19 @@ public class JbiResolutionListener implements ResolutionListener {
             return artifact;
         }
 
-        public Set getParents() {
+        public Set<Node> getParents() {
             return parents;
+        }
+
+        public String getScope() {
+            if (scope != null) {
+                return scope;
+            }
+            return artifact.getScope();
+        }
+
+        public void setScope(String scope) {
+            this.scope = scope;
         }
     }
 
