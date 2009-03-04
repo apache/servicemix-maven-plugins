@@ -180,11 +180,11 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
     /*
      * Read the list of bundles we can use to satisfy links
      */
-    private void readBundles() throws IOException, ArtifactResolutionException, ArtifactNotFoundException {
-        getLog().info("Step 2 : Building a list of exports for bundles in " + bundles.getAbsolutePath());
+    private void readBundles() throws IOException, ArtifactResolutionException, ArtifactNotFoundException {        
         BufferedReader reader = null;
         try {
             if (bundles != null) {
+                getLog().info("Step 2 : Building a list of exports for bundles in " + bundles.getAbsolutePath());
                 reader = new BufferedReader(new FileReader(bundles));
                 String line = reader.readLine();
                 while (line != null) {
@@ -195,7 +195,9 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
                         registerBundle(artifact);
                     }
                     line = reader.readLine();
-                }
+                }                
+            } else {
+                getLog().info("Step 2 : No Bundle file supplied for building list of exports");
             }
         } finally {
             if (reader != null) {
