@@ -444,13 +444,15 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
         }
 
         public void write(PrintStream out) {
-            out.println("  <feature name='" + artifact.getArtifactId() + "'>");
+            out.println("  <feature name='" + artifact.getArtifactId() + "' version='"
+            		+ artifact.getBaseVersion() + "'>");
             Set<Artifact> featureArtifacts = new HashSet<Artifact>();
             Set<Artifact> bundleArtifacts = new HashSet<Artifact>();
             
             for (Artifact next : artifacts) {
                 if (isFeature(next)) {
-                    out.println(String.format("    <feature>%s</feature>", next.getArtifactId()));
+                    out.println("    <feature version='"
+            		+ next.getBaseVersion() + "'>" + String.format("%s</feature>", next.getArtifactId()));
                 	featureArtifacts.addAll(features.get(next).artifacts);
                 } else {
                     bundleArtifacts.add(next);
