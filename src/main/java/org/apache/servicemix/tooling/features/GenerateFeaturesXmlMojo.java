@@ -116,7 +116,7 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
     /*
      * These bundles are the features that will be built
      */
-    private Set<Artifact> features = new HashSet<Artifact>();
+    private Map<Artifact, Feature> features = new HashMap<Artifact, Feature>();
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         PrintStream out = null;
@@ -218,8 +218,9 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
         Set<Artifact> dependencies = (Set<Artifact>)project.getDependencyArtifacts();
         for (Artifact artifact : dependencies) {
             getLog().info(" Generating feature " + artifact.getArtifactId() + " from " + artifact);
-            getFeature(artifact).write(out);
-            registerFeature(artifact);
+            Feature feature = getFeature(artifact);
+            feature.write(out);
+            registerFeature(artifact, feature);
         }
         out.println("</features>");
         getLog().info("...done!");
@@ -315,7 +316,7 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
      * Check if a given bundle is itself being generated as a feature
      */
     private boolean isFeature(Artifact artifact) {
-        return features.contains(artifact);
+        return features.containsKey(artifact);
     }
 
     /*
@@ -347,9 +348,9 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
     /*
      * Register a feature and also register the bundle for the feature
      */
-    private void registerFeature(Artifact artifact) throws ArtifactResolutionException, ArtifactNotFoundException, ZipException,
+    private void registerFeature(Artifact artifact, Feature feature) throws ArtifactResolutionException, ArtifactNotFoundException, ZipException,
         IOException {
-        features.add(artifact);
+        features.put(artifact, feature);
         registerBundle(artifact);
     }
 
@@ -444,14 +445,28 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
 
         public void write(PrintStream out) {
             out.println("  <feature name='" + artifact.getArtifactId() + "'>");
-            while (!artifacts.isEmpty()) {
-                Artifact next = artifacts.pop();
+            Set<Artifact> featureArtifacts = new HashSet<Artifact>();
+            Set<Artifact> bundleArtifacts = new HashSet<Artifact>();
+            
+            for (Artifact next : artifacts) {
                 if (isFeature(next)) {
                     out.println(String.format("    <feature>%s</feature>", next.getArtifactId()));
+                	featureArtifacts.addAll(features.get(next).artifacts);
                 } else {
-                    out.println(String.format("    <bundle>mvn:%s/%s/%s</bundle>", 
-                                              next.getGroupId(), next.getArtifactId(), next.getBaseVersion()));
+                    bundleArtifacts.add(next);
                 }
+            }
+                        
+            for (Artifact artifact : bundleArtifacts) {
+            	if (!featureArtifacts.contains(artifact)) {
+            		//only if the bundle isn't in the inner feature then print it out
+            		out.println(String.format("    <bundle>mvn:%s/%s/%s</bundle>", 
+                        artifact.getGroupId(), artifact.getArtifactId(), artifact.getBaseVersion()));
+
+            	} else {
+            		getLog().info(String.format("bundle %s/%s/%s is already included in inner feature, so don't count it in again", 
+                            artifact.getGroupId(), artifact.getArtifactId(), artifact.getBaseVersion()));
+            	}
             }
             out.println("  </feature>");
         }
