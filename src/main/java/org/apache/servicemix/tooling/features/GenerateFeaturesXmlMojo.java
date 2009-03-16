@@ -90,7 +90,7 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
      * @parameter
      */
     private String kernelVersion;
-
+    
     /*
      * A list of packages exported by the kernel
      */
@@ -103,6 +103,11 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
      */
     private File bundles;
 
+    /*
+     * A set of known bundles
+     */
+    private Set<String> knownBundles = new HashSet<String>();
+    
     /*
      * A list of exports by the bundles
      */
@@ -173,6 +178,7 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
                     getLog().debug(" adding kernel export " + entry.getName() + " (" + entry.getVersion() + ")");
                 }
             }
+            registerBundle(artifact);
         }
         getLog().info("...done!");
     }
@@ -242,7 +248,7 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
     private void discoverBundles(Artifact artifact) throws ArtifactResolutionException, ArtifactNotFoundException, ZipException, IOException {
         List<Artifact> dependencies = getDependencies(artifact);
         for (Artifact dependency : dependencies) {
-            if (isBundle(dependency) && !isFeature(dependency)) {
+            if (isDiscoverableBundle(dependency)) {
                 getLog().info("  Automatically discovered bundle " + dependency);
                 registerBundle(dependency);
             }
@@ -250,10 +256,31 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
     }
 
     /*
+     * Only auto-discover an OSGi bundle
+     * - if it is not already known as a feature itself
+     * - if it is not another version of an already known bundle
+     */
+    private boolean isDiscoverableBundle(Artifact artifact) {
+        if (isBundle(artifact) && !isFeature(artifact)) {
+            for (String known : knownBundles) {
+                String[] elements = known.split("/");
+                if (artifact.getGroupId().equals(elements[0]) &&
+                    artifact.getArtifactId().equals(elements[1])) {
+                    getLog().debug(String.format("  Avoid auto-discovery for %s because of existing bundle %s", 
+                                                 toString(artifact), known));
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /*
      * Check if the given artifact is a bundle
      */
     private boolean isBundle(Artifact artifact) {
-        if (artifact.getArtifactHandler().getPackaging().equals("bundle")) {
+        if (knownBundles.contains(toString(artifact)) || artifact.getArtifactHandler().getPackaging().equals("bundle")) {
             return true;
         } else {
             try {
@@ -333,6 +360,7 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
     private void registerBundle(Artifact artifact) throws ArtifactResolutionException, ArtifactNotFoundException, ZipException,
         IOException {
         getLog().debug("Registering bundle " + artifact);
+        knownBundles.add(toString(artifact));
         Manifest manifest = getManifest(artifact);
         for (ManifestEntry entry : getManifestEntries(manifest.getExports())) {
             Map<VersionRange, Artifact> versions = bundleExports.get(entry.getName());
@@ -422,7 +450,10 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
         }
         return list;
     }
-
+    
+    public static String toString(Artifact artifact) {
+        return String.format("%s/%s/%s", artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion());
+    }
 
     private class Feature {
 
@@ -466,7 +497,7 @@ public class GenerateFeaturesXmlMojo extends MojoSupport {
                         artifact.getGroupId(), artifact.getArtifactId(), artifact.getBaseVersion()));
 
             	} else {
-            		getLog().info(String.format("bundle %s/%s/%s is already included in inner feature, so don't count it in again", 
+            		getLog().debug(String.format("    bundle %s/%s/%s is already included in inner feature, so don't count it in again", 
                             artifact.getGroupId(), artifact.getArtifactId(), artifact.getBaseVersion()));
             	}
             }
