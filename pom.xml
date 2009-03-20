@@ -21,20 +21,20 @@
   <parent>
     <groupId>org.apache.servicemix.tooling</groupId>
     <artifactId>maven-plugins-pom</artifactId>
-    <version>2-SNAPSHOT</version>
+    <version>2</version>
   </parent>
   
   <groupId>org.apache.servicemix.tooling</groupId>
   <artifactId>xfire-maven-plugin</artifactId>
-  <version>4.1-SNAPSHOT</version>
+  <version>4.1</version>
   
   <packaging>maven-plugin</packaging>  
   <name>ServiceMix :: Maven2 XFire Plugin</name>
   
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/maven-plugins/xfire-maven-plugin/trunk</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/maven-plugins/xfire-maven-plugin/trunk</developerConnection>
-    <url>http://svn.apache.org/viewcvs.cgi/servicemix/maven-plugins/xfire-maven-plugin/trunk</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/maven-plugins/xfire-maven-plugin/tags/xfire-maven-plugin-4.1</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/maven-plugins/xfire-maven-plugin/tags/xfire-maven-plugin-4.1</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/maven-plugins/xfire-maven-plugin/tags/xfire-maven-plugin-4.1</url>
   </scm>
   
   <dependencies>
