@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<!--
 		Licensed to the Apache Software Foundation (ASF) under one or more
 		contributor license agreements. See the NOTICE file distributed with
@@ -19,20 +18,20 @@
     <parent>
       <groupId>org.apache.servicemix.tooling</groupId>
       <artifactId>maven-plugins-pom</artifactId>
-      <version>2-SNAPSHOT</version>
+      <version>2</version>
     </parent>
 
 
     <groupId>org.apache.servicemix.tooling</groupId>
     <artifactId>features-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1</version>
     <name>ServiceMix :: Maven2 Features plugin</name>
 
     <scm>
-      <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/maven-plugins/features-maven-plugin/trunk</connection>
-      <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/maven-plugins/features-maven-plugin/trunk</developerConnection>
-      <url>http://svn.apache.org/viewcvs.cgi/servicemix/maven-plugins/features-maven-plugin/trunk</url>
+      <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/maven-plugins/features-maven-plugin/tags/features-maven-plugin-1.1</connection>
+      <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/maven-plugins/features-maven-plugin/tags/features-maven-plugin-1.1</developerConnection>
+      <url>http://svn.apache.org/viewcvs.cgi/servicemix/maven-plugins/features-maven-plugin/tags/features-maven-plugin-1.1</url>
     </scm>
 
 	<dependencies>
