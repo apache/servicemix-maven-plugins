@@ -123,7 +123,7 @@ public class GenerateDependsFileMojo extends AbstractMojo {
                     Dependency dep = new Dependency();
                     dep.setGroupId(a.getGroupId());
                     dep.setArtifactId(a.getArtifactId());
-                    dep.setVersion(a.getVersion());
+                    dep.setVersion(a.getBaseVersion());
                     dep.setClassifier(a.getClassifier());
                     dep.setType(a.getType());
                     dep.setScope(a.getScope());
