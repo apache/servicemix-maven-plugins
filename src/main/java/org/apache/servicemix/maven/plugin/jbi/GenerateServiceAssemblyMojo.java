@@ -37,7 +37,7 @@ import org.codehaus.plexus.util.FileUtils;
 
 /**
  * A Mojo used to build the jbi service assembly zip file
- * 
+ *
  * @author <a href="pdodds@apache.org">Philip Dodds</a>
  * @version $Id: GenerateApplicationXmlMojo.java 314956 2005-10-12 16:27:15Z
  *          brett $
@@ -98,6 +98,11 @@ public class GenerateServiceAssemblyMojo extends AbstractJbiMojo {
             archiver.setArchiver(jarArchiver);
             archiver.setOutputFile(installerFile);
             jarArchiver.addConfiguredManifest(createManifest());
+
+            File classesDir = new File(getProject().getBuild().getOutputDirectory());
+            if ( classesDir.exists() )
+                jarArchiver.addDirectory(classesDir, null, DirectoryScanner.DEFAULTEXCLUDES);
+
             jarArchiver.addDirectory(workDirectory, null, DirectoryScanner.DEFAULTEXCLUDES);
             archiver.createArchive(getProject(), archive);
 
