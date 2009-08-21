@@ -18,8 +18,11 @@ package org.apache.servicemix.maven.plugin.jbi;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.maven.archiver.MavenArchiveConfiguration;
@@ -98,6 +101,14 @@ public class GenerateComponentMojo extends AbstractJbiMojo {
      * @parameter
      */
     private MavenArchiveConfiguration archive = new MavenArchiveConfiguration();
+    
+    /**
+     * A list of dependency types to include in component classpath.
+     * Default: jar, bundle, jbi-component
+     * 
+     * @parameter
+     */
+    private List componentTypes = new ArrayList(Arrays.asList(new Object[]{"jar", "bundle", "jbi-component"}));
 
     public void execute() throws MojoExecutionException, MojoFailureException {
 
@@ -198,7 +209,7 @@ public class GenerateComponentMojo extends AbstractJbiMojo {
                 String type = project != null ? project.getPackaging() : artifact.getType();
                 if ("jbi-shared-library".equals(type)) {
                     excludeBranch(listener.getNode(artifact), excludes);
-                } else if ("jar".equals(type) || "bundle".equals(type) || "jbi-component".equals(type)) {
+                } else if (componentTypes.contains(type)) {
                     includes.add(artifact);
                 }
             }

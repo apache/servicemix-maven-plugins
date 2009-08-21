@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -126,6 +127,14 @@ public class GenerateComponentDescriptorMojo extends AbstractJbiMojo {
      * @parameter expression="parent-first"
      */
     private String bootstrapClassLoaderDelegation;
+    
+    /**
+     * A list of dependency types to include in component classpath.
+     * Default: jar, bundle, jbi-component
+     *
+     * @parameter
+     */
+    private List componentTypes = new ArrayList(Arrays.asList(new Object[]{"jar", "bundle", "jbi-component"}));
 
     public void execute() throws MojoExecutionException, MojoFailureException {
 
@@ -237,7 +246,7 @@ public class GenerateComponentDescriptorMojo extends AbstractJbiMojo {
                     excludeBranch(listener.getNode(artifact), excludes);
                     excludes.remove(artifact);
                     includes.add(artifact);
-                } else if ("jar".equals(type) || "bundle".equals(type) || "jbi-component".equals(type)) {
+                } else if (componentTypes.contains(type)) {
                     includes.add(artifact);
                 }
             }
