@@ -403,6 +403,32 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
                 return child.getArtifact().getArtifactId();
             }
         }
+        
+        //as the jbi-component packaged dependency may already have been pruned
+        //in case of multiple sus which belong to same jbi-component exist in one sa, so we
+        //just check the dependencies from this su maven project to find the jbi-component name
+        
+        for (Iterator it = project.getArtifacts().iterator(); it.hasNext();) {
+            Artifact artifactInSUPom = (Artifact) it
+                    .next();
+            MavenProject artifactProject = null;
+            try {
+                artifactProject = projectBuilder.buildFromRepository(artifactInSUPom
+                        , remoteRepos, localRepo);
+            } catch (ProjectBuildingException e) {
+                getLog().warn(
+                        "Unable to determine packaging for dependency : "
+                                + artifactInSUPom.getArtifactId()
+                                + " assuming jar");
+            }
+            getLog().info(
+                    "Project " + artifactProject + " packaged "
+                            + artifactProject.getPackaging());
+            if ((artifactProject != null)
+                    && (artifactProject.getPackaging().equals("jbi-component"))) {
+                return artifactInSUPom.getArtifactId();
+            }
+        }
 
         throw new MojoExecutionException(
                 "The service unit "
