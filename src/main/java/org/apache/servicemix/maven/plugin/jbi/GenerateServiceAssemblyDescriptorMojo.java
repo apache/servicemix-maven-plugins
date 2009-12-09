@@ -36,6 +36,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
+import org.apache.maven.model.Profile;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -187,8 +188,8 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
 
         Set artifacts = project.getArtifacts();
         for (Iterator iter = artifacts.iterator(); iter.hasNext();) {
+        	
             Artifact artifact = (Artifact) iter.next();
-
             // TODO: utilise appropriate methods from project builder
             ScopeArtifactFilter filter = new ScopeArtifactFilter(
                     Artifact.SCOPE_RUNTIME);
@@ -330,7 +331,24 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
         Iterator dependencies = getReparsedDependencies();
 
         List orderedServiceUnits = new ArrayList();
-        while (dependencies.hasNext()) {
+        parseDependencies(serviceUnits, dependencies, orderedServiceUnits);
+        
+        //get chance the go through the active profile dependencies so that the SU dependency 
+        //from active profile can also be taken into account
+
+        List activeProfileList = project.getActiveProfiles();
+        for (Iterator iter = activeProfileList.iterator(); iter.hasNext();) {
+                Profile activeProfile = (Profile) iter.next();
+                parseDependencies(serviceUnits, activeProfile.getDependencies().iterator(), orderedServiceUnits);
+                
+        }
+
+        return orderedServiceUnits;
+    }
+
+	private void parseDependencies(List serviceUnits, Iterator dependencies,
+			List orderedServiceUnits) throws MojoExecutionException {
+		while (dependencies.hasNext()) {
             Dependency dependency = (Dependency) dependencies.next();
             if (dependency.getArtifactId().contains("${")) {
                 int first = dependency.getArtifactId().indexOf("${");
@@ -350,15 +368,23 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
                         .next();
                 if (dependency.getArtifactId()
                         .equals(serviceUnitInfo.getName())) {
-                    getLog().debug("Adding " + serviceUnitInfo.getFilename());
-                    orderedServiceUnits.add(serviceUnitInfo);
+                	//check if this su already added to descriptor
+                	boolean addedSu = false;
+                	for (Iterator innerIt = orderedServiceUnits.iterator();innerIt.hasNext();) {
+                		DependencyInformation addedServiceUnitInfo = (DependencyInformation) innerIt.next();
+                		if (addedServiceUnitInfo.getName().equals(serviceUnitInfo.getName())) {
+                			addedSu = true;
+                		}
+                	}
+                	if (!addedSu) {
+                		getLog().debug("Adding " + serviceUnitInfo.getFilename());
+                		orderedServiceUnits.add(serviceUnitInfo);
+                	}
                 }
 
             }
         }
-
-        return orderedServiceUnits;
-    }
+	}
 
     private Iterator getReparsedDependencies() throws MojoExecutionException {
         MavenXpp3Reader mavenXpp3Reader = new MavenXpp3Reader();
