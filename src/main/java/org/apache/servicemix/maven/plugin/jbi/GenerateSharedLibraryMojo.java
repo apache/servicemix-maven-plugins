@@ -71,7 +71,7 @@ public class GenerateSharedLibraryMojo extends AbstractJbiMojo {
     /**
      * The Zip archiver.
      * 
-     * @parameter expression="${component.org.codehaus.plexus.archiver.Archiver#jar}"
+     * @component role="org.codehaus.plexus.archiver.Archiver" roleHint="jar"
      * @required
      */
     private JarArchiver jarArchiver;

@@ -70,6 +70,7 @@ public class GenerateServiceUnitMojo extends AbstractJbiMojo {
      * The Zip archiver.
      * 
      * @parameter expression="${component.org.codehaus.plexus.archiver.Archiver#jar}"
+     * @component role="org.codehaus.plexus.archiver.Archiver" roleHint="jar"
      * @required
      */
     private JarArchiver jarArchiver;
@@ -91,7 +92,7 @@ public class GenerateServiceUnitMojo extends AbstractJbiMojo {
     /**
      * ArtifactHandler to handle jbi-service-unit artifacts
      * 
-     * @parameter expression="${component.org.apache.maven.artifact.handler.ArtifactHandler#jbi-service-unit}"
+     * @component role="org.apache.maven.artifact.handler.ArtifactHandler" roleHint="jbi-service-unit"
      */
     private ArtifactHandler handler;
 
