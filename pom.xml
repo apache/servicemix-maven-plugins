@@ -21,20 +21,20 @@
   <parent>
     <groupId>org.apache.servicemix.tooling</groupId>
     <artifactId>maven-plugins-pom</artifactId>
-    <version>3-SNAPSHOT</version>
+    <version>3</version>
   </parent>
   
   <groupId>org.apache.servicemix.tooling</groupId>
   <artifactId>res-maven-plugin</artifactId>
-  <version>4.1-SNAPSHOT</version>
+  <version>4.1</version>
   
   <packaging>maven-plugin</packaging>
   <name>ServiceMix :: Maven2 Resource Plugin</name>
   
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/maven-plugins/res-maven-plugin/trunk</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/maven-plugins/res-maven-plugin/trunk</developerConnection>
-    <url>http://svn.apache.org/viewcvs.cgi/servicemix/maven-plugins/res-maven-plugin/trunk</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/maven-plugins/res-maven-plugin/tags/res-maven-plugin-4.1</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/maven-plugins/res-maven-plugin/tags/res-maven-plugin-4.1</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/maven-plugins/res-maven-plugin/tags/res-maven-plugin-4.1</url>
   </scm>
   
   <dependencies>
