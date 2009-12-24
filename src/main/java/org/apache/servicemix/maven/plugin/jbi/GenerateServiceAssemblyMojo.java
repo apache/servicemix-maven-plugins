@@ -51,7 +51,7 @@ public class GenerateServiceAssemblyMojo extends AbstractJbiMojo {
     /**
      * The Zip archiver.
      *
-     * @component role="org.codehaus.plexus.archive.Archive" roleHint="jar"
+     * @component role="org.codehaus.plexus.archiver.Archiver" roleHint="jar"
      * @required
      */
     private JarArchiver jarArchiver;
