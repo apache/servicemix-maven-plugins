@@ -78,9 +78,11 @@ public class JbiComponentDescriptorWriter {
         writer.startElement("component-class-path");
         for (Iterator it = uris.iterator(); it.hasNext();) {
             DependencyInformation info = (DependencyInformation) it.next();
-            writer.startElement("path-element");
-            writer.writeText(info.getFilename());
-            writer.endElement();
+            if (!info.isSharedLibrary()) {
+                writer.startElement("path-element");
+                writer.writeText(info.getFilename());
+                writer.endElement();
+            }
         }
         writer.endElement();
 
@@ -100,7 +102,7 @@ public class JbiComponentDescriptorWriter {
 
         for (Iterator it = uris.iterator(); it.hasNext();) {
             DependencyInformation info = (DependencyInformation) it.next();
-            if ("jbi-shared-library".equals(info.getType())) {
+            if (info.isSharedLibrary()) {
                 writer.startElement("shared-library");
                 writer.addAttribute("version", info.getVersion());
                 writer.writeText(info.getName());

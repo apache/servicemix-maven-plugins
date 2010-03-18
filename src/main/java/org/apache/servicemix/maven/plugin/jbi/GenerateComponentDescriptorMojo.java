@@ -34,6 +34,8 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.codehaus.plexus.util.FileUtils;
 
+import static org.apache.servicemix.maven.plugin.jbi.DependencyInformation.*;
+
 /**
  * A Mojo used to build the jbi.xml file.
  * 
@@ -241,7 +243,7 @@ public class GenerateComponentDescriptorMojo extends AbstractJbiMojo {
                                     + artifact.getArtifactId() + " assuming jar");
                 }
                 String type = project != null ? project.getPackaging() : artifact.getType();
-                if ("jbi-shared-library".equals(type)) {
+                if (SHARED_LIBRARY_TYPE.equals(type)) {
                     // exclude children, but not the shared library itself
                     excludeBranch(listener.getNode(artifact), excludes);
                     excludes.remove(artifact);
@@ -269,62 +271,6 @@ public class GenerateComponentDescriptorMojo extends AbstractJbiMojo {
             info.setType(type);
             uris.add(info);
         }
-//
-//        DependencyNode node = buildDependencyTree(filter);
-//        Set<Artifact> includes = new HashSet<Artifact>();
-//        Set<Artifact> excludes = new HashSet<Artifact>();
-//        for (Iterator iter = project.getArtifacts().iterator(); iter.hasNext();) {
-//            Artifact artifact = (Artifact) iter.next();
-//            //if (filter.include(artifact)) {
-//                MavenProject project = null;
-//                try {
-//                    project = projectBuilder.buildFromRepository(artifact, remoteRepos, localRepo);
-//                } catch (ProjectBuildingException e) {
-//                    getLog().warn("Unable to determine packaging for dependency : "
-//                                    + artifact.getArtifactId() + " assuming jar");
-//                }
-//                String type = project != null ? project.getPackaging() : artifact.getType();
-//                if ("jbi-shared-library".equals(type)) {
-//                    // exclude children, but not the shared library itself
-//                    excludeBranch(findNode(node, artifact), excludes, false);
-//                    includes.add(artifact);
-//                } else if ("jar".equals(type) || "bundle".equals(type) || "jbi-component".equals(type)) {
-//                    includes.add(artifact);
-//                }
-//            //}
-//        }
-//        for (Artifact artifact : excludes) {
-//            System.out.println("Excludes: " + artifact);
-//        }
-//        includes.removeAll(excludes);
-//        Set<Artifact> newIncludes = new HashSet<Artifact>();
-//        for (Artifact artifact : includes) {
-//            DependencyNode n = findNode(node, artifact);
-//            if (n != null) {
-//                Artifact a = n.getArtifact();
-//                if (filter.include(a)) {
-//                    newIncludes.add(artifact);
-//                }
-//            }
-//        }
-//        //pruneTree(node, filter, excludes);
-//        for (Artifact artifact : newIncludes) {
-//            MavenProject project = null;
-//            try {
-//                project = projectBuilder.buildFromRepository(artifact, remoteRepos, localRepo);
-//            } catch (ProjectBuildingException e) {
-//                getLog().warn("Unable to determine packaging for dependency : "
-//                                + artifact.getArtifactId() + " assuming jar");
-//            }
-//            String type = project != null ? project.getPackaging() : artifact.getType();
-//            info = new DependencyInformation();
-//            info.setFilename(LIB_DIRECTORY + "/" + artifact.getFile().getName());
-//            info.setVersion(artifact.getVersion());
-//            info.setName(artifact.getArtifactId());
-//            info.setType(type);
-//            uris.add(info);
-//        }
-//
 
         JbiComponentDescriptorWriter writer = new JbiComponentDescriptorWriter(encoding);
         writer.write(descriptor, component, bootstrap, type, name, description,

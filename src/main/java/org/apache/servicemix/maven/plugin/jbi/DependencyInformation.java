@@ -24,6 +24,11 @@ package org.apache.servicemix.maven.plugin.jbi;
  */
 public class DependencyInformation {
 
+    /**
+     * Artifact type for a JBI Shared Library
+     */
+    public static final String SHARED_LIBRARY_TYPE = "jbi-shared-library";
+
     private String filename;
 
     private String component;
@@ -82,5 +87,12 @@ public class DependencyInformation {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    /**
+     * Is this dependency a JBI Shared Library?
+     */
+    public boolean isSharedLibrary() {
+        return SHARED_LIBRARY_TYPE.equals(type);
     }
 }
