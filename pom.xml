@@ -151,6 +151,7 @@
       <modules>
         <module>checksum-maven-plugin</module>
         <module>depends-maven-plugin</module>
+        <module>docs-maven-plugin</module>
         <module>jbi-maven-plugin</module>
         <module>res-maven-plugin</module>
         <module>xfire-maven-plugin</module>
