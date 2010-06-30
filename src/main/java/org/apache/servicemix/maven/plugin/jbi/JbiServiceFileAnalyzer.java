@@ -23,28 +23,27 @@ import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.servicemix.common.packaging.Consumes;
+import org.apache.servicemix.common.packaging.Provides;
+import org.apache.servicemix.common.packaging.ServiceUnitAnalyzer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.servicemix.common.packaging.Consumes;
-import org.apache.servicemix.common.packaging.Provides;
-import org.apache.servicemix.common.packaging.ServiceUnitAnalyzer;
-
 /**
  * A dummy implementation of the ServiceUnitAnalyzer that allows you to generate
  * the consumes and provides from a simple XML file
- * 
+ *
  */
 public class JbiServiceFileAnalyzer implements ServiceUnitAnalyzer {
 
     public static final String JBI_NAMESPACE = "http://java.sun.com/xml/ns/jbi";
 
-    private List consumes = new ArrayList();
+    private final List consumes = new ArrayList();
 
-    private List provides = new ArrayList();
+    private final List provides = new ArrayList();
 
     public List getConsumes() {
         return consumes;
@@ -69,9 +68,17 @@ public class JbiServiceFileAnalyzer implements ServiceUnitAnalyzer {
             DocumentBuilder db = dbf.newDocumentBuilder();
             Document doc = db.parse(jbiServicesFile);
 
-            Node servicesNode = doc.getFirstChild();
-            if (XmlDescriptorHelper.isElement(servicesNode, JBI_NAMESPACE,
+            // Stop at first services child node that is found
+            NodeList childNodes = doc.getChildNodes();
+            Node servicesNode = null;
+            for (int i = 0; i < childNodes.getLength(); i++) {
+                if (XmlDescriptorHelper.isElement(childNodes.item(i), JBI_NAMESPACE,
                     "services")) {
+                    servicesNode = childNodes.item(i);
+                    break;
+                }
+            }
+            if (servicesNode != null) {
                 // We will process the children
                 Element servicesElement = (Element) servicesNode;
                 NodeList children = servicesElement.getChildNodes();
