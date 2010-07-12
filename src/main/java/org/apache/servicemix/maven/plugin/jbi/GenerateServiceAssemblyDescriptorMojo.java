@@ -413,17 +413,23 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
                     .next();
             MavenProject artifactProject = null;
             try {
-                artifactProject = projectBuilder.buildFromRepository(child
-                        .getArtifact(), remoteRepos, localRepo);
+                getLog().info(child.getArtifact().toString());
+                
+                artifactProject = projectBuilder
+                    .buildFromRepository(child.getArtifact(), 
+                                         remoteRepos, localRepo);
             } catch (ProjectBuildingException e) {
                 getLog().warn(
                         "Unable to determine packaging for dependency : "
                                 + child.getArtifact().getArtifactId()
                                 + " assuming jar");
+                getLog().debug(e);                
+            }      
+            if (artifactProject != null) {
+                getLog().info(
+                              "Project " + artifactProject + " packaged "
+                              + artifactProject.getPackaging());
             }
-            getLog().info(
-                    "Project " + artifactProject + " packaged "
-                            + artifactProject.getPackaging());
             if ((artifactProject != null)
                     && (artifactProject.getPackaging().equals("jbi-component"))) {
                 return child.getArtifact().getArtifactId();
@@ -446,10 +452,13 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
                         "Unable to determine packaging for dependency : "
                                 + artifactInSUPom.getArtifactId()
                                 + " assuming jar");
+                getLog().debug(e);                
             }
-            getLog().info(
+            if (artifactProject != null) {
+                getLog().info(
                     "Project " + artifactProject + " packaged "
                             + artifactProject.getPackaging());
+            }
             if ((artifactProject != null)
                     && (artifactProject.getPackaging().equals("jbi-component"))) {
                 return artifactInSUPom.getArtifactId();
