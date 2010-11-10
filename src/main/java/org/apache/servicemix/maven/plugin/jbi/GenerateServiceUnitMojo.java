@@ -53,7 +53,7 @@ public class GenerateServiceUnitMojo extends AbstractJbiMojo {
     /**
      * The name of the generated war.
      * 
-     * @parameter expression="${project.artifactId}-${project.version}.zip"
+     * @parameter expression="${project.build.finalName}.zip"
      * @required
      */
     private String serviceUnitName;

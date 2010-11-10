@@ -55,7 +55,7 @@ public class GenerateSharedLibraryMojo extends AbstractJbiMojo {
     /**
      * The name of the generated war.
      * 
-     * @parameter expression="${project.artifactId}-${project.version}.zip"
+     * @parameter expression="${project.build.finalName}.zip"
      * @required
      */
     private String sharedLibraryName;
@@ -63,7 +63,7 @@ public class GenerateSharedLibraryMojo extends AbstractJbiMojo {
     /**
      * The name of the generated war.
      * 
-     * @parameter expression="${project.artifactId}-${project.version}.jar"
+     * @parameter expression="${project.build.finalName}.jar"
      * @required
      */
     private String jarName;

@@ -51,6 +51,7 @@ public class GenerateServiceAssemblyMojo extends AbstractJbiMojo {
     /**
      * The Zip archiver.
      *
+     * @parameter expression="${component.org.codehaus.plexus.archiver.Archiver#jar}"
      * @component role="org.codehaus.plexus.archiver.Archiver" roleHint="jar"
      * @required
      */
@@ -67,7 +68,7 @@ public class GenerateServiceAssemblyMojo extends AbstractJbiMojo {
     /**
      * The name of the generated war.
      *
-     * @parameter expression="${project.build.finalName}.zip"
+     * @parameter expression="${project.build.finalName}.jar"
      * @required
      */
     private String finalName;
@@ -105,7 +106,6 @@ public class GenerateServiceAssemblyMojo extends AbstractJbiMojo {
 
             jarArchiver.addDirectory(workDirectory, null, DirectoryScanner.DEFAULTEXCLUDES);
             archiver.createArchive(getProject(), archive);
-
         } catch (Exception e) {
             throw new JbiPluginException("Error creating shared library: "
                     + e.getMessage(), e);

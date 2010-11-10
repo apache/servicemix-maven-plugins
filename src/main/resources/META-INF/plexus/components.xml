@@ -90,7 +90,7 @@
       <implementation>org.apache.maven.artifact.handler.DefaultArtifactHandler</implementation>
       <configuration>
         <type>jbi-service-assembly</type>
-        <extension>zip</extension>
+        <extension>jar</extension>
         <language>java</language>
       </configuration>
     </component>
