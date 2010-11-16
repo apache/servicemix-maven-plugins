@@ -83,10 +83,12 @@ public class GenerateServiceAssemblyMojo extends AbstractJbiMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             injectDependentServiceUnits();
-
-            createArchive(new File(outputDirectory, finalName));
-
-            projectHelper.attachArtifact(project, "zip", null, new File(outputDirectory, finalName));
+            File sa = new File(outputDirectory, finalName);
+            File zipFile = new File(outputDirectory, FileUtils.removeExtension(finalName) + ".zip");
+            createArchive(sa);
+            // now copy it to zip
+            FileUtils.copyFile(sa, zipFile);
+            projectHelper.attachArtifact(project, "zip", null, zipFile);
         } catch (Exception e) {
             throw new MojoExecutionException("Failed to inject dependencies", e);
         }
