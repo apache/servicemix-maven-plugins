@@ -38,7 +38,7 @@
   </scm>
 
   <properties>
-    <servicemix.specs.version>1.6-SNAPSHOT</servicemix.specs.version>
+    <servicemix.specs.version>1.6.0</servicemix.specs.version>
   </properties>
   
   <dependencies>
@@ -115,7 +115,7 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-tx</artifactId>
-      <version>3.0.3.RELEASE</version>
+      <version>3.0.4.RELEASE</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>

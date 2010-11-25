@@ -32,7 +32,7 @@ public abstract class AbstractDeployableMojo extends AbstractJbiMojo {
     protected String host;
 
     /**
-     * @parameter default-value="ServiceMix"
+     * @parameter default-value="ServiceMix" expression="${containerName}
      */
     protected String containerName;
 
