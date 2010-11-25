@@ -210,6 +210,13 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
                     DependencyInformation info = new DependencyInformation();
                     info.setName(artifact.getArtifactId());
                     String fileName = artifact.getFile().getName();
+                    if (fileName == null) {
+                        // the name is not defined in the POM
+                        // try to use the artifactId
+                        // as the artifactId is mandatory by maven, we don't
+                        // need any additional test
+                        fileName = artifact.getArtifactId();
+                    }
                     fileName = fileName.substring(0, fileName.lastIndexOf('.')) + ".zip";
                     info.setFilename(fileName);
                     info.setComponent(getComponentName(project, artifacts, artifact));
