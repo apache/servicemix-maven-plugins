@@ -33,7 +33,7 @@
   
   <scm>
     <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/maven-plugins/jbi-maven-plugin/trunk</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/maven-plugins/trunk</developerConnection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/maven-plugins/jbi-maven-plugin/trunk</developerConnection>
     <url>http://svn.apache.org/viewcvs.cgi/servicemix/maven-plugins/jbi-maven-plugin/trunk</url>
   </scm>
 
