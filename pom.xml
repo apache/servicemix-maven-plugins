@@ -26,15 +26,15 @@
   
   <groupId>org.apache.servicemix.tooling</groupId>
   <artifactId>jbi-maven-plugin</artifactId>
-  <version>4.4-SNAPSHOT</version>
+  <version>4.4</version>
   
   <packaging>maven-plugin</packaging>
   <name>ServiceMix :: Maven2 JBI Plugin</name>
   
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/maven-plugins/jbi-maven-plugin/trunk</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/maven-plugins/trunk</developerConnection>
-    <url>http://svn.apache.org/viewcvs.cgi/servicemix/maven-plugins/jbi-maven-plugin/trunk</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/maven-plugins/jbi-maven-plugin/tags/jbi-maven-plugin-4.4</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/maven-plugins/tags/jbi-maven-plugin-4.4</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/maven-plugins/jbi-maven-plugin/tags/jbi-maven-plugin-4.4</url>
   </scm>
 
   <properties>
