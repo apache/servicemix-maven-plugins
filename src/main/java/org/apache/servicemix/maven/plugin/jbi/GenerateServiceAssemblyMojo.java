@@ -16,11 +16,6 @@
  */
 package org.apache.servicemix.maven.plugin.jbi;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.Set;
-
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.artifact.Artifact;
@@ -34,6 +29,11 @@ import org.apache.maven.project.ProjectBuildingException;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.FileUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * A Mojo used to build the jbi service assembly zip file
@@ -68,7 +68,7 @@ public class GenerateServiceAssemblyMojo extends AbstractJbiMojo {
     /**
      * The name of the generated war.
      *
-     * @parameter expression="${project.build.finalName}.jar"
+     * @parameter expression="${project.build.finalName}.zip"
      * @required
      */
     private String finalName;
@@ -84,11 +84,8 @@ public class GenerateServiceAssemblyMojo extends AbstractJbiMojo {
         try {
             injectDependentServiceUnits();
             File sa = new File(outputDirectory, finalName);
-            File zipFile = new File(outputDirectory, FileUtils.removeExtension(finalName) + ".zip");
             createArchive(sa);
-            // now copy it to zip
-            FileUtils.copyFile(sa, zipFile);
-            projectHelper.attachArtifact(project, "zip", null, zipFile);
+            project.getArtifact().setFile(sa);
         } catch (Exception e) {
             throw new MojoExecutionException("Failed to inject dependencies", e);
         }
