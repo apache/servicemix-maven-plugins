@@ -1,0 +1,26 @@
+h1. Chapter
+
+{anchor:My Anchor}
+
+h2. Section 1
+This section contains a simple link to [http://www.google.be]
+
+h2. Section 2
+Click [here|http://www.google.be] to follow the link with text
+
+h2. Section 3
+Links in a variable list
+- search provider :: [Google|http://www.google.be] is often used for searching the web
+
+h2. Section 4
+[Google|http://www.google.be]
+
+h2. Section 5
+[http://www.google.be]
+
+h2. Section 6
+[#Section 5]
+
+h2. Section 7
+[#My Anchor]
+

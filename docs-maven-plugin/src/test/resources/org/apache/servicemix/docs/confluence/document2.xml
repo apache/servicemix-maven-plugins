@@ -1,0 +1,12 @@
+<chapter xmlns="http://docbook.org/ns/docbook" id="Chapter">
+  <title>Chapter</title>
+  <section id="Section1">
+    <title>Section 1</title>
+    <para>Paragraph 1 starts here...</para>
+    <para>Paragraph 2 starts here...</para>
+    <section id="Section1.1">
+      <title>Section 1.1</title>
+      <para>And one more paragraph</para>
+    </section>
+  </section>
+</chapter>

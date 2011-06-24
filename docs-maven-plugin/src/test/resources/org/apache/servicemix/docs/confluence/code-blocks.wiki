@@ -1,0 +1,23 @@
+h1. Chapter
+
+h2. Section 1
+This section contains a piece of {{code text}}.
+
+{code}
+<?xml version="1.0"?>
+<hello>
+  <world/>
+</hello>
+{code}
+
+h2. Section 2
+The next one specifies the language for the code block.
+
+{code:lang=xml}
+<?xml version="1.0"?>
+<hello>
+  <world/>
+</hello>
+{code}
+
+h2. Section with {{code text}}

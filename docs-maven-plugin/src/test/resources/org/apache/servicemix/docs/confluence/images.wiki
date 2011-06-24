@@ -1,0 +1,6 @@
+h1. Chapter
+
+h2. Section 1
+This section contains an image
+
+!image.png!

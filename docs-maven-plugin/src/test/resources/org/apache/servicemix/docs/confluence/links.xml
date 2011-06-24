@@ -1,0 +1,56 @@
+<chapter xmlns="http://docbook.org/ns/docbook" id="Chapter">
+  <title>Chapter</title>
+  <para>
+      <phrase id="MyAnchor"></phrase>
+  </para>
+  <section id="Section1">
+    <title>Section 1</title>
+    <para>This section contains a simple link to
+        <ulink url="http://www.google.be">http://www.google.be</ulink>
+    </para>
+  </section>
+  <section id="Section2">
+    <title>Section 2</title>
+    <para>Click
+        <ulink url="http://www.google.be">here</ulink> to follow the link with text
+    </para>
+  </section>
+  <section id="Section3">
+    <title>Section 3</title>
+    <para>Links in a variable list</para>
+      <variablelist>
+        <varlistentry>
+          <term>search provider</term>
+          <listitem>
+            <para>
+              <ulink url="http://www.google.be">Google</ulink> is often used for searching the web
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+  </section>    
+    <section id="Section4">
+      <title>Section 4</title>
+      <para>
+        <ulink url="http://www.google.be">Google</ulink>
+      </para>
+    </section>
+    <section id="Section5">
+      <title>Section 5</title>
+      <para>
+        <ulink url="http://www.google.be">http://www.google.be</ulink>
+      </para>
+    </section>
+    <section id="Section6">
+        <title>Section 6</title>
+        <para>
+            <link linkend="Section5">Section 5</link>
+        </para>
+    </section>
+    <section id="Section7">
+        <title>Section 7</title>
+        <para>
+            <link linkend="MyAnchor">My Anchor</link>
+        </para>
+    </section>
+</chapter>

@@ -1,0 +1,30 @@
+<chapter xmlns="http://docbook.org/ns/docbook" id="Chapter">
+  <title>Chapter</title>
+  <section id="Section1">
+    <title>Section 1</title>
+    <para>This section contains a piece of
+      <literal>code text</literal>.
+    </para>
+    <programlisting><![CDATA[
+    <?xml version="1.0"?>
+    <hello>
+      <world/>
+    </hello>
+    ]]></programlisting>
+  </section>
+  <section id="Section2">
+    <title>Section 2</title>
+    <para>The next one specifies the language for the code block.</para>
+    <programlisting language="xml"><![CDATA[
+    <?xml version="1.0"?>
+    <hello>
+      <world/>
+    </hello>
+    ]]></programlisting>
+  </section>
+  <section id="Sectionwithcodetext">
+    <title>Section with
+      <literal>code text</literal>
+    </title>
+  </section>
+</chapter>

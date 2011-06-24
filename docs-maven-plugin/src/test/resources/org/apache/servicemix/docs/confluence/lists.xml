@@ -1,0 +1,65 @@
+<chapter xmlns="http://docbook.org/ns/docbook" id="Chapter">
+  <title>Chapter</title>
+  <section id="Section1">
+    <title>Section 1</title>
+    <para>This section contains a bulleted list:</para>
+      <itemizedlist>
+        <listitem>
+          <para>item 1</para>
+        </listitem>
+        <listitem>
+          <para>
+              <literal>item 2</literal>
+          </para>
+        </listitem>
+        <listitem>
+          <para>item 3</para>
+        </listitem>
+      </itemizedlist>
+  </section>
+  <section id="Section2">
+    <title>Section 2</title>
+    <para>This section contains a numbered list:</para>
+      <orderedlist>
+        <listitem>
+          <para>item 1</para>
+        </listitem>
+        <listitem>
+          <para>
+              <literal>item 2</literal>
+          </para>
+        </listitem>
+        <listitem>
+          <para>item 3</para>
+        </listitem>
+      </orderedlist>
+  </section>
+  <section id="Variablelist">
+    <title>Variable list</title>
+    <para>This section contains a variable list:</para>
+      <variablelist>
+        <varlistentry>
+          <term>term1</term>
+          <listitem>
+            <para>Definition for term1</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <literal>term2</literal>
+          </term>
+          <listitem>
+            <para>Definition for term2 (including
+              <literal>code text</literal>)
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>term3</term>
+          <listitem>
+            <para>Definition for term3</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+  </section>
+</chapter>

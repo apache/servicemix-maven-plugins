@@ -1,0 +1,7 @@
+h1. Chapter
+
+h2. An informal table
+This section contains an informal table:
+|| Header 1 || Header 2 || Header 3 ||
+| Val 1.1 | Val 1.2 | {{Val 1.3}} |
+| Val 2.1 | Val 2.2 | {{Val 2.3}} |
