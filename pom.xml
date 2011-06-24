@@ -29,7 +29,7 @@
   <version>5-SNAPSHOT</version>
   
   <packaging>pom</packaging>
-  <name>ServiceMix :: Maven2 Plugins POM</name>
+  <name>Apache ServiceMix :: Plugins :: Plugins POM</name>
   
   <scm>
     <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/maven-plugins/maven-plugins-pom/trunk</connection>
