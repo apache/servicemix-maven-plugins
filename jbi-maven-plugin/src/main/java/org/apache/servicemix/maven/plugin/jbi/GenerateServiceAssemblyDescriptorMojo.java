@@ -217,6 +217,9 @@ public class GenerateServiceAssemblyDescriptorMojo extends AbstractJbiMojo {
                         // need any additional test
                         fileName = artifact.getArtifactId();
                     }
+                    if (fileName.equals("classes")) {
+                    	fileName = artifact.getArtifactId() + "-" + artifact.getVersion() + ".jar";
+                    }
                     fileName = fileName.substring(0, fileName.lastIndexOf('.')) + ".zip";
                     info.setFilename(fileName);
                     info.setComponent(getComponentName(project, artifacts, artifact));
