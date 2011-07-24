@@ -18,15 +18,14 @@ package org.apache.servicemix.maven.plugin.jbi;
 
 import javax.xml.namespace.QName;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 public final class XmlDescriptorHelper {
 
-    private static final Log LOG = LogFactory.getLog(XmlDescriptorHelper.class);
+    private static final transient Logger LOGGER = LoggerFactory.getLogger(XmlDescriptorHelper.class);
 
     private XmlDescriptorHelper() {
     }
@@ -61,17 +60,17 @@ public final class XmlDescriptorHelper {
             String localPart) {
         if (node instanceof Element) {
             Element element = (Element) node;
-            LOG.debug("Got Element nodeName:" + element.getNodeName()
+            LOGGER.debug("Got Element nodeName:" + element.getNodeName()
                     + " namespaceUri:" + element.getNamespaceURI()
                     + " localName:" + element.getLocalName());
             if (localPart.equals(element.getNodeName())) {
                 return true;
             } else {
                 // Compare the namespace URI and localname
-                LOG.debug(namespaceUrl + "=" + element.getNamespaceURI()
+                LOGGER.debug(namespaceUrl + "=" + element.getNamespaceURI()
                         + " is "
                         + namespaceUrl.equals(element.getNamespaceURI()));
-                LOG.debug(localPart + "=" + element.getLocalName() + " is "
+                LOGGER.debug(localPart + "=" + element.getLocalName() + " is "
                         + localPart.equals(element.getLocalName()));
                 if ((namespaceUrl.equals(element.getNamespaceURI()))
                         && (localPart.equals(element.getLocalName()))) {
