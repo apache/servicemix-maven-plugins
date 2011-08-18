@@ -42,6 +42,7 @@ import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
+import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
@@ -51,6 +52,7 @@ import org.apache.maven.project.ProjectBuildingException;
 import org.apache.servicemix.maven.plugin.jbi.JbiResolutionListener.Node;
 import org.codehaus.plexus.archiver.jar.Manifest;
 import org.codehaus.plexus.archiver.jar.ManifestException;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 public abstract class AbstractJbiMojo extends AbstractMojo {
 
@@ -349,5 +351,26 @@ public abstract class AbstractJbiMojo extends AbstractMojo {
         sb.append(version.substring(matcher.end(), version.length()));
         return sb.toString();
     }
+    
+    protected String getServiceUnitName(MavenProject project) {
+		for (Object elem : project.getBuildPlugins()) {
+			if (elem instanceof Plugin) {
+				Plugin plugin = (Plugin)elem;
+				if (plugin.getGroupId().equals("org.apache.servicemix.tooling")
+						&& plugin.getArtifactId().equals("jbi-maven-plugin")) {
+					Xpp3Dom configuration = (Xpp3Dom) plugin.getConfiguration();
+					if (configuration != null) {
+						Xpp3Dom serviceUnitName = configuration.getChild("serviceUnitName");
+						if (serviceUnitName != null) {
+							return serviceUnitName.getValue();
+						}
+					}
+					break;
+				}
+			}
+		}
+		return null;
+	}
+
 
 }

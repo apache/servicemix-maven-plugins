@@ -22,6 +22,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
+import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -30,6 +31,7 @@ import org.codehaus.plexus.archiver.jar.JarArchiver;
 import org.codehaus.plexus.archiver.jar.Manifest;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import java.io.File;
 import java.io.IOException;
@@ -133,9 +135,14 @@ public class GenerateServiceAssemblyMojo extends AbstractJbiMojo {
                 }
                 if (project != null && project.getPackaging().equals("jbi-service-unit")) {
                     try {
-                        String path = artifact.getFile().getAbsolutePath();
-                        path = path.substring(0, path.lastIndexOf('.')) + ".zip";
-                        FileUtils.copyFileToDirectory(new File(path), workDirectory);
+                    	String suName = getServiceUnitName(project);
+                    	String path = artifact.getFile().getAbsolutePath();
+                    	if (suName != null && suName.length() > 0) {
+                    		path = path.substring(0, path.lastIndexOf(File.separator)) + File.separator + suName;
+                    	} else {
+                    		path = path.substring(0, path.lastIndexOf('.')) + ".zip";
+                    	}
+                    	FileUtils.copyFileToDirectory(new File(path), workDirectory);
                     } catch (IOException e) {
                         throw new JbiPluginException(e);
                     }
@@ -143,5 +150,4 @@ public class GenerateServiceAssemblyMojo extends AbstractJbiMojo {
             }
         }
     }
-
 }
