@@ -17,15 +17,12 @@
 package org.apache.servicemix.tooling.depends;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -41,6 +38,7 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * Generates the dependencies properties file
@@ -78,7 +76,7 @@ public class GenerateDependsFileMojo extends AbstractMojo {
      */
     
     private File outputFile;
-
+    
     /**
      * @parameter default-value="${localRepository}"
      */
@@ -106,72 +104,55 @@ public class GenerateDependsFileMojo extends AbstractMojo {
      */
     protected ArtifactFactory factory;
 
+    /**
+     * @component
+     */
+    private BuildContext buildContext;
+
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if (buildContext.hasDelta("pom.xml")) {
+            List<Dependency> dependencies = getDependencies();
+            writeDependencies(dependencies);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Dependency> getDependencies() {
+        List<Dependency> dependencies;
+        if (!recursive) {
+            dependencies = project.getDependencies();
+        } else {
+            Set<Artifact> artifacts = project.getArtifacts();
+            dependencies = new ArrayList<Dependency>();
+            for (Artifact a : artifacts) {
+                Dependency dep = new Dependency();
+                dep.setGroupId(a.getGroupId());
+                dep.setArtifactId(a.getArtifactId());
+                dep.setVersion(a.getBaseVersion());
+                dep.setClassifier(a.getClassifier());
+                dep.setType(a.getType());
+                dep.setScope(a.getScope());
+                dependencies.add(dep);
+            }
+        }
+        Collections.sort(dependencies, new DependencyComparator());
+        return dependencies;
+    }
+    
+
+    private void writeDependencies(List<Dependency> dependencies) throws MojoExecutionException {
         OutputStream out = null;
         try {
             outputFile.getParentFile().mkdirs();
-            out = new FileOutputStream(outputFile);
+            out = buildContext.newFileOutputStream(outputFile);
             PrintStream printer = new PrintStream(out);
-
-            List<Dependency> dependencies;
-            if (!recursive) {
-                dependencies = project.getDependencies();
-            } else {
-                Set<Artifact> artifacts = project.getArtifacts();
-                dependencies = new ArrayList<Dependency>();
-                for (Artifact a : artifacts) {
-                    Dependency dep = new Dependency();
-                    dep.setGroupId(a.getGroupId());
-                    dep.setArtifactId(a.getArtifactId());
-                    dep.setVersion(a.getBaseVersion());
-                    dep.setClassifier(a.getClassifier());
-                    dep.setType(a.getType());
-                    dep.setScope(a.getScope());
-                    dependencies.add(dep);
-                }
-            }
-            Collections.sort(dependencies, new Comparator<Dependency>() {
-                public int compare(Dependency o1, Dependency o2) {
-                    int result = o1.getGroupId().compareTo( o2.getGroupId() );
-                    if ( result == 0 ) {
-                        result = o1.getArtifactId().compareTo( o2.getArtifactId() );
-                        if ( result == 0 ) {
-                            result = o1.getType().compareTo( o2.getType() );
-                            if ( result == 0 ) {
-                                if ( o1.getClassifier() == null ) {
-                                    if ( o2.getClassifier() != null ) {
-                                        result = 1;
-                                    }
-                                } else {
-                                    if ( o2.getClassifier() != null ) {
-                                        result = o1.getClassifier().compareTo( o2.getClassifier() );
-                                    } else {
-                                        result = -1;
-                                    }
-                                }
-                                if ( result == 0 ) {
-                                    // We don't consider the version range in the comparison, just the resolved version
-                                    result = o1.getVersion().compareTo( o2.getVersion() );
-                                }
-                            }
-                        }
-                    }
-                    return result;
-                }
-            });
             populateProperties(printer, dependencies);
             getLog().info("Created: " + outputFile);
         } catch (Exception e) {
             throw new MojoExecutionException(
                     "Unable to create dependencies file: " + e, e);
         } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    getLog().info("Failed to close: " + outputFile + ". Reason: " + e, e);
-                }
-            }
+            safeClose(out);
         }
     }
 
@@ -188,10 +169,7 @@ public class GenerateDependsFileMojo extends AbstractMojo {
         out.println("# dependencies");
         out.println();
 
-        Iterator iterator = dependencies.iterator();
-
-        while (iterator.hasNext()) {
-            Dependency dependency = (Dependency) iterator.next();
+        for (Dependency dependency : dependencies) {
             String prefix = dependency.getGroupId() + SEPARATOR + dependency.getArtifactId() + SEPARATOR;
             out.println(prefix + "version = " + dependency.getVersion());
             String classifier = dependency.getClassifier();
@@ -203,6 +181,16 @@ public class GenerateDependsFileMojo extends AbstractMojo {
             out.println();
 
             getLog().debug("Dependency: " + dependency + " classifier: " + classifier + " type: " + dependency.getType());
+        }
+    }
+    
+    private void safeClose(OutputStream out) {
+        if (out != null) {
+            try {
+                out.close();
+            } catch (IOException e) {
+                getLog().info("Failed to close: " + outputFile + ". Reason: " + e, e);
+            }
         }
     }
 
