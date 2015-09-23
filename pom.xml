@@ -26,15 +26,15 @@
   
   <groupId>org.apache.servicemix.tooling</groupId>
   <artifactId>maven-plugins-pom</artifactId>
-  <version>5-SNAPSHOT</version>
+  <version>5</version>
   
   <packaging>pom</packaging>
   <name>Apache ServiceMix :: Plugins :: Plugins POM</name>
   
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/maven-plugins/maven-plugins-pom/trunk</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/maven-plugins/maven-plugins-pom/trunk</developerConnection>
-    <url>http://svn.apache.org/viewcvs.cgi/servicemix/maven-plugins/maven-plugins-pom/trunk</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/maven-plugins/maven-plugins-pom/tags/maven-plugins-pom-5</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/maven-plugins/maven-plugins-pom/tags/maven-plugins-pom-5</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/maven-plugins/maven-plugins-pom/tags/maven-plugins-pom-5</url>
   </scm>
   
   <properties>
