@@ -36,19 +36,14 @@
 
     <groupId>org.apache.servicemix.plugins</groupId>
     <artifactId>org.apache.servicemix.plugins.pom</artifactId>
-    <version>1-SNAPSHOT</version>
+    <version>2-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Apache ServiceMix :: Plugins</name>
 
     <modules>
         <module>maven-plugins-pom</module>
         
-        <module>checksum-maven-plugin</module>
         <module>depends-maven-plugin</module>
-        <module>jbi-maven-plugin</module>
-        <module>res-maven-plugin</module>
-        <module>servicemix-build</module>
-        <module>xfire-maven-plugin</module>
     </modules>
 
 </project>
