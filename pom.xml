@@ -40,6 +40,13 @@
     <packaging>pom</packaging>
     <name>Apache ServiceMix :: Plugins</name>
 
+    <scm>
+        <connection>scm:git:https://git-wip-us.apache.org/repos/asf/servicemix-maven-bundles.git</connection>
+        <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/servicemix-maven-bundles.git</developerConnection>
+        <url>https://git-wip-us.apache.org/repos/asf?p=servicemix-maven-bundles.git</url>
+        <tag>HEAD</tag>
+    </scm>
+
     <modules>
         <module>maven-plugins-pom</module>
         

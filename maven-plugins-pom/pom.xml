@@ -31,12 +31,6 @@
   <packaging>pom</packaging>
   <name>Apache ServiceMix :: Plugins :: Plugins POM</name>
   
-  <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/maven-plugins/trunk/maven-plugins-pom</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/maven-plugins/trunk/maven-plugins-pom</developerConnection>
-    <url>http://svn.apache.org/viewcvs.cgi/servicemix/maven-plugins/trunk/maven-plugins-pom</url>
-  </scm>
-  
   <properties>
       <servicemix.legal.version>1.0</servicemix.legal.version>
   </properties>
