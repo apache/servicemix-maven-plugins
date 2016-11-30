@@ -33,105 +33,71 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * Generates the dependencies properties file
- *
- * @version $Id: $
- * @goal generate-depends-file
- * @phase generate-resources
- * @requiresDependencyResolution test
- * @description Generates the dependencies properties file
  */
+@Mojo( name = "generate-depends-file", defaultPhase = LifecyclePhase.GENERATE_RESOURCES,
+       requiresDependencyResolution = ResolutionScope.TEST )
 public class GenerateDependsFileMojo extends AbstractMojo {
 
     protected static final String SEPARATOR = "/";
 
     /**
      * The maven project.
-     *
-     * @parameter expression="${project}"
-     * @required
-     * @readonly
      */
+    @Parameter( defaultValue = "${project}", required = true, readonly = true )
     protected MavenProject project;
 
-    /**
-     *
-     * @parameter expression='true'
-     * @required
-     */
+    @Parameter( required = true, defaultValue = "true" )
     protected boolean recursive;
-    
-    /**
-     *
-     * @parameter expression='true'
-     */
+
+    @Parameter( defaultValue = "true" )
     protected boolean includeVersion;
 
-    /**
-     *
-     * @parameter expression='true'
-     */
+    @Parameter( defaultValue = "true" )
     protected boolean includeClassifier;
 
-    /**
-     *
-     * @parameter expression='true'
-     */
+    @Parameter( defaultValue = "true" )
     protected boolean includeScope;
 
-    /**
-     *
-     * @parameter expression='true'
-     */
+    @Parameter( defaultValue = "true" )
     protected boolean includeType;
 
     /**
      * The file to generate
-     *
-     * @parameter default-value="${project.build.directory}/classes/META-INF/maven/dependencies.properties"
      */
-    
+    @Parameter( defaultValue = "${project.build.directory}/classes/META-INF/maven/dependencies.properties" )
     private File outputFile;
-    
-    /**
-     * @parameter default-value="${localRepository}"
-     */
+
+    @Parameter( defaultValue = "${localRepository}" )
     protected ArtifactRepository localRepo;
 
-    /**
-     * @parameter default-value="${project.remoteArtifactRepositories}"
-     */
+    @Parameter( defaultValue = "${project.remoteArtifactRepositories}" )
     protected List remoteRepos;
 
-    /**
-     * @parameter expression="${filterGroupIds}"
-     */
+    @Parameter( defaultValue = "${filterGroupIds}" )
     protected String[] filterGroupIds;
 
-    /**
-     * @component
-     */
+    @Component
     protected ArtifactMetadataSource artifactMetadataSource;
 
-    /**
-     * @component
-     */
+    @Component
     protected ArtifactResolver resolver;
 
     protected ArtifactCollector collector = new DefaultArtifactCollector();
 
-    /**
-     * @component
-     */
+    @Component
     protected ArtifactFactory factory;
 
-    /**
-     * @component
-     */
+    @Component
     private BuildContext buildContext;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
