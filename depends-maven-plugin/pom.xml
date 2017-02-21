@@ -22,6 +22,14 @@
     <version>1.4.0-SNAPSHOT</version>
     <name>Apache ServiceMix :: Plugins :: Maven2 Depends Plugin</name>
 
+    <scm>
+        <connection>scm:git:https://git-wip-us.apache.org/repos/asf/servicemix-maven-bundles.git</connection>
+        <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/servicemix-maven-bundles.git
+        </developerConnection>
+        <url>https://git-wip-us.apache.org/repos/asf?p=servicemix-maven-bundles.git</url>
+        <tag>HEAD</tag>
+    </scm>
+
     <build>
         <plugins>
             <plugin>

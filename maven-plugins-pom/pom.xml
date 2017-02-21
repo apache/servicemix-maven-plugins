@@ -32,6 +32,14 @@
     <packaging>pom</packaging>
     <name>Apache ServiceMix :: Plugins :: Plugins POM</name>
 
+    <scm>
+        <connection>scm:git:https://git-wip-us.apache.org/repos/asf/servicemix-maven-bundles.git</connection>
+        <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/servicemix-maven-bundles.git
+        </developerConnection>
+        <url>https://git-wip-us.apache.org/repos/asf?p=servicemix-maven-bundles.git</url>
+        <tag>HEAD</tag>
+    </scm>
+
     <properties>
         <servicemix.legal.version>1.0</servicemix.legal.version>
     </properties>
@@ -41,17 +49,17 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
-                <version>2.6</version>
+                <version>3.5</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
-                <version>2.2</version>
+                <version>2.4</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.7</version>
+                <version>2.9.1</version>
             </plugin>
         </plugins>
     </reporting>
@@ -64,7 +72,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
-                    <version>2.5.1</version>
+                    <version>2.5.3</version>
                     <configuration>
                         <useReleaseProfile>false</useReleaseProfile>
                         <preparationGoals>clean install</preparationGoals>
@@ -76,11 +84,49 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>2.0.2</version>
+                    <version>3.6.1</version>
                     <configuration>
                         <source>1.5</source>
                         <target>1.5</target>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.0.1</version>
+                    <executions>
+                        <execution>
+                            <phase>generate-sources</phase>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                            <configuration>
+                                <includePom>true</includePom>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jarsigner-plugin</artifactId>
+                    <version>1.4</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>2.9.1</version>
+                    <inherited>true</inherited>
+                    <configuration>
+                        <source>1.5</source>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -89,7 +135,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.0</version>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <id>copy-legal</id>
@@ -111,10 +157,18 @@
                         </configuration>
                     </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.servicemix.legal</groupId>
+                        <artifactId>legal</artifactId>
+                        <version>${servicemix.legal.version}</version>
+                        <type>xml</type>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <artifactId>maven-remote-resources-plugin</artifactId>
-                <version>1.0</version>
+                <version>1.5</version>
                 <executions>
                     <execution>
                         <goals>
@@ -141,76 +195,14 @@
 
     <profiles>
         <profile>
-            <id>all</id>
-            <activation>
-                <!--
-                <activeByDefault>true</activeByDefault>
-                -->
-            </activation>
-            <modules>
-                <module>checksum-maven-plugin</module>
-                <module>depends-maven-plugin</module>
-                <module>docs-maven-plugin</module>
-                <module>jbi-maven-plugin</module>
-                <module>res-maven-plugin</module>
-                <module>xfire-maven-plugin</module>
-                <module>servicemix-build</module>
-            </modules>
-        </profile>
-
-        <profile>
             <id>release</id>
             <build>
                 <plugins>
-
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-release-plugin</artifactId>
-                        <version>2.5.1</version>
-                        <configuration>
-                            <preparationGoals>clean,verify,install</preparationGoals>
-                            <autoVersionSubmodules>true</autoVersionSubmodules>
-                        </configuration>
-                    </plugin>
-
-                    <!-- We want a source jar -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <version>2.0.4</version>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <!-- We want the JavaDoc JAR published with the release -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.4</version>
-                        <inherited>true</inherited>
-                        <configuration>
-                            <source>1.5</source>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-
                     <!-- We want to sign the artifact, the POM, and all attached artifacts -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.0-alpha-4</version>
+                        <version>1.6</version>
                         <inherited>true</inherited>
                         <executions>
                             <execution>
@@ -226,7 +218,7 @@
                         <inherited>true</inherited>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-deploy-plugin</artifactId>
-                        <version>2.3</version>
+                        <version>2.8.2</version>
                         <configuration>
                             <altDeploymentRepository>${deploy.altRepository}</altDeploymentRepository>
                             <updateReleaseInfo>true</updateReleaseInfo>
