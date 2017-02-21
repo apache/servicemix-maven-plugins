@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements. See the NOTICE file distributed 
         with this work for additional information regarding copyright ownership. The ASF licenses this file to You under the Apache License, 
@@ -29,8 +30,8 @@
                 <version>3.5</version>
                 <executions>
                     <execution>
-                            <id>default-descriptor</id>
-                            <phase>process-classes</phase>
+                        <id>default-descriptor</id>
+                        <phase>process-classes</phase>
                     </execution>
                 </executions>
             </plugin>

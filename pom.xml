@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <!--
 
@@ -29,9 +30,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-      <groupId>org.apache.servicemix</groupId>
-      <artifactId>servicemix-pom</artifactId>
-      <version>5</version>
+        <groupId>org.apache.servicemix</groupId>
+        <artifactId>servicemix-pom</artifactId>
+        <version>5</version>
     </parent>
 
     <groupId>org.apache.servicemix.plugins</groupId>
@@ -42,14 +43,15 @@
 
     <scm>
         <connection>scm:git:https://git-wip-us.apache.org/repos/asf/servicemix-maven-bundles.git</connection>
-        <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/servicemix-maven-bundles.git</developerConnection>
+        <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/servicemix-maven-bundles.git
+        </developerConnection>
         <url>https://git-wip-us.apache.org/repos/asf?p=servicemix-maven-bundles.git</url>
         <tag>HEAD</tag>
     </scm>
 
     <modules>
         <module>maven-plugins-pom</module>
-        
+
         <module>depends-maven-plugin</module>
     </modules>
 
