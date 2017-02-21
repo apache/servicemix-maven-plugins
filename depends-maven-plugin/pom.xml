@@ -12,20 +12,20 @@
     <parent>
         <groupId>org.apache.servicemix.tooling</groupId>
         <artifactId>maven-plugins-pom</artifactId>
-        <version>6</version>
+        <version>7-SNAPSHOT</version>
         <relativePath>../maven-plugins-pom/pom.xml</relativePath>
     </parent>
 
     <artifactId>depends-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
-    <version>1.4.0</version>
+    <version>1.4.1-SNAPSHOT</version>
     <name>Apache ServiceMix :: Plugins :: Maven2 Depends Plugin</name>
 
     <scm>
         <connection>scm:git:https://git-wip-us.apache.org/repos/asf/servicemix-maven-plugins.git</connection>
         <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/servicemix-maven-plugins.git</developerConnection>
         <url>https://git-wip-us.apache.org/repos/asf?p=servicemix-maven-plugins.git</url>
-        <tag>depends-maven-plugin-1.4.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <build>
