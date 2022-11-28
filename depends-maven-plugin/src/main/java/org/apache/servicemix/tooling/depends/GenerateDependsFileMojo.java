@@ -20,9 +20,22 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.handler.ArtifactHandler;
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.resolver.ArtifactCollector;
+import org.apache.maven.artifact.resolver.ArtifactResolver;
+import org.apache.maven.artifact.resolver.DefaultArtifactCollector;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -65,6 +78,9 @@ public class GenerateDependsFileMojo extends AbstractMojo {
     @Parameter( defaultValue = "true" )
     protected boolean includeType;
 
+	@Parameter(defaultValue = "true")
+	protected boolean includeExtension;
+
     /**
      * The file to generate
      */
@@ -76,6 +92,9 @@ public class GenerateDependsFileMojo extends AbstractMojo {
 
     @Component
     private BuildContext buildContext;
+
+	@Component
+	private ArtifactHandlerManager artifactHandlerManager;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (buildContext.hasDelta("pom.xml")) {
@@ -174,6 +193,10 @@ public class GenerateDependsFileMojo extends AbstractMojo {
                 out.println(prefix + "type = " + dependency.getType());
             if( includeScope )
                 out.println(prefix + "scope = " + dependency.getScope());
+			if (includeExtension) {
+				ArtifactHandler handler = artifactHandlerManager.getArtifactHandler(dependency.getType());
+				out.println(prefix + "extension = " + handler.getExtension());
+			}
 
             out.println();
 
