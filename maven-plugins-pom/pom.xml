@@ -40,6 +40,9 @@
 
     <properties>
         <servicemix.legal.version>1.0</servicemix.legal.version>
+        <java.version>7</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
     </properties>
 
     <reporting>
@@ -84,8 +87,8 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.6.1</version>
                     <configuration>
-                        <source>1.5</source>
-                        <target>1.5</target>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -115,7 +118,7 @@
                     <version>2.9.1</version>
                     <inherited>true</inherited>
                     <configuration>
-                        <source>1.5</source>
+                        <source>${java.version}</source>
                     </configuration>
                     <executions>
                         <execution>
