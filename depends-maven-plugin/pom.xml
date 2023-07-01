@@ -12,7 +12,7 @@
     <parent>
         <groupId>org.apache.servicemix.tooling</groupId>
         <artifactId>maven-plugins-pom</artifactId>
-        <version>6</version>
+        <version>7-SNAPSHOT</version>
         <relativePath>../maven-plugins-pom/pom.xml</relativePath>
     </parent>
 
